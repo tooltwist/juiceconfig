@@ -215,18 +215,19 @@ export default async (req, res, next) => {
         /*
          *  See if we have this user in our application database.
          */
-        const config = {
-            host: await juice.string('db.host', juice.MANDATORY),
-            port: await juice.integer('db.port', juice.MANDATORY),
-            database: await juice.string('db.database', juice.MANDATORY),
-            user: await juice.string('db.user', juice.MANDATORY),
-            password: await juice.string('db.password', juice.MANDATORY)
-        }
-        console.log(`config=`, config);
-        var con = mysql.createConnection(config);
-        con.connect(function(err) {
-            if (err) throw err;
-            // console.log("Connected!");
+        // const config = {
+        //     host: await juice.string('db.host', juice.MANDATORY),
+        //     port: await juice.integer('db.port', juice.MANDATORY),
+        //     database: await juice.string('db.database', juice.MANDATORY),
+        //     user: await juice.string('db.user', juice.MANDATORY),
+        //     password: await juice.string('db.password', juice.MANDATORY)
+        // }
+        // console.log(`config=`, config);
+        // var con = mysql.createConnection(config);
+        // con.connect(function(err) {
+        //     if (err) throw err;
+        //     // console.log("Connected!");
+        let con = await db.checkConnection()
 
             const sql = `SELECT * FROM user WHERE external_id=?`
             const params = [ externalID ]
@@ -302,7 +303,7 @@ export default async (req, res, next) => {
                   })//- insert
                 }
             });
-        });
+        // });
     } else {
       console.log(`auth: Do not have authorization`);
     }
