@@ -1,0 +1,45 @@
+{
+  "name": "juice-api",
+  "version": "1.0.0",
+  "description": "API server for Juice - the new (2019) Tooltwist Controller",
+  "homepage": "https://juiceconfig.io",
+  "author": {
+    "name": "Sally Callender",
+    "email": "sally.callender@tooltwist.com"
+  },
+  "main": "src/juice-client.js",
+  "scripts": {
+    "dev": "nodemon -e .js,.yml --exec babel-node src/server.js",
+    "build": "babel src --out-dir dist",
+    "serve": "node dist/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tooltwist/juice-api.git"
+  },
+  "author": "Philip Callener <philip.callender@tooltwist.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tooltwist/juice-api/issues"
+  },
+  "homepage": "https://github.com/tooltwist/juice-api#readme",
+  "dependencies": {
+    "aws-sdk": "^2.597.0",
+    "axios": "^0.19.0",
+    "istextorbinary": "^3.3.0",
+    "jsonwebtoken": "^8.5.1",
+    "mysql": "^2.17.1",
+    "mysql2": "^2.0.0",
+    "restify": "^8.4.0",
+    "restify-cors-middleware": "^1.1.1",
+    "restify-plugins": "^1.6.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.6.0",
+    "@babel/core": "^7.6.0",
+    "@babel/node": "^7.6.1",
+    "@babel/preset-env": "^7.6.0",
+    "nodemon": "^1.19.2"
+  }
+}

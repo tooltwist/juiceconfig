@@ -1,0 +1,8 @@
+
+This is my fancy config file.
+// สิบสองกษัตริย์ก่อนหน้าแลถัดไป
+
+{
+  "name": "$JUICE{db.database}",
+  "port": "$JUICE{db.port}"
+}

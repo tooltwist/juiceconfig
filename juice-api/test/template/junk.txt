@@ -1,0 +1,12 @@
+
+This is my fancy config file.
+----
+$ZJUICE{unknown1}
+$ZJUICE
+$ZJUICE(38)
+$ZJUICE is here
+--------
+{
+  "name": "$JUICE{db.database}",
+  "port": "$JUICE{db.port}"
+}

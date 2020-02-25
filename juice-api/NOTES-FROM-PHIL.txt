@@ -1,0 +1,14 @@
+
+
+
+Steps:
+
+- npm install
+- npm install restify
+- Added index.js with initial Restify content (copied from http://restify.com/docs/home/)
+- Changed server port to 4000, to match our config. Later this will be set in the config files.
+- Add scripts/dev to package.json
+- Add babel, which allows us to use the latest Javascript features. See https://hackernoon.com/using-babel-7-with-node-7e401bc28b04
+    npm install --save-dev @babel/core @babel/cli @babel/preset-env @babel/node
+    npm install nodemon --save-dev
+    update .babelrc
