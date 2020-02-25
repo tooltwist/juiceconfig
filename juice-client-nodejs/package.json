@@ -1,0 +1,38 @@
+{
+  "name": "@tooltwist/juice-client",
+  "version": "1.0.13",
+  "description": "API to access config files",
+  "main": "lib/juice-client.js",
+  "scripts": {
+    "patch-release": "npm version patch && npm publish --access=public && git push --follow-tags",
+    "test-cli": "cd test; mocha mocha-cli-tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tooltwist/juice-api.git"
+  },
+  "author": "Philip Callender <philip.callender@tooltwist.com>",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/JackFranklin/filesearch/blob/master/LICENSE-MIT"
+    }
+  ],
+  "bugs": {
+    "url": "https://github.com/tooltwist/juice-client/issues"
+  },
+  "homepage": "https://juiceconfig.io",
+  "dependencies": {
+    "aws-sdk": "^2.620.0",
+    "axios": "^0.19.2",
+    "istextorbinary": "^3.3.0"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.*",
+    "should": "^7.0.1",
+    "supertest": "^1.0.1"
+  },
+  "zbin": {
+    "juice-cli": "lib/cli.js"
+  }
+}
