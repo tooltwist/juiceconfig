@@ -21,7 +21,17 @@ For more details, see https://juiceconfig.io
 
 ## juice-client-nodejs
 
->    npm install @tooltwist/juice-client
+``` bash
+# install dependencies
+$ yarn install
+
+# test the command line interface
+$ yarn test-cli
+
+# publish a 'dot release' version to npm
+$ yarn patch-release
+```
+
 
 ## juice-client-go
 (coming soon)  
@@ -30,10 +40,28 @@ For more details, see https://juiceconfig.io
 (coming soon)  
  
 
-## juice-spa
+## website
 This is the frontend of the juice configuration tool.
 
-## juice-api
+``` bash
+# install dependencies
+$ yarn install
+
+# serve with hot reload at localhost:3000
+$ yarn dev
+
+# build for production and launch server
+$ yarn build
+$ yarn start
+
+# generate static project
+$ yarn generate
+
+# run tests
+$ yarn test
+```
+
+## server
 This is the backend of the juice configuration tool.
 
 ``` bash
