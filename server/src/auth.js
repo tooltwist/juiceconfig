@@ -1,11 +1,7 @@
 import errors from 'restify-errors';
-import loginService from './loginservice-client';
-import restify from 'restify';
-import mysql from 'mysql';
+import loginService from '../lib/loginservice-client';
 import juice from '@tooltwist/juice-client'
 import db from '../lib/database-mysql';
-// import loginService from '~/services/loginserviceio/index';
-// ?? /opt/Development/Projects/juice/juice/protected-config/loginservice-config.js
 
 
 
@@ -193,7 +189,7 @@ export default async (req, res, next) => {
         // 4. Validate JWT Token if it is expired or invalid
         // Corresponding status error will be thrown depending on its type
         console.log(`auth: before validating token`);
-        loginService.validateJWT(token);
+        await loginService.validateJWT(token);
         console.log(`auth: after validating token`);
 
         // 5. Decode and attach the user details into the payload
