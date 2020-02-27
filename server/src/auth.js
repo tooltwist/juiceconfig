@@ -3,6 +3,7 @@ import loginService from './loginservice-client';
 import restify from 'restify';
 import mysql from 'mysql';
 import juice from '@tooltwist/juice-client'
+import db from '../lib/database-mysql';
 // import loginService from '~/services/loginserviceio/index';
 // ?? /opt/Development/Projects/juice/juice/protected-config/loginservice-config.js
 
