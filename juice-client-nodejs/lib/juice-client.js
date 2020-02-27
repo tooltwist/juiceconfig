@@ -228,7 +228,7 @@ async function getStringValue(name, dflt) {
 
   // Get the value from the config.
   let value = findValue(configuration, name)
-  console.log(`findValue(${name}) => ${value} (${typeof(value)})`);
+  // console.log(`findValue(${name}) => ${value} (${typeof(value)})`);
   if (typeof(value) !== 'undefined') {
     return value
   }
