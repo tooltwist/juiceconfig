@@ -1,9 +1,7 @@
 import restify from 'restify';
 import corsMiddleware from 'restify-cors-middleware';
-import mysql from 'mysql';
 import db from '../lib/database-mysql';
 import auth from './auth';
-import juice from '@tooltwist/juice-client';
 
 /*
  *  Initialise Restify.

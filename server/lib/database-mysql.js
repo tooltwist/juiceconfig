@@ -1,13 +1,5 @@
-// var SERVER_HOME = require('./SERVER_HOME'),
-		// config = SERVER_HOME.require('config/serverConfig.js'),
 const	mysql = require('mysql');
-const	errors = require('restify-errors');	// https://github.com/restify/errors
-const	moment = require('moment');
 import juice from '@tooltwist/juice-client';
-
-// var MAX_ROWS = 200;
-var VERBOSE = false;
-
 
 /*
  *	This is the database connection.
@@ -17,18 +9,20 @@ var VERBOSE = false;
  */
 let CURRENT_CONNECTION = null;
 
+// Display debug messages
+var VERBOSE = false;
+
 
 exports.checkConnection = checkConnection;
-
 async function checkConnection() {
-	console.log('database-mysql.checkConnection()')
+	if (VERBOSE) console.log('database-mysql.checkConnection()')
 
 	return new Promise(async (resolve, reject) => {
 
 
 		// If the current connection is working, use it.
 		if (CURRENT_CONNECTION) {
-			console.log('Already connected.')
+			if (VERBOSE) console.log('Already connected.')
 			return resolve (CURRENT_CONNECTION);
 		}
 
@@ -44,13 +38,13 @@ async function checkConnection() {
 
 		// We either haven't connected to the database yet, or the
 		// connection has dropped out and been reset. Connect now.
-		console.log('Connecting...')
+		if (VERBOSE) console.log('Connecting...')
 		var connection = mysql.createConnection(config);
 		// var connection = mysql.createConnection(config.mysqlConnectionOptions);
 
 		// Handle the connection failing or dropping out.
 		connection.on("error", function (error) {
-			console.log('Connection error', error)
+			if (VERBOSE) console.log('Connection error', error)
 			//		console.log('connection error event', error)
 			if (error instanceof Error) {
 				if (error.code === "PROTOCOL_CONNECTION_LOST") {

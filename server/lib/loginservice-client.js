@@ -1,32 +1,32 @@
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
 import errors from 'restify-errors';
-import appConfig from '../conf/appConfig';
+// import appConfig from '../conf/appConfig';
 import juice from '@tooltwist/juice-client';
 // import logger from '~/lib/logger';
 
-const { auth } = appConfig.services;
+// const { auth } = appConfig.services;
 
 /**
  * @param {*} user
  * @returns String LoginServiceId
  */
 async function registerUser(user) {
-  // const url = juice.getString('service.auth.url')
-  // const apikey = juice.getString('service.auth.apikey')
-  // const apikey = juice.getString('service.auth.returnURL')
+  const url = await juice.getString('services.auth.url')
+  const apikey = await juice.getString('services.auth.apikey')
+  const returnURL = await juice.getString('services.auth.returnURL')
 
   let isSuccess = false;
   await axios({
     method: 'put',
-    url: `${auth.url}/v2/${auth.apikey}/email/register`,
+    url: `${url}/v2/${apikey}/email/register`,
     // url: `${url}/v2/${apikey}/email/register`,
     data: {
       email: user.email,
       username: user.email,
       first_name: user.firstname,
       last_name: user.lastname,
-      resume: auth.returnURL,
+      resume: returnURL,
     },
   })
     .then((response) => {
@@ -50,13 +50,13 @@ async function registerUser(user) {
  * If invalid or expired, corresponding error status will be thrown.
  * @param {*} token is the authentication provided by the login service
  */
-function validateJWT(token) {
+async function validateJWT(token) {
   console.log(`validateJWT() YARP1`)
-  console.log(`auth=`, auth)
-  
+  // console.log(`auth=`, auth)
+
   try {
-    console.log(`secret is ${auth.secret}`)
-    jwt.verify(token, auth.secret);
+    const secret = await juice.string('services.auth.secret', juice.MANDATORY)
+    jwt.verify(token, secret);
   } catch (err) {
     let msg
     console.log(`err.name=`, err.name);
@@ -77,10 +77,13 @@ function validateJWT(token) {
  * @param {*} token
  */
 async function sendEmail(params, subject, toEmail, templateName) {
+  const url = await juice.getString('services.auth.url')
+  const apikey = await juice.getString('services.auth.apikey')
+
   let isSuccess = true;
   await axios({
     method: 'post',
-    url: `${auth.url}/v2/${auth.apikey}/sendmail`,
+    url: `${url}/v2/${apikey}/sendmail`,
     data: {
       template: templateName,
       params: params,
