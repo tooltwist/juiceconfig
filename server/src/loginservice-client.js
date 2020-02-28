@@ -1,11 +1,7 @@
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
 import errors from 'restify-errors';
-// import appConfig from '../conf/appConfig';
 import juice from '@tooltwist/juice-client';
-// import logger from '~/lib/logger';
-
-// const { auth } = appConfig.services;
 
 /**
  * @param {*} user
@@ -20,7 +16,6 @@ async function registerUser(user) {
   await axios({
     method: 'put',
     url: `${url}/v2/${apikey}/email/register`,
-    // url: `${url}/v2/${apikey}/email/register`,
     data: {
       email: user.email,
       username: user.email,
@@ -51,8 +46,7 @@ async function registerUser(user) {
  * @param {*} token is the authentication provided by the login service
  */
 async function validateJWT(token) {
-  console.log(`validateJWT() YARP1`)
-  // console.log(`auth=`, auth)
+  console.log(`validateJWT()`)
 
   try {
     const secret = await juice.string('services.auth.secret', juice.MANDATORY)

@@ -1,7 +1,7 @@
 import errors from 'restify-errors';
-import loginService from '../lib/loginservice-client';
+import loginService from './loginservice-client';
 import juice from '@tooltwist/juice-client'
-import db from '../lib/database-mysql';
+import db from './database-mysql';
 
 
 
