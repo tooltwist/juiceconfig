@@ -1,0 +1,11 @@
+#!/bin/bash
+#
+#	Build mbc into a Docker container, so we can test it locally
+#
+dir=$(cd `dirname $0`; pwd)
+
+cd ${dir}/..
+pwd
+
+echo "$" docker build -t juice-local-test .
+         docker build -t juice-local-test .
