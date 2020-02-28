@@ -1,7 +1,7 @@
 #!/bin/sh
 
 export JUICE_CONFIG='file:::/docker-install/config.json'
-CMD=/juice-client/node_modules/\@tooltwist/juice-client/lib/juice-cli
+CMD=/juice-client/node_modules/\@tooltwist/juice-client/bin/juice-cli
 errorStatus=0
 
 function checkType {

@@ -7,9 +7,6 @@ const { isText, isBinary, getEncoding } = require('istextorbinary');
 const juice = require('../lib/juice-client');
 
 
-console.log(`We are running. Yay!`)
-
-
 
 function usage() {
   // Uses same syntax as cp -R
