@@ -1,6 +1,6 @@
 import restify from 'restify';
 import corsMiddleware from 'restify-cors-middleware';
-import db from '../lib/database-mysql';
+import db from './database-mysql';
 import auth from './auth';
 
 /*
