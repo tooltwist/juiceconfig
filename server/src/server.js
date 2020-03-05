@@ -1,7 +1,8 @@
 import restify from 'restify';
 import corsMiddleware from 'restify-cors-middleware';
 import db from './database-mysql';
-import auth from './auth';
+import auth from './auth'
+import figlet from 'figlet'
 
 /*
  *  Initialise Restify.
@@ -1393,7 +1394,17 @@ server.post('/editUserAccount', async (req, res, next) => {
     // })  
   }); // End of section
 
+/*
+*       Display a nice banner.
+*       See https://www.npmjs.com/package/figlet
+*/
+console.log();
+console.log(figlet.textSync('juice-api', {
+        horizontalLayout: 'fitted'
+}));
+console.log();
 
+console.log(`JUICE_CONFIG=${process.env.JUICE_CONFIG}`)
 server.listen(4000, function() {
   console.log('%s listening at %s', server.name, server.url);
 });
