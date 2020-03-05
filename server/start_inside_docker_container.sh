@@ -9,7 +9,7 @@
 echo ""
 echo "start_inside_docker_container.sh"
 echo "--------------------------------"
-echo SERVER_HOME=${SERVER_HOME}
+echo JUICE_CONFIG=${JUICE_CONFIG}
 echo WEBSITE_PORT=${WEBSITE_PORT}
 echo "$" cd /server
          cd /server
@@ -19,5 +19,10 @@ echo "$" cd /server
 #         cp ${SERVER_HOME}/config/environment.js /src/public/assets/scripts/environment.js
 
 echo "Starting the server using pm2..."
-echo "$" exec pm2 start pm2.json --no-daemon
-         exec pm2 start pm2.json --no-daemon
+#echo "$" exec pm2 start pm2.json --no-daemon --node-args="-r esm"
+#         exec pm2 start pm2.json --no-daemon --node-args="-r esm"
+echo "$" exec pm2-runtime src/server.js --node-args="-r esm"
+         exec pm2-runtime src/server.js --node-args="-r esm"
+
+#docker run -it --link test-mysql:mysql --rm mysql sh -c 'exec mysql -h"$MYSQL_PORT_3306_TCP_ADDR" -P"$MYSQL_PORT_3306_TCP_PORT" -uroot -p"$MYSQL_ENV_MYSQL_ROOT_PASSWORD"'
+#/opt/Development/Projects/juice/juiceconfig-config/local-server/volumes/juice/config/config-for-juice.json

@@ -6,15 +6,18 @@ USER root
 RUN apt-get update
 RUN apt-get install -y vim
 
+# Change this to force rebuild
+RUN echo 1
 
 # Install pm2 so we can run our application
-RUN npm i -g pm2
+RUN yarn global add pm2
 
 # Install npm modules first
 COPY server/package.json /server/package.json
 WORKDIR /server
 RUN rm -rf node_modules
-RUN npm --color false install
+#RUN npm --color false install
+RUN yarn install
 
 #COPY website/package.json /website/package.json
 #WORKDIR /website
@@ -23,7 +26,7 @@ RUN npm --color false install
 
 # Now install the source
 ADD server /server
-RUN yarn
+RUN yarn install
 #ADD website /website
 #RUN mkdir -p /src/public /website/dist
 
@@ -55,4 +58,4 @@ RUN yarn
 
 # Run the app with pm2 to ensure server restart on exceptions.
 EXPOSE  4000
-CMD ["bash", "/server/start_inside_docker_container.sh"]
+CMD ["/bin/bash", "/server/start_inside_docker_container.sh"]
