@@ -2,5 +2,6 @@
 .DS_Store
 /server/dist
 /server/node_modules
+
 /website/protected-config/website-config.js
 /website/protected-config/loginservice-config.js
