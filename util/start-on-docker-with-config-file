@@ -15,6 +15,7 @@ docker run -ti \
 	--net juice_default \
 	--link juice_db_1:juice_db_1 \
 	--volume=${dir}/Config:/Config \
-	--rm -e JUICE_CONFIG=file:::/Config/config-for-docker.json \
+	--rm \
+	-e JUICE_CONFIG=file:::/Config/config-for-docker.json \
 	juice-local-test \
 	${CMD}
