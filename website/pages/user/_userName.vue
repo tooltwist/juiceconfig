@@ -85,6 +85,8 @@ section.section
 
 <script>
 import axios from 'axios';
+import webconfig from '~/protected-config/website-config'
+const { protocol, host, port } = webconfig
 
 export default {
     name: 'User',
@@ -115,7 +117,7 @@ export default {
 
         async saveEditedUser() {
             try {
-                await axios.post('http://localhost:4000/editUserAccount', {
+                await axios.post('${protocol}://${host}:${port}/editUserAccount', {
                     id: this.user.id,
                     email: this.form.new_accountemail,
                     role: this.form.new_accountrole,
@@ -132,7 +134,7 @@ export default {
 
         // RELOAD THE DATABASE TABLE AFTER SAVING NEW PROJECT USER
         async reloadUsers() {
-        const url = `http://localhost:4000/userName`
+        const url = `${protocol}://${host}:${port}/userName`
         let res = await axios.get(url, {
             params: { 
                 userID: this.userID
@@ -151,7 +153,7 @@ export default {
 
         try {
             // Select the user for this page
-            const url = `http://localhost:4000/userName`
+            const url = `${protocol}://${host}:${port}/userName`
             let res = await axios.get(url, {
                 params: {
                     userID: userID
@@ -161,7 +163,7 @@ export default {
             console.log(`User   :`, user)
 
             // Select users projects for this page
-            const url2 = `http://localhost:4000/usersProjects`
+            const url2 = `${protocol}://${host}:${port}/usersProjects`
             let res2 = await axios.get(url2, {
                 params: {
                     userID: userID
@@ -170,7 +172,7 @@ export default {
             const projects = res2.data.records
 
             // Select users environments for this page
-            const url3 = `http://localhost:4000/usersEnvironments`
+            const url3 = `${protocol}://${host}:${port}/usersEnvironments`
             let res3 = await axios.get(url3, {
                 params: {
                     userID: userID

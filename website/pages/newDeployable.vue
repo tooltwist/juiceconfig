@@ -40,6 +40,8 @@ section.section
 
 <script>
 import axios from 'axios'
+import webconfig from '~/protected-config/website-config'
+const { protocol, host, port } = webconfig
 
 export default {
     name: 'New_Deployable',
@@ -83,7 +85,7 @@ export default {
                 // If no error, send post request to server
                 try {
                     e.preventDefault();
-                    axios.post('http://localhost:4000/newDeployable', {
+                    axios.post('${protocol}://${host}:${port}/newDeployable', {
                         name: this.form.new_deployable,
                         product_owner: this.form.new_owner,
                         description: this.form.new_description,
@@ -118,7 +120,7 @@ export default {
    */
     asyncData ({ params, error }) {
 
-        const url = `http://localhost:4000/showDeployables`
+        const url = `${protocol}://${host}:${port}/showDeployables`
         console.log(`Calling ${url}`);
         return axios.get(url)
         .then((res) => {

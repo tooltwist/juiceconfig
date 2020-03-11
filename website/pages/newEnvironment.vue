@@ -40,6 +40,8 @@ section.section
 
 <script>
 import axios from 'axios'
+import webconfig from '~/protected-config/website-config'
+const { protocol, host, port } = webconfig
 
 export default {
     name: 'New_Deployable',
@@ -83,7 +85,7 @@ export default {
                 // If no error, send post request to server
                 try {
                     e.preventDefault();
-                    axios.post('http://localhost:4000/newEnvironment', {
+                    axios.post(`${protocol}://${host}:${port}/newEnvironment`, {
                         name: this.form.new_environment,
                         description: this.form.new_description,
                         notes: this.form.new_notes,
@@ -119,7 +121,7 @@ export default {
     async asyncData ({ params, error }) {
     try {        
         // Get the environments
-        const url = `http://localhost:4000/showEnvironments`
+        const url = `${protocol}://${host}:${port}/showEnvironments`
         console.log(`Calling ${url}`);
         let reply = await axios.get(url)
         console.log(`Response is: `, reply)
