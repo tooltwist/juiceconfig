@@ -203,6 +203,8 @@ section.section
 
 <script>
 import axios from 'axios'
+import webconfig from '~/protected-config/website-config'
+const { protocol, host, port } = webconfig
 
 export default {
   name: 'Environment',
@@ -279,7 +281,7 @@ export default {
 
         // If no error, send post request to server
         try {
-          await axios.post('http://localhost:4000/newDeployment', {
+          await axios.post('${protocol}://${host}:${port}/newDeployment', {
             environment: this.environmentName,
             notes: this.form.new_notes,
             deployable: this.form.new_deployable,
@@ -305,7 +307,7 @@ export default {
     // SAVED EDITED ENVIRONMENT TO THE DATABASE - FROM MODAL
     async saveEditedEnv() {
       try {
-        await axios.post('http://localhost:4000/editedEnv', {
+        await axios.post('${protocol}://${host}:${port}/editedEnv', {
           description: this.form.edit_envdescription,
           notes: this.form.edit_envnotes,
           name: this.environmentName,
@@ -326,7 +328,7 @@ export default {
 
     // RELOAD THE DATABASE TABLE AFTER SAVING EDITED ENVIRONMENT
     async reloadEnvironment() {
-      const url = `http://localhost:4000/environment`
+      const url = `${protocol}://${host}:${port}/environment`
       let res = await axios.get(url, { 
         params: {
           environmentName: this.environmentName
@@ -341,7 +343,7 @@ export default {
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW DEPLOYMENT
     async reloadDeployments() {
-      const url2 = `http://localhost:4000/deployments`
+      const url2 = `${protocol}://${host}:${port}/deployments`
       let res2 = await axios.get(url2, { 
         params: {
           environmentName: this.environmentName
@@ -379,7 +381,7 @@ export default {
 
         // If no error, send post request to server
         try {
-          await axios.post('http://localhost:4000/newEnvironmentUser', {
+          await axios.post('${protocol}://${host}:${port}/newEnvironmentUser', {
             id: this.form.new_environmentuser,
             access: this.form.new_user_access,
             environment: this.environmentName
@@ -404,7 +406,7 @@ export default {
 
     async saveEditedUser() {
       try {
-        await axios.post('http://localhost:4000/editEnvUser', {
+        await axios.post('${protocol}://${host}:${port}/editEnvUser', {
             id: this.users.user_id,
             access: this.form.edit_useraccess,
             environment: this.environmentName,
@@ -421,7 +423,7 @@ export default {
     }, // - saveEditedUser
 
     async reloadUsers() {
-      const url3 = `http://localhost:4000/environments_users`
+      const url3 = `${protocol}://${host}:${port}/environments_users`
       let res3 = await axios.get(url3, {
           params: { 
             environmentName: this.environmentName
@@ -482,7 +484,7 @@ export default {
 
     try {
       // Select the environment for this page
-      const url = `http://localhost:4000/environment`
+      const url = `${protocol}://${host}:${port}/environment`
       console.log(`Calling ${url}`);
       let res = await axios.get(url, { 
         params: {
@@ -493,7 +495,7 @@ export default {
       const environment = res.data.record
 
       // Select the deployments for this environment
-      const url2 = `http://localhost:4000/deployments`
+      const url2 = `${protocol}://${host}:${port}/deployments`
       let res2 = await axios.get(url2, { 
         params: {
           environmentName: environmentName
@@ -503,7 +505,7 @@ export default {
       const deployments = res2.data.deployments
 
       // Select the users for the environment
-      const url3 = `http://localhost:4000/environments_users`
+      const url3 = `${protocol}://${host}:${port}/environments_users`
       let res3 = await axios.get(url3, {
           params: { 
             environmentName: environmentName
@@ -513,20 +515,20 @@ export default {
       const users = res3.data.users
 
       // Import deployables to be used in deployments form
-      const url4 = `http://localhost:4000/deployables`
+      const url4 = `${protocol}://${host}:${port}/deployables`
       let res4 = await axios.get(url4, config)
 
       const deployables = res4.data.list
 
       // Import all users for creating new user (on the selected project)
-      const url5 = `http://localhost:4000/users`
+      const url5 = `${protocol}://${host}:${port}/users`
       let res5 = await axios.get(url5)
       console.log(`API5 returned`, res5.data);
       const allUsers = res5.data.users
       console.log(allUsers)
 
       // This users accessibility/profile details
-      const url8 = `http://localhost:4000/currentUser`
+      const url8 = `${protocol}://${host}:${port}/currentUser`
       let res8 = await axios.get(url8, config)
       console.log(`API8 returned`, res8.data);
       const currentUser = res8.data.user

@@ -20,6 +20,8 @@ section.section
 
 <script>
 import axios from 'axios'
+import webconfig from '~/protected-config/website-config'
+const { protocol, host, port } = webconfig
 
 export default {
   name: 'Projects',
@@ -57,7 +59,7 @@ export default {
       console.log(`------------------- asyncData`)
       let jwt = app.$nuxtLoginservice.jwt
 
-      const url = `http://localhost:4000/deployables`
+      const url = `${protocol}://${host}:${port}/deployables`
       let config = {
         headers: {
           authorization: `Bearer ${jwt}`,
