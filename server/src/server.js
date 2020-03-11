@@ -42,6 +42,14 @@ function respond(req, res, next) {
 server.get('/hello/:name', respond);
 server.head('/hello/:name', respond);
 
+// Healthcheck, so the load balancer can check the API is operational
+server.get('/healthcheck', async (req, res, next) => {
+  console.log(`GET /healthcheck`);
+
+  res.send({ status: 'ok' })
+  next()
+});
+
 // Deployables
 /*
  *  Select projects from MySQL database
