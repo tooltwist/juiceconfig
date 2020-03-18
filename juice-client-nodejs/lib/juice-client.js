@@ -27,7 +27,9 @@ let configLoadTime = 0
 //const CACHE_INTERVAL = (1000 * 60 * 10) // 10 minutes
 const CACHE_INTERVAL = (1000 * 60 * 60 * 24 * 1000) // 1000 days
 
-async function loadConfigFile(path) {
+async function getConfigFromConfigFile(path) {
+  console.log(`getConfigFromConfigFile(${path})`);
+
   if (!fs.existsSync(path)) {
     console.error(`FATAL ERROR: Invalid environment variable JUICE_CONFIG (unknown file ${path})`)
     process.exit(1)
@@ -40,6 +42,25 @@ async function loadConfigFile(path) {
     configuration = config
   } catch (e) {
     console.error(`FATAL ERROR: Could not load config file ${path}:\n`, e)
+    process.exit(1)
+  }
+}
+
+function getConfigFromEnvironmentVariable(variableName) {
+  console.log(`getConfigFromEnvironmentVariable(${variableName})`);
+
+  let value = process.env[variableName]
+  if (typeof(value) === 'undefined') {
+    console.error(`FATAL ERROR: Environment variable ${variableName} is not defined\n`)
+    process.exit(1)
+  }
+
+  try {
+    let config = JSON.parse(value)
+    console.log(`parsed config is `, config);
+    configuration = config
+  } catch (e) {
+    console.error(`FATAL ERROR: Invalid JSON in environment variable ${variableName}\n`, e)
     process.exit(1)
   }
 }
@@ -81,9 +102,18 @@ function getConfigFromSecretsManager(region, secretName) {
             // We can't find the resource that you asked for.
             // Deal with the exception here, and/or rethrow at your discretion.
             throw err;
+        else {
+          console.error(`Unknown error while getting secret from Secrets Manager (${err.code})`)
+          console.error(err)
+          throw err;
+        }
       }
 
       console.log(`Have secret`, data);
+      if (!secret) {
+        console.error(`FATAL ERROR: Secret ${secretName} not found in secrets manager`)
+        process.exit(1)
+      }
       // Decrypts secret using the associated KMS CMK.
       // Depending on whether the secret is a string or binary, one of these fields will be populated.
       let secret
@@ -140,18 +170,28 @@ async function checkConfigLoaded() {
     process.exit(1)
   }
 
-  switch (arr[0]) {
-    case 'file':
-      await loadConfigFile(arr[1])
-      break
+  try {
+    switch (arr[0]) {
+      case 'file':
+        await getConfigFromConfigFile(arr[1])
+        break
 
-    case 'secrets_manager':
-      await getConfigFromSecretsManager(arr[1], arr[2])
-      break
+      case 'secrets_manager':
+        await getConfigFromSecretsManager(arr[1], arr[2])
+        break
 
-    default:
-      console.error(`FATAL ERROR: Invalid environment variable JUICE_CONFIG (unknown type ${arr[0]})`)
-      process.exit(1)
+      case 'environment':
+        await getConfigFromEnvironmentVariable(arr[1])
+        break
+
+      default:
+        console.error(`FATAL ERROR: Invalid environment variable JUICE_CONFIG (unknown type ${arr[0]})`)
+        process.exit(1)
+    }
+  } catch (err) {
+    console.error(`FATAL ERROR: could not load config`)
+    console.error(err)
+    process.exit(1)
   }
 
   configLoadTime = now
