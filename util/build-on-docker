@@ -3,9 +3,10 @@
 #	Build mbc into a Docker container, so we can test it locally
 #
 dir=$(cd `dirname $0`; pwd)
+IMAGE_TAG=tooltwist/juiceconfig
 
 cd ${dir}/..
 pwd
 
-echo "$" docker build -t juice-local-test .
-         docker build -t juice-local-test .
+echo "$" docker build -t ${IMAGE_TAG} .
+         docker build -t ${IMAGE_TAG} .

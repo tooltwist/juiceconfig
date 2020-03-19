@@ -4,6 +4,7 @@
 #
 dir=$(cd `dirname $0`; pwd)
 echo dir=${dir}
+IMAGE_TAG=tooltwist/juiceconfig
 
 # Leave command blank, to perform default startup
 CMD=/bin/bash
@@ -17,5 +18,5 @@ docker run -ti \
 	--volume=${dir}/Config:/Config \
 	--rm \
 	-e JUICE_CONFIG=file:::/Config/config-for-docker.json \
-	juice-local-test \
+	${IMAGE_TAG} \
 	${CMD}
