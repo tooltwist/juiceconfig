@@ -28,7 +28,7 @@ let configLoadTime = 0
 const CACHE_INTERVAL = (1000 * 60 * 60 * 24 * 1000) // 1000 days
 
 async function getConfigFromConfigFile(path) {
-  console.log(`getConfigFromConfigFile(${path})`);
+  // console.log(`getConfigFromConfigFile(${path})`);
 
   if (!fs.existsSync(path)) {
     console.error(`FATAL ERROR: Invalid environment variable JUICE_CONFIG (unknown file ${path})`)
@@ -47,7 +47,7 @@ async function getConfigFromConfigFile(path) {
 }
 
 function getConfigFromEnvironmentVariable(variableName) {
-  console.log(`getConfigFromEnvironmentVariable(${variableName})`);
+  // console.log(`getConfigFromEnvironmentVariable(${variableName})`);
 
   let value = process.env[variableName]
   if (typeof(value) === 'undefined') {
@@ -57,7 +57,7 @@ function getConfigFromEnvironmentVariable(variableName) {
 
   try {
     let config = JSON.parse(value)
-    console.log(`parsed config is `, config);
+    // console.log(`parsed config is `, config);
     configuration = config
   } catch (e) {
     console.error(`FATAL ERROR: Invalid JSON in environment variable ${variableName}\n`, e)
@@ -66,7 +66,7 @@ function getConfigFromEnvironmentVariable(variableName) {
 }
 
 function getConfigFromSecretsManager(region, secretName) {
-  console.log(`getConfigFromSecretsManager(${region}, ${secretName})`);
+  // console.log(`getConfigFromSecretsManager(${region}, ${secretName})`);
 
   return new Promise(function(resolve, reject) {
 
@@ -80,7 +80,6 @@ function getConfigFromSecretsManager(region, secretName) {
 
     // console.log(`Getting secret ${secretName} from AWS`);
     client.getSecretValue({SecretId: secretName}, function(err, data) {
-      console.log(`back`);
       if (err) {
         if (err.code === 'DecryptionFailureException')
             // Secrets Manager can't decrypt the protected secret text using the provided KMS key.
@@ -103,14 +102,14 @@ function getConfigFromSecretsManager(region, secretName) {
             // Deal with the exception here, and/or rethrow at your discretion.
             throw err;
         else {
-          console.error(`Unknown error while getting secret from Secrets Manager (${err.code})`)
+          console.error(`Error while getting secret from Secrets Manager (${err.code})`)
           console.error(err)
           throw err;
         }
       }
 
-      console.log(`Have secret`, data);
-      if (!secret) {
+      // console.log(`Have secret`, data);
+      if (!data) {
         console.error(`FATAL ERROR: Secret ${secretName} not found in secrets manager`)
         process.exit(1)
       }
