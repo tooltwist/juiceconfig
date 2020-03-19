@@ -261,7 +261,7 @@ export default async (req, res, next) => {
                     ourId
                   ]
                   con.query(sql, params, function (err, result) {
-                    con.end()
+                    // con.end()
                     if (err) throw err;
                     // console.log(`result is`, result);
                     if (result.affectedRows !== 1) {
@@ -287,7 +287,7 @@ export default async (req, res, next) => {
                     '', // Access
                   ]
                   con.query(sql, params, function (err, result) {
-                    con.end()
+                    // con.end()
                     if (err) throw err;
                     // console.log(`result is`, result);
                     if (result.affectedRows !== 1) {

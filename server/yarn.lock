@@ -675,9 +675,9 @@
     extsprintf "^1.4.0"
     lodash "^4.17.15"
 
-"@tooltwist/juice-client@^1.0.13":
-  version "1.0.13"
-  resolved "https://registry.yarnpkg.com/@tooltwist/juice-client/-/juice-client-1.0.13.tgz#1667aaa1ace364e3d47d5b8c8b34d1b2873858db"
+"@tooltwist/juice-client@^1.0.15":
+  version "1.0.15"
+  resolved "https://registry.yarnpkg.com/@tooltwist/juice-client/-/juice-client-1.0.15.tgz#6d0936d6b1499c3145a1a74d19e9d908ea4a2006"
   dependencies:
     aws-sdk "^2.620.0"
     axios "^0.19.2"
