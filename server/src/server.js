@@ -50,7 +50,8 @@ server.get('/healthcheck', async (req, res, next) => {
     status: 'ok',
     version: '___INSERT_VERSION_HERE___',
     buildNo: '___INSERT_BUILD_NUMBER_HERE___',
-    commitMsg: '___INSERT_COMMITMSG_HERE___'
+    commitMsg: '___INSERT_COMMITMSG_HERE___',
+    identifier: 'Snarglefish'
   })
   next()
 });
