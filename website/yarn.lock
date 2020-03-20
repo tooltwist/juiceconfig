@@ -1103,9 +1103,10 @@
     mustache "^2.3.0"
     stack-trace "0.0.10"
 
-"@tooltwist/vue-loginservice@^4.0.16":
-  version "4.0.16"
-  resolved "https://registry.yarnpkg.com/@tooltwist/vue-loginservice/-/vue-loginservice-4.0.16.tgz#a4e787a5cbcc98ad2f88f15105eb53df4a966036"
+"@tooltwist/vue-loginservice@^4.0.17":
+  version "4.0.17"
+  resolved "https://registry.yarnpkg.com/@tooltwist/vue-loginservice/-/vue-loginservice-4.0.17.tgz#143cb5672ddaca32e1f43212724706b82fb9c86f"
+  integrity sha512-KOrcFn+E6yidmqZldueH5WCPRdTXfpY/I5iUBT3KyXySN+mwnTSdFuiSCdR3FQS9JRzoiR3dxsl0rM5EjEIqIw==
   dependencies:
     axios "^0.18.0"
     debounce "^1.1.0"

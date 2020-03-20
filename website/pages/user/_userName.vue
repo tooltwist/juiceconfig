@@ -28,27 +28,25 @@ section.section
             b-button.stop(@click="setEditMode", type="is-primary is-outlined is-light", size="is-small")  Edit
     
         b-tab-item(label="Projects")
-            h1(class="is-title is-size-4", style="text-align:left;") User's Projects
             div(v-if="this.projects.length === 0")
                 br
                 article(class="message is-success is-small")
                     div(class="message-body") {{ user.first_name}} {{user.last_name}} is not involved in any projects yet. Add this user to a project via the relevant deployables' 'Users' tab.
-            b-table(:data="projects")
+            b-table(:data="projects", focusable)
                 template(slot-scope="props")
-                    b-table-column(field="project", label="Project")
+                    b-table-column(field="project", label="User's Projects")
                         | {{ props.row.project }}
                     b-table-column(field="access", label="Access")
                         | {{ props.row.access }}
     
         b-tab-item(label="Environments")
-            h1(class="is-title is-size-4", style="text-align:left;") User's Environments
             div(v-if="this.environments.length === 0")
                 br
                 article(class="message is-success is-small")
                     div(class="message-body") {{ user.first_name}} {{user.last_name}} does not have access to any environments yet. Add this user to an environment via the relevant environments' 'Users' tab.
-            b-table(:data="environments")
+            b-table(:data="environments", focusable)
                 template(slot-scope="props")
-                    b-table-column(field="project", label="Project")
+                    b-table-column(field="project", label="User's Environments")
                         | {{ props.row.environment }}
                     b-table-column(field="access", label="Access")
                         | {{ props.row.access }}
@@ -60,7 +58,8 @@ section.section
                 div(class="modal-wrapper")
                     div(class="modal-card")
                         header(class="modal-card-head")
-                            p(class="modal-card-title") Edit User: {{ user.first_name }} {{ user.last_name }} ({{ user.id }})
+                            p(class="modal-card-title") Edit User
+                                b {{ user.first_name }} {{ user.last_name }} ({{ user.id }})
                         section(class="modal-card-body")    
                             div(class="modal-body")
                                 slot(name="body")

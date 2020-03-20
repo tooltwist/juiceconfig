@@ -11,7 +11,7 @@ section.section
                 |, or 
                 a(href="/newDeployable") create another deployable?
     div(v-else)
-        h1.title Add new deployable:
+        h1.title Add New Deployable:
         div(v-if="mode === 'inputError'")
             article(class="message is-danger is-small")
                 div(class="message-header")
@@ -140,7 +140,7 @@ export default {
 }
 
 .formStyle {
-  margin: 10px 0px;
+  margin: 10px -20px;
 }
 
 </style>

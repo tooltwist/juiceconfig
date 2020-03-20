@@ -48,7 +48,7 @@ div
               | There are no variables for this deployable yet. Would you like to add a 
               a(href="" @click.prevent="newVariable(variables)") new variable?
         div(v-else)
-          b-table(:data="variables")
+          b-table(:data="variables", focusable)
             template(slot-scope="props")
               b-table-column(field="name", label="Name")
                 | {{ props.row.name }}
@@ -80,7 +80,7 @@ div
           article(class="message is-success is-small")
             div(class="message-body") There are no deployments for this deployable yet. Would you like to add a new deployment?
         div(v-else)
-          b-table(:data="deployments")
+          b-table(:data="deployments", focusable)
             template(slot-scope="props")
               b-table-column(field="environment", label="Environment")
                 nuxt-link(:to="`/environment/${props.row.environment}`") {{ props.row.environment }}
@@ -100,7 +100,7 @@ div
           br
           article(class="message is-success is-small")
             div(class="message-body") There are no dependencies for this deployable yet. Would you like to add a new dependency?
-        b-table(:data="dependencies")
+        b-table(:data="dependencies", focusable)
           template(slot-scope="props")
             b-table-column(field="parent", label="Parent")
               | {{ props.row.parent }}
@@ -123,7 +123,7 @@ div
             br
             article(class="message is-success is-small")
               div(class="message-body") There are no users for this deployable yet. Would you like to add a new user?
-          b-table(:data="users")
+          b-table(:data="users", focusable)
             template(slot-scope="props")
               b-table-column(field="project", label="Project")
                 | {{ props.row.project }}
@@ -148,7 +148,8 @@ div
         div(class="modal-wrapper")
           div(class="modal-card")
             header(class="modal-card-head")
-              p(class="modal-card-title") Edit Deployable {{ deployableName }}
+              p(class="modal-card-title") Edit Deployable 
+                b {{ deployableName }}
             section(class="modal-card-body")
               slot(name="body")
                 form
@@ -176,7 +177,8 @@ div
         div(class="modal-wrapper")
           div(class="modal-card")
             header(class="modal-card-head")
-              p(class="modal-card-title") Edit Variable: {{ variable_name }}
+              p(class="modal-card-title") Edit Variable 
+                b {{ variable_name }}
             section(class="modal-card-body")
               slot(name="body")
                 form
@@ -184,18 +186,19 @@ div
                     div.formStyle Edit description:
                       div(class="control")
                         input(v-model="form.new_variable_description", class="input", type="text", value="description", placeholder="Description")  
-                    b-field.formStyle(class="control") Edit Type:
-                      b-select(placeholder="Type", v-model="form.new_variable_type", value="type") 
-                        option(value="string") String
-                        option(value="numeric") Numeric 
-                    div.formStyle Edit mandatory:
-                      b-select(placeholder="Is this variable mandatory?", v-model="form.new_variable_mandatory", value="mandatory") Is this variable mandatory?:
-                        option(value="1") Yes
-                        option(value="0") No
-                    div.formStyle Edit external:
-                      b-select(placeholder="Is this variable external?", v-model="form.new_variable_is_external", value="is_external") Is this variable external?:
-                        option(value="1") Yes
-                        option(value="0") No
+                    div.formPlacement
+                      b-field.formStyle(class="control") Edit Type:
+                        b-select(placeholder="Type", v-model="form.new_variable_type", value="type") 
+                          option(value="string") String
+                          option(value="numeric") Numeric 
+                      div.formStyle Edit mandatory:
+                        b-select(placeholder="Is this variable mandatory?", v-model="form.new_variable_mandatory", value="mandatory") Is this variable mandatory?:
+                          option(value="1") Yes
+                          option(value="0") No
+                      div.formStyle Edit external:
+                        b-select(placeholder="Is this variable external?", v-model="form.new_variable_is_external", value="is_external") Is this variable external?:
+                          option(value="1") Yes
+                          option(value="0") No
             footer(class="modal-card-foot")  
               div(class="control")
                 b-button(@click.stop="saveVariable", type="is-primary is-light", size="is-small")  Save    
@@ -208,7 +211,8 @@ div
         div(class="modal-wrapper")
           div(class="modal-card")
             header(class="modal-card-head")
-              p(class="modal-card-title") Add new variable for {{ deployableName }}
+              p(class="modal-card-title") Add New Variable for 
+                b {{ deployableName }}
             section(class="modal-card-body")
               div(v-if="errormode === 'inputError'")
                 article(class="message is-danger is-small")
@@ -229,18 +233,19 @@ div
                         div.formStyle Description:
                           div(class="control")
                             input(name="new_description", v-model="form.variable_description", class="input", type="text", placeholder="Description")
-                        div.formStyle Type:
-                          b-select(placeholder="Type", v-model="form.variable_type") Type:
-                            option(value="string") String
-                            option(value="numeric") Numeric
-                        div.formStyle Mandatory:
-                          b-select(placeholder="Is this variable mandatory?", v-model="form.variable_mandatory") Is this variable mandatory: 
-                            option(value="1") Yes
-                            option(value="0") No
-                        div.formStyle External:
-                          b-select(placeholder="Is this variable external?", v-model="form.variable_is_external", value="is_external") Is this variable external?:
-                            option(value="1") Yes
-                            option(value="0") No
+                        div.formPlacement
+                          div.formStyle Type:
+                            b-select(placeholder="Type", v-model="form.variable_type") Type:
+                              option(value="string") String
+                              option(value="numeric") Numeric
+                          div.formStyle Mandatory:
+                            b-select(placeholder="Is this variable mandatory?", v-model="form.variable_mandatory") Is this variable mandatory: 
+                              option(value="1") Yes
+                              option(value="0") No
+                          div.formStyle External:
+                            b-select(placeholder="Is this variable external?", v-model="form.variable_is_external", value="is_external") Is this variable external?:
+                              option(value="1") Yes
+                              option(value="0") No
             footer(class="modal-card-foot")
               div(class="control")
                 b-button(@click.stop="saveNewVariable",  type="is-primary is-light", size="is-small")  Save    
@@ -253,7 +258,8 @@ div
         div(class="modal-wrapper")
           div(class="modal-card")
             header(class="modal-card-head")
-              p(class="modal-card-title") Add new deployment for {{ deployableName }}
+              p(class="modal-card-title") Add New Deployment for 
+                b {{ deployableName }}
             section(class="modal-card-body")
               div(v-if="errormode === 'inputError'")
                 article(class="message is-danger is-small")
@@ -288,7 +294,8 @@ div
         div(class="modal-wrapper")
           div(class="modal-card")
             header(class="modal-card-head")
-              p(class="modal-card-title") Add new dependency for {{ deployableName }}
+              p(class="modal-card-title") Add New Dependency for 
+                b {{ deployableName }}
             section(class="modal-card-body")
               div(v-if="errormode === 'inputError'")
                 article(class="message is-danger is-small")
@@ -299,7 +306,6 @@ div
                 slot(name="body")
                     form
                       div.form-group
-                        div.formStyle Parent: {{ deployableName }}
                         div.formStyle Child: 
                           div(class="control")
                             div(v-if="dependencyError === null")
@@ -329,7 +335,8 @@ div
         div(class="modal-wrapper")
           div(class="modal-card")
             header(class="modal-card-head")
-              p(class="modal-card-title") Add new user for project {{ deployableName }}
+              p(class="modal-card-title") Add New User for Project 
+                b {{ deployableName }}
             section(class="modal-card-body")
               div(v-if="errormode === 'inputError'")
                 article(class="message is-danger is-small")
@@ -367,7 +374,8 @@ div
         div(class="modal-wrapper")
           div(class="modal-card")
             header(class="modal-card-head")
-              p(class="modal-card-title") Edit User: {{ users.first_name }} {{ users.last_name }}
+              p(class="modal-card-title") Edit User
+                b  {{ users.first_name }} {{ users.last_name }}
             section(class="modal-card-body")
               slot(name="body")
                 form
@@ -1074,9 +1082,13 @@ export default {
 /* 
 FORM STYLING
 */
+.formPlacement {
+  display: flex;
+}
 
 .formStyle {
   margin: 10px 0px;
+  padding: 0px 20px;
 }
 
 </style>

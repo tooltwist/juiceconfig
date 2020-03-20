@@ -6,11 +6,11 @@ div
         .juiceLogo Juice.
 
     div(class="navbar-end")
-      b-navbar-item(href="/documentation") Documentation
-      b-navbar-item(v-if="loggedIn", separator="true", custom="true") | 
+      b-navbar-item(href="https://juiceconfig.io", target="_blank") Documentation
+      div.seperatorStyle(v-if="loggedIn", separator="true", custom="true") | 
       b-dropdown(v-if="loggedIn", position="is-bottom-left", aria-role="menu")
         a(class="navbar-item", slot="trigger", role="button")
-          b-icon(icon="settings")
+          b-icon(icon="account")
           span {{ fullname }}
           b-icon(icon="menu-down")
         b-dropdown-item(custom aria-role="menuitem") Logged in as {{ fullname }}
@@ -37,7 +37,7 @@ div
           ul.menu-list
             b-menu-list(label="Actions")
               a.href(href="#", @click="doLogout")
-                b-icon(icon="account")
+                b-icon(icon="logout")
                 | Logout
         div.container.column.is-9
           nuxt
@@ -46,8 +46,6 @@ div
 </template> 
 
 <script>
-
-
 export default {
   data () {
     return {
@@ -160,13 +158,21 @@ export default {
   }
 
   .headerStyle {
-    background-color: rgba(255,165,0, 0.9);
+    background-color: rgba(255, 166, 0, 0.884);
+    
   }
 
   .activeHighlight {
     background-color: rgba(255, 165, 0, 0.5);
     width: 100%;
     display: flex;
+  }
+
+  .seperatorStyle {
+    color: white;
+    display: flex;
+    justify-content: space-evenly;
+    margin: 27px 0px;
   }
 
   .dropMenuStyle {

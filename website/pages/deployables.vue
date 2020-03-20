@@ -5,7 +5,7 @@ section.section
       button.button(class="is-primary is-outlined", v-if="justProjects", @click="justProjects=false") Show all Deployables
       button.button(class="is-primary is-outlined", v-else, @click="justProjects=true") Show Projects   
       b-button(class="is-primary", tag="nuxt-link", to="/newDeployable",  type="is-light")  + Add New Deployable
-  b-table(:data="listOfDeployables") 
+  b-table(:data="listOfDeployables", focusable) 
     template(slot-scope="props")
       b-table-column(field="name", label="Name")
         nuxt-link(:to="`/deployable/${props.row.name}`") {{ props.row.name }}
