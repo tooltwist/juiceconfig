@@ -15,6 +15,8 @@
 
 <script>
 import axios from 'axios'
+import webconfig from '~/protected-config/website-config'
+const { protocol, host, port } = webconfig
 
 export default {
   name: 'Environments',
@@ -40,7 +42,7 @@ export default {
       }
 
       // Get the environments
-      const url = `http://localhost:4000/environments`
+      const url = `${protocol}://${host}:${port}/environments`
 
       console.log(`Calling ${url}`);
       let reply = await axios.get(url, config)

@@ -46,7 +46,7 @@ async function registerUser(user) {
  * @param {*} token is the authentication provided by the login service
  */
 async function validateJWT(token) {
-  console.log(`validateJWT()`)
+  // console.log(`validateJWT()`)
 
   try {
     const secret = await juice.string('services.auth.secret', juice.MANDATORY)

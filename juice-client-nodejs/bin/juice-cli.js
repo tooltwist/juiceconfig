@@ -139,7 +139,7 @@ async function copyFileOrDirectory(source, destinationDirectory) {
 
   // If the source is a directory, create it then copy it's contents.
   if (fs.lstatSync(source).isDirectory()) {
-    console.log(`# mkdir ${newPath}`);
+    // console.log(`# mkdir ${newPath}`);
     let errCnt = await copyDirectoryContents(source, newPath)
     return errCnt
   } else {
@@ -153,7 +153,7 @@ async function copyDirectoryContents(sourceDirectory, destinationDirectory) {
   if (sourceDirectory.endsWith('/')) {
     sourceDirectory = sourceDirectory.substring(0, sourceDirectory.length - 1)
   }
-  console.log(`copyDirectoryContents(${sourceDirectory}, ${destinationDirectory})`);
+  // console.log(`copyDirectoryContents(${sourceDirectory}, ${destinationDirectory})`);
   let files = fs.readdirSync(sourceDirectory)
   // console.log(`   files=`, files);
   let errors = 0
@@ -227,17 +227,14 @@ async function doInstall(files, destination) {
         }
 
       } else if (sourceEntry.isDirectory()) {
-        console.log(`maybe special case?`);
-        console.log(`yog 6`);
+        // console.log(`maybe special case?`);
         if (!fs.existsSync(destination)) {
-          console.log(`yog 7`);
           // (3)
-          console.log(`Creating directory ${destination}`);
+          // console.log(`Creating directory ${destination}`);
           fs.mkdirSync(destination, { recursive: true })
           // Carry on to mode 2
           // return copyDirectoryContents(source, destination)
         }
-        console.log(`yog 8`);
       }
 
     } else {
@@ -246,12 +243,12 @@ async function doInstall(files, destination) {
 
     }
   }
-  console.log(`yog 9`);
+  // console.log(`yog 9`);
 
   /*
    *  Mode 2 (cp source_file ... target_directory) otherwise
    */
-  console.log(`Must be mode 2 (copy to target directory)`);
+  // console.log(`Must be mode 2 (copy to target directory)`);
 
   // Check the destination directory exists
   if (!fs.existsSync(destination)) {

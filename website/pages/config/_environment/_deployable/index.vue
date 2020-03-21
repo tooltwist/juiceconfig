@@ -42,6 +42,8 @@ section.section
 
 <script>
 import axios from 'axios'
+import webconfig from '~/protected-config/website-config'
+const { protocol, host, port } = webconfig
 
 export default {
     data () {
@@ -79,7 +81,7 @@ export default {
         }   
            
         // Select the environment for this page
-        const url = `http://localhost:4000/environmentIndex`
+        const url = `${protocol}://${host}:${port}/environmentIndex`
         console.log(`Calling ${url}`);
         let res = await axios.get(url, { 
             params: {
@@ -90,13 +92,13 @@ export default {
         const environment = res.data.record
 
         // Import deployables to be used in deployments form
-        const url2 = `http://localhost:4000/deployables`
+        const url2 = `${protocol}://${host}:${port}/deployables`
         let res2 = await axios.get(url2, config)
 
         const deployables = res2.data.list
 
         // Select the variables for this deployable
-        const url3 = `http://localhost:4000/variables`
+        const url3 = `${protocol}://${host}:${port}/variables`
         let res3 = await axios.get(url3, { 
             params: {
                 deployableName: deployableName
@@ -106,7 +108,7 @@ export default {
         const variables = res3.data.variables
 
         // Import dependencies with 'deployableName' as parent
-        const url4 = 'http://localhost:4000/dependencies1'
+        const url4 = '${protocol}://${host}:${port}/dependencies1'
         let res4 = await axios.get(url4, {
             params: {
                 deployableName: deployableName
@@ -116,13 +118,13 @@ export default {
         const dependencies = res4.data.dependencies
 
         // // Select all variables for dependencies
-        // const url5 = 'http://localhost:4000/variablesAll'
+        // const url5 = '${protocol}://${host}:${port}/variablesAll'
         // let res5 = await axios.get(url5)
         
         // const variablesDepend = res5.data.variables
 
         // Variables for dependencies and deployable (recursive array data)
-        const url6 = 'http://localhost:4000/variablesConfig'
+        const url6 = '${protocol}://${host}:${port}/variablesConfig'
         let res6 = await axios.get(url6, {
             params: {
                 deployable: deployableName

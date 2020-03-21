@@ -63,6 +63,8 @@
 
 <script>
 import axios from 'axios'
+import webconfig from '~/protected-config/website-config'
+const { protocol, host, port } = webconfig
 
 export default {
   name: 'Users',
@@ -132,7 +134,7 @@ export default {
 
         // If no error, send post request to server
         try {
-          await axios.post('http://localhost:4000/newUser', {
+          await axios.post('${protocol}://${host}:${port}/newUser', {
             first_name: this.form.user_firstname,
             last_name: this.form.user_lastname,
             role: this.form.user_role,
@@ -159,7 +161,7 @@ export default {
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW USER
     async reloadUsers() {
-      const url = `http://localhost:4000/users`
+      const url = `${protocol}://${host}:${port}/users`
       let res = await axios.get(url)
       this.users = res.data.users
       console.log(`Users have been reloaded on the browser.`)
@@ -176,7 +178,7 @@ export default {
    */
   async asyncData ({ params, error }) {
     try {
-      const url = `http://localhost:4000/users`
+      const url = `${protocol}://${host}:${port}/users`
       console.log(`Calling ${url}`);
       let res = await axios.get(url)
       const users = res.data.users

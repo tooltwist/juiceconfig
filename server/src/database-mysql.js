@@ -1,4 +1,4 @@
-const	mysql = require('mysql');
+import mysql from 'mysql';
 import juice from '@tooltwist/juice-client';
 
 /*
@@ -13,7 +13,6 @@ let CURRENT_CONNECTION = null;
 var VERBOSE = false;
 
 
-exports.checkConnection = checkConnection;
 async function checkConnection() {
 	if (VERBOSE) console.log('database-mysql.checkConnection()')
 
@@ -40,7 +39,6 @@ async function checkConnection() {
 		// connection has dropped out and been reset. Connect now.
 		if (VERBOSE) console.log('Connecting...')
 		var connection = mysql.createConnection(config);
-		// var connection = mysql.createConnection(config.mysqlConnectionOptions);
 
 		// Handle the connection failing or dropping out.
 		connection.on("error", function (error) {
@@ -74,3 +72,8 @@ async function checkConnection() {
 
 	})
 }
+
+export default {
+	checkConnection,
+};
+  

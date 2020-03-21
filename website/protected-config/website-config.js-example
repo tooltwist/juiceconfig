@@ -1,0 +1,7 @@
+export default {
+    debug: true,
+    protocol: 'http',
+    zhost: '68.183.239.105',
+    host: 'localhost',
+    port: '4000'
+}

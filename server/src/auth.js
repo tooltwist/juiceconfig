@@ -180,21 +180,21 @@ export default async (req, res, next) => {
 
     // 2. Throw an error 400 if no authorization is presented
     if (authorization) {
-        console.log(`auth: have authorization`);
+        // console.log(`auth: have authorization`);
 
         // 3. Get the JWT Token from the Authorization
         const token = getJWTFromAuthorization(authorization);
-        console.log(`auth: token is -->${token}<--`);
+        // console.log(`auth: token is -->${token}<--`);
 
         // 4. Validate JWT Token if it is expired or invalid
         // Corresponding status error will be thrown depending on its type
-        console.log(`auth: before validating token`);
+        // console.log(`auth: before validating token`);
         await loginService.validateJWT(token);
-        console.log(`auth: after validating token`);
+        // console.log(`auth: after validating token`);
 
         // 5. Decode and attach the user details into the payload
         const { identity } = loginService.decodeJWT(token);
-        console.log(`auth: identity is`, identity);
+        // console.log(`auth: identity is`, identity);
 
         let externalID = identity.id
         console.log('externalID = ', externalID)
@@ -261,7 +261,7 @@ export default async (req, res, next) => {
                     ourId
                   ]
                   con.query(sql, params, function (err, result) {
-                    con.end()
+                    // con.end()
                     if (err) throw err;
                     // console.log(`result is`, result);
                     if (result.affectedRows !== 1) {
@@ -287,7 +287,7 @@ export default async (req, res, next) => {
                     '', // Access
                   ]
                   con.query(sql, params, function (err, result) {
-                    con.end()
+                    // con.end()
                     if (err) throw err;
                     // console.log(`result is`, result);
                     if (result.affectedRows !== 1) {

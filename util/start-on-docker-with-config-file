@@ -1,0 +1,22 @@
+#!/bin/bash
+#
+#	Run the mbc Docker container, using the home volume found in this directory.
+#
+dir=$(cd `dirname $0`; pwd)
+echo dir=${dir}
+IMAGE_TAG=tooltwist/juiceconfig
+
+# Leave command blank, to perform default startup
+CMD=/bin/bash
+CMD=
+
+#docker run -ti -p :4000 --rm -e SERVER_HOME=/Config/home juice-local-test /bin/sh
+docker run -ti \
+	-p 4000:4000 \
+	--net juice_default \
+	--link juice_db_1:juice_db_1 \
+	--volume=${dir}/Config:/Config \
+	--rm \
+	-e JUICE_CONFIG=file:::/Config/config-for-docker.json \
+	${IMAGE_TAG} \
+	${CMD}

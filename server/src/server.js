@@ -1,7 +1,8 @@
 import restify from 'restify';
 import corsMiddleware from 'restify-cors-middleware';
 import db from './database-mysql';
-import auth from './auth';
+import auth from './auth'
+import figlet from 'figlet'
 
 /*
  *  Initialise Restify.
@@ -40,6 +41,20 @@ function respond(req, res, next) {
 }
 server.get('/hello/:name', respond);
 server.head('/hello/:name', respond);
+
+// Healthcheck, so the load balancer can check the API is operational
+server.get('/healthcheck', async (req, res, next) => {
+  console.log(`GET /healthcheck`);
+
+  res.send({
+    status: 'ok',
+    version: '___INSERT_VERSION_HERE___',
+    buildNo: '___INSERT_BUILD_NUMBER_HERE___',
+    commitMsg: '___INSERT_COMMITMSG_HERE___',
+    identifier: 'Snarglefish'
+  })
+  next()
+});
 
 // ******************** All server calls related to /deployables page *********************
 /*
@@ -1476,6 +1491,16 @@ server.post('/newUser', async (req, res, next) => {
   })
   // })  
 }); // ******************** end of /newUser server calls *********************
+
+/*
+*       Display a nice banner.
+*       See https://www.npmjs.com/package/figlet
+*/
+console.log();
+console.log(figlet.textSync('juice-api', {
+  horizontalLayout: 'fitted'
+}));
+console.log();
 
 server.listen(4000, function() {
   console.log('%s listening at %s', server.name, server.url);
