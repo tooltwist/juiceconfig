@@ -285,7 +285,7 @@ export default {
 
         // If no error, send post request to server
         try {
-          await axios.post('${protocol}://${host}:${port}/newDeployment', {
+          await axios.post(`${protocol}://${host}:${port}/newDeployment`, {
             environment: this.environmentName,
             notes: this.form.new_notes,
             deployable: this.form.new_deployable,
@@ -311,7 +311,7 @@ export default {
     // SAVED EDITED ENVIRONMENT TO THE DATABASE - FROM MODAL
     async saveEditedEnv() {
       try {
-        await axios.post('${protocol}://${host}:${port}/editedEnv', {
+        await axios.post(`${protocol}://${host}:${port}/editedEnv`, {
           description: this.form.edit_envdescription,
           notes: this.form.edit_envnotes,
           name: this.environmentName,
@@ -385,7 +385,7 @@ export default {
 
         // If no error, send post request to server
         try {
-          await axios.post('${protocol}://${host}:${port}/newEnvironmentUser', {
+          await axios.post(`${protocol}://${host}:${port}/newEnvironmentUser`, {
             id: this.form.new_environmentuser,
             access: this.form.new_user_access,
             environment: this.environmentName
@@ -410,7 +410,7 @@ export default {
 
     async saveEditedUser() {
       try {
-        await axios.post('${protocol}://${host}:${port}/editEnvUser', {
+        await axios.post(`${protocol}://${host}:${port}/editEnvUser`, {
             id: this.users.user_id,
             access: this.form.edit_useraccess,
             environment: this.environmentName,

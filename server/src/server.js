@@ -76,7 +76,6 @@ server.get('/deployables', auth, async (req, res, next) => {
   con.query(sql, params, function (err, result) {
     if (err) throw err;
     res.send({ list: result })
-    // con.end()
     next()
   });
 });
@@ -86,32 +85,17 @@ server.get('/deployables', auth, async (req, res, next) => {
  *  
  */
 server.get('/showDeployables', async (req, res, next) => {
-  console.log('------------------------------')
   console.log(`GET /showDeployables`);
 
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // });
-
-  // con.connect(function(err) {
-  //   if (err) throw err;
-  //   console.log("Connected!");
   let con = await db.checkConnection()
+  const sql = `(SELECT * FROM deployable)`
 
-    const sql = `(SELECT * FROM deployable)`
-
-    console.log(`SQL IS ${sql}`)
-    con.query(sql, function (err, result) {
-      if (err) throw err;
-      res.send({ list: result })
-      // con.end()
-      next()
-    });
-  // });
+  console.log(`SQL IS ${sql}`)
+  con.query(sql, function (err, result) {
+    if (err) throw err;
+    res.send({ list: result })
+    next()
+  });
 }); // ******************** end of /deployables server calls *********************
 
 // ********************** All server calls related to /_deployableNAME page **********************
@@ -122,35 +106,18 @@ server.get('/showDeployables', async (req, res, next) => {
 server.get('/deployable', async (req, res, next) => {
   console.log(`GET /deployable`);
 
-  // console.log(`PAERAMS IS `, req.query)
   let deployableName = req.query.deployableName
+  let con = await db.checkConnection()
+  const sql = `SELECT * from deployable where name=?`
+  const params = [ deployableName ]
 
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56991,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // });
-
-  // con.connect(function(err) {
-  //   if (err) throw err;
-  //   console.log("Connected!");
-    let con = await db.checkConnection()
-
-    const sql = `SELECT * from deployable where name=?`
-    const params = [ deployableName ]
-    // console.log(`SQL IS ${sql}`)
-    // console.log(`PARAMS IS`, params)
-    con.query(sql, params, function (err, result) {
-      if (err) throw err;
-      console.log("Result: " + result);
-      console.log(`result[0]=`, result[0]);
-      res.send({ record: result[0] })
-      // con.end()
-      next()
-    });
-  // });
+  con.query(sql, params, function (err, result) {
+    if (err) throw err;
+    console.log("Result: " + result);
+    console.log(`result[0]=`, result[0]);
+    res.send({ record: result[0] })
+    next()
+  });
 });
 
 /*
@@ -160,35 +127,17 @@ server.get('/deployable', async (req, res, next) => {
 server.get('/envDeployments', async (req, res, next) => {
   console.log(`GET /envDeployments`);
 
-  // console.log(`PAERAMS IS `, req.query)
   let deployableName = req.query.deployableName
-
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // });
-
-  // con.connect(function(err) {
-  //   if (err) throw err;
-  //   console.log("Connected!");
   let con = await db.checkConnection()
-
-    const sql = `SELECT * from deployments where deployable =?`
-    const params = [ deployableName ];
-    
-    // console.log(`sql=${sql}`)
-    // console.log(`params=`, params)
-    con.query(sql, params, function (err, result) {
-      if (err) throw err;
-      console.log("Result: " + result);
-      res.send({ deployments: result })
-      // con.end()
-      next()
-    });
-  // });
+  const sql = `SELECT * from deployments where deployable =?`
+  const params = [ deployableName ];
+  
+  con.query(sql, params, function (err, result) {
+    if (err) throw err;
+    console.log("Result: " + result);
+    res.send({ deployments: result })
+    next()
+  });
 });
 
 /*
@@ -199,29 +148,15 @@ server.get('/project_users', async (req, res, next) => {
   console.log(`GET /project_users`);
 
   let deployableName = req.query.deployableName
-
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // })
-
-  // con.connect(function(err) {
-  //   if (err) throw err;
-  //   console.log(`Connected!`);
   let con = await db.checkConnection()
+  const sql = `SELECT PU.project, PU.user_id, PU.access, U.first_name, U.last_name FROM project_user PU left outer join user U on PU.user_id = U.id WHERE PU.project=?`
+  let params = [ deployableName ]
 
-    const sql = `SELECT PU.project, PU.user_id, PU.access, U.first_name, U.last_name FROM project_user PU left outer join user U on PU.user_id = U.id WHERE PU.project=?`
-    let params = [ deployableName ]
-    con.query(sql, params, function (err, result) {
-      if (err) throw err;
-      res.send({ users: result })
-      // con.end()
-      next()
-    })
-  // })
+  con.query(sql, params, function (err, result) {
+    if (err) throw err;
+    res.send({ users: result })
+    next()
+  })
 })
 
 /*
@@ -231,27 +166,14 @@ server.get('/project_users', async (req, res, next) => {
 server.get('/dependencies', async (req, res, next) => {
   console.log(`GET /dependencies`);
 
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // });
-
-  // con.connect(function(err) {
-  //   if (err) throw err;
-  //   console.log("Connected!");
   let con = await db.checkConnection()
+  const sql = `SELECT * from dependency`
 
-    const sql = `SELECT * from dependency`
-    con.query(sql, function (err, result) {
-      if (err) throw err;
-      res.send({ dependencies: result })
-      // con.end()
-      next()
-    });
-  // });
+  con.query(sql, function (err, result) {
+    if (err) throw err;
+    res.send({ dependencies: result })
+    next()
+  });
 });
 
 /*
@@ -261,31 +183,16 @@ server.get('/dependencies', async (req, res, next) => {
 server.get('/dependencies1', async (req, res, next) => {
   console.log(`GET /dependencies1`);
 
-  // console.log(`PARAMS IS `, req.query)
   let deployableName = req.query.deployableName
-
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // });
-
-  // con.connect(function(err) {
-  //   if (err) throw err;
-  //   console.log("Connected!");
   let con = await db.checkConnection()
+  const sql = `SELECT * from dependency where parent=?`
+  const params = [ deployableName ]
 
-    const sql = `SELECT * from dependency where parent=?`
-    const params = [ deployableName ]
-    con.query(sql, params, function (err, result) {
-      if (err) throw err;
-      res.send({ dependencies: result })
-      // con.end()
-      next()
-    });
-  // });
+  con.query(sql, params, function (err, result) {
+    if (err) throw err;
+    res.send({ dependencies: result })
+    next()
+  });
 });
 
 /*
@@ -295,30 +202,16 @@ server.get('/dependencies1', async (req, res, next) => {
 server.get('/variablesAll', async (req, res, next) => {
   console.log(`GET /variablesAll`);
 
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // });
-
-  // con.connect(function(err) {
-  //   if (err) throw err;
-  //   console.log("Connected!");
   let con = await db.checkConnection()
+  const sql = `SELECT * FROM variable`
 
-    const sql = `SELECT * FROM variable`
-    console.log(`sql=${sql}`)
-    con.query(sql, function (err, result) {
-      if (err) throw err;
-      console.log("Result: " + result);
-      console.log(`result[0]=`, result[0]);
-      res.send({ variables: result })
-      // con.end()
-      next()
-    });
-  // });
+  con.query(sql, function (err, result) {
+    if (err) throw err;
+    console.log("Result: " + result);
+    console.log(`result[0]=`, result[0]);
+    res.send({ variables: result })
+    next()
+  });
 });
 
 /*
@@ -328,35 +221,18 @@ server.get('/variablesAll', async (req, res, next) => {
 server.get('/variables', async (req, res, next) => {
   console.log(`GET /variables`);
 
-  // console.log(`PAERAMS IS `, req.query)
   let deployableName = req.query.deployableName
-
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // });
-
-  // con.connect(function(err) {
-  //   if (err) throw err;
-  //   console.log("Connected!");
   let con = await db.checkConnection()
+  const sql = `SELECT * FROM variable WHERE deployable=?`
+  const params = [ deployableName ]
 
-    const sql = `SELECT * from variable where deployable=?`
-    const params = [ deployableName ]
-    console.log(`sql=${sql}`)
-    console.log(`params=`, params)
-    con.query(sql, params, function (err, result) {
-      if (err) throw err;
-      console.log("Result: " + result);
-      console.log(`result[0]=`, result[0]);
-      res.send({ variables: result })
-      // con.end()
-      next()
-    });
-  // });
+  con.query(sql, params, function (err, result) {
+    if (err) throw err;
+    console.log("Result: " + result);
+    console.log(`result[0]=`, result[0]);
+    res.send({ variables: result })
+    next()
+  });
 });
 
 /*
@@ -374,34 +250,22 @@ server.use(restify.plugins.acceptParser(server.acceptable));
 server.post('/deployable', async (req, res, next) => {
   console.log(`POST /deployable`)
 
-  // var con = mysql.createConnection({
-  //       host: "localhost",
-  //       port: 56911,
-  //       database: "juice",
-  //       user: "root",
-  //       password: ""
-  //    })
-
-  // con.connect(function(err, result) {
-  //   if (err) throw err;
   let con = await db.checkConnection()
-    
-    const product_owner = req.params.product_owner;
-    const description = req.params.description;
-    const is_project = req.params.is_project;
-    const name = req.params.name;
-    const sql = `UPDATE deployable SET product_owner =?, description =?, is_project =? Where name =?`
-    const params = [ product_owner, description, is_project, name ]
-    con.query(sql, params, (err, res) => {
-        if (err) throw err;
-        console.log("Result: " + req.params.product_owner + ' ' + req.params.description + ' ' + req.params.is_project)
-    // con.end();
+  const product_owner = req.params.product_owner;
+  const description = req.params.description;
+  const is_project = req.params.is_project;
+  const name = req.params.name;
+  const sql = `UPDATE deployable SET product_owner =?, description =?, is_project =? WHERE name =?`
+  const params = [ product_owner, description, is_project, name ]
+
+  con.query(sql, params, (err, res) => {
+    if (err) throw err;
+    console.log("Result: " + req.params.product_owner + ' ' + req.params.description + ' ' + req.params.is_project)
 
     // Send a success reply
-      res.send({ status: 'ok' })
-      return next();
-    })
-  // })
+    res.send({ status: 'ok' });
+    return next();
+  })
 }); // End of section
 
 /*
@@ -418,34 +282,19 @@ server.use(restify.plugins.acceptParser(server.acceptable));
 server.post('/newProjectUser', async (req, res, next) => {
   console.log(`POST /newProjectUser`)
 
-  // var con = mysql.createConnection({
-  //       host: "localhost",
-  //       port: 56911,
-  //       database: "juice",
-  //       user: "root",
-  //       password: ""
-  //   })
-
-  // con.connect(function(err, result) {
-  //   if (err) throw err;
   let con = await db.checkConnection()
+  const userValues = {user_id: req.params.id, project: req.params.project, access: req.params.access}
+  let sql = `INSERT INTO project_user SET ?`
+  let params = [ userValues ]
 
-    const userValues = {user_id: req.params.id, project: req.params.project, access: req.params.access}
+  con.query( sql, params, (err, res) => {
+    if (err) throw err;
+    console.log("Result: NEW project user- " + req.params.name + ' project- ' + req.params.project + " access- " + req.params.access) 
 
-    let sql = `INSERT INTO project_user SET ?`
-    let params = [ userValues ]
-
-    con.query( sql, params, (err, res) => {
-      if (err) throw err;
-
-      console.log("Result: NEW project user- " + req.params.name + ' project- ' + req.params.project + " access- " + req.params.access) 
-      // con.end();
-
-      // Send reply
-      res.send({ status: 'ok' })
-      return next();
-      })
-  // })  
+    // Send reply
+    res.send({ status: 'ok' })
+    return next();
+    }) 
 }); // End of section
 
 /*
@@ -461,34 +310,22 @@ server.use(restify.plugins.bodyParser({
 server.use(restify.plugins.acceptParser(server.acceptable));
 server.post('/newVariable', async (req, res, next) => {
   console.log(`POST /newVariable`)
-  // var con = mysql.createConnection({
-  //       host: "localhost",
-  //       port: 56911,
-  //       database: "juice",
-  //       user: "root",
-  //       password: ""
-  //   })
 
-  // con.connect(function(err, result) {
-  //   if (err) throw err;
   let con = await db.checkConnection()
+  const variableValues = {name: req.params.name, description: req.params.description, type: req.params.type, mandatory: req.params.mandatory, deployable: req.params.deployable, is_external: req.params.external}
+  let sql = `INSERT INTO variable SET ?`
+  let params = [ variableValues ]
 
-    const variableValues = {name: req.params.name, description: req.params.description, type: req.params.type, mandatory: req.params.mandatory, deployable: req.params.deployable, is_external: req.params.external}
+  con.query( sql, params, (err, res) => {
+    if (err) throw err;
 
-    let sql = `INSERT INTO variable SET ?`
-    let params = [ variableValues ]
+    console.log("Result: NEW variable- " + req.params.name + " deployable- " + req.params.deployable + " Description- " + req.params.description) 
+    
 
-    con.query( sql, params, (err, res) => {
-        if (err) throw err;
-
-        console.log("Result: NEW variable- " + req.params.name + " deployable- " + req.params.deployable + " Description- " + req.params.description) 
-        // con.end();
-
-        // Send reply
-        res.send({ status: 'ok' })
-        return next();
-        })
-  // })  
+    // Send reply
+    res.send({ status: 'ok' })
+    return next();
+  })
 }); // End of section
 
 /*
@@ -506,41 +343,24 @@ server.use(restify.plugins.acceptParser(server.acceptable));
 server.post('/variable', async (req, res, next) => {
   console.log(`POST /variable`)
 
-  // var con = mysql.createConnection({
-  //       host: "localhost",
-  //       port: 56911,
-  //       database: "juice",
-  //       user: "root",
-  //       password: ""
-  //   })
-
-  // con.connect(function(err, result) {
-  //   if (err) throw err;
   let con = await db.checkConnection()
-    
-    const deployable = req.params.deployable;
-    const name = req.params.name;
-    const description = req.params.description;
-    const type = req.params.type;
-    const mandatory = req.params.mandatory;
-    const is_external = req.params.external;
+  const deployable = req.params.deployable;
+  const name = req.params.name;
+  const description = req.params.description;
+  const type = req.params.type;
+  const mandatory = req.params.mandatory;
+  const is_external = req.params.external;
+  let sql = `UPDATE variable SET type=?, description =?, mandatory=?, is_external=? WHERE name=? AND deployable=?`
+  let params = [ type, description, mandatory, is_external, name, deployable ]
 
-    let sql = `UPDATE variable SET type=?, description =?, mandatory=?, is_external=? WHERE name=? AND deployable=?`
-    let params = [ type, description, mandatory, is_external, name, deployable ]
-    console.log(`sql=${sql}`)
-    console.log(`params=`, params)
+  con.query(sql, params, (err, res) => {
+    if (err) throw err;
+    console.log("Result: ", res)
 
-    con.query(sql, params, (err, res) => {
-      if (err) throw err;
-
-      console.log("Result: ", res)
-      // con.end();
-
-      // Send a success reply
-      res.send({ status: 'ok' })
-      return next();
-      })
-  // })  
+    // Send a success reply
+    res.send({ status: 'ok' })
+    return next();
+  })
 }); // End of section
 
 /*
@@ -554,38 +374,24 @@ server.use(restify.plugins.bodyParser({
   mapParams: true
 }));
 server.use(restify.plugins.acceptParser(server.acceptable));
+
 server.post('/newDependency', async (req, res, next) => {
   console.log(`POST /newDependency`)
 
-  // var con = mysql.createConnection({
-  //       host: "localhost",
-  //       port: 56911,
-  //       database: "juice",
-  //       user: "root",
-  //       password: ""
-  //   })
-
-  // con.connect(function(err, result) {
-  //   if (err) throw err;
   let con = await db.checkConnection()
+  const dependencyValues = {parent: req.params.deployable, child: req.params.child, prefix: req.params.prefix, version: req.params.version}
+  let sql = `INSERT INTO dependency SET ?`
+  let params = [ dependencyValues ]
 
-    const dependencyValues = {parent: req.params.deployable, child: req.params.child, prefix: req.params.prefix, version: req.params.version}
+  con.query( sql, params, (err, res) => {
+    if (err) throw err;
+    console.log("Result: NEW dependency " + req.params.deployable + " child- " + req.params.child + " prefix- " + req.params.prefix) 
 
-    let sql = `INSERT INTO dependency SET ?`
-    let params = [ dependencyValues ]
-
-    con.query( sql, params, (err, res) => {
-        if (err) throw err;
-
-        console.log("Result: NEW dependency " + req.params.deployable + " child- " + req.params.child + " prefix- " + req.params.prefix) 
-        // con.end();
-
-        // Send reply
-        res.send({ status: 'ok' })
-        return next();
-        })
-  // })  
-  }); // End of section
+    // Send reply
+    res.send({ status: 'ok' })
+    return next();
+  })
+}); // End of section
 
 /*
 *  /_deployableNAME: Edit a USER in /_deployableNAME on MySQL db
@@ -602,38 +408,21 @@ server.use(restify.plugins.acceptParser(server.acceptable));
 server.post('/editUser', async (req, res, next) => {
   console.log(`POST /editUser`)
 
-  // var con = mysql.createConnection({
-  //       host: "localhost",
-  //       port: 56911,
-  //       database: "juice",
-  //       user: "root",
-  //       password: ""
-  //   })
-
-  // con.connect(function(err, result) {
-  //   if (err) throw err;
   let con = await db.checkConnection()
-    
-    const id = req.params.id;
-    const access = req.params.access;
-    const project = req.params.project;
+  const id = req.params.id;
+  const access = req.params.access;
+  const project = req.params.project;
+  let sql = `UPDATE project_user SET access=? WHERE user_id=? AND project=?`
+  let params = [ access, id, project ]
 
-    let sql = `UPDATE project_user SET access=? WHERE user_id=? AND project=?`
-    let params = [ access, id, project ]
-    console.log(`sql=${sql}`)
-    console.log(`params=`, params)
+  con.query(sql, params, (err, res) => {
+    if (err) throw err;
+    console.log("Result: ", res)
 
-    con.query(sql, params, (err, res) => {
-      if (err) throw err;
-
-      console.log("Result: ", res)
-      // con.end();
-
-      // Send a success reply
-      res.send({ status: 'ok' })
-      return next();
-      })
-  // })  
+    // Send a success reply
+    res.send({ status: 'ok' })
+    return next();
+  })
 }); // ******************** end of /_deployableNAME server calls *********************
 
 // ********************** All server calls related to /_userNAME page **********************
@@ -644,37 +433,18 @@ server.post('/editUser', async (req, res, next) => {
 server.get('/userName', async (req, res, next) => {
   console.log(`GET /userName`);
 
-  // console.log(`PAERAMS IS `, req.query)
   let userID = req.query.userID
+  let con = await db.checkConnection()
+  const sql = `SELECT * from user where id=?`
+  const params = [ userID ]
 
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // });
-
-  // con.connect(function(err) {
-  //   if (err) throw err;
-  //   console.log("Connected!");
-
-    let con = await db.checkConnection()
-
-
-    const sql = `SELECT * from user where id=?`
-    const params = [ userID ]
-    // console.log(`SQL IS ${sql}`)
-    // console.log(`PARAMS IS`, params)
-    con.query(sql, params, function (err, result) {
-      if (err) throw err;
-      console.log("Result: " + result);
-      console.log(`result[0]=`, result[0]);
-      res.send({ record: result[0] })
-      // con.end()
-      next()
-    });
-  // });
+  con.query(sql, params, function (err, result) {
+    if (err) throw err;
+    console.log("Result: " + result);
+    console.log(`result[0]=`, result[0]);
+    res.send({ record: result[0] })
+    next()
+  });
 });
 
 /*
@@ -684,34 +454,17 @@ server.get('/userName', async (req, res, next) => {
 server.get('/usersProjects', async (req, res, next) => {
   console.log(`GET /usersProjects`);
 
-  // console.log(`PAERAMS IS `, req.query)
   let userID = req.query.userID
-
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // });
-
-  // con.connect(function(err) {
-  //   if (err) throw err;
-  //   console.log("Connected!");
   let con = await db.checkConnection()
-  
-    const sql = `SELECT * from project_user where user_id=?`
-    const params = [ userID ]
-    console.log(`SQL IS ${sql}`)
-    console.log(`PARAMS IS`, params)
-    con.query(sql, params, function (err, result) {
-      if (err) throw err;
-      console.log("Result: " + result);
-      res.send({ records: result })
-      // con.end()
-      next()
-    });
-  // });
+  const sql = `SELECT * from project_user where user_id=?`
+  const params = [ userID ]
+
+  con.query(sql, params, function (err, result) {
+    if (err) throw err;
+    console.log("Result: " + result);
+    res.send({ records: result })
+    next()
+  });
 });
 
 /*
@@ -721,32 +474,17 @@ server.get('/usersProjects', async (req, res, next) => {
 server.get('/usersEnvironments', async (req, res, next) => {
   console.log(`GET /usersEnvironments`);
 
-  // console.log(`PAERAMS IS `, req.query)
   let userID = req.query.userID
-
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // });
-
-  // con.connect(function(err) {
-  //   if (err) throw err;
-  //   console.log("Connected!");
   let con = await db.checkConnection()
+  const sql = `SELECT * from environment_user where user_id=?`
+  const params = [ userID ]
 
-    const sql = `SELECT * from environment_user where user_id=?`
-    const params = [ userID ]
-    con.query(sql, params, function (err, result) {
-      if (err) throw err;
-      console.log("Result: " + result);
-      res.send({ records: result })
-      // con.end()
-      next()
-    });
-  // });
+  con.query(sql, params, function (err, result) {
+    if (err) throw err;
+    console.log("Result: " + result);
+    res.send({ records: result })
+    next()
+  });
 });
 
 /*
@@ -764,75 +502,41 @@ server.use(restify.plugins.acceptParser(server.acceptable));
 server.post('/editUserAccount', async (req, res, next) => {
   console.log(`POST /editUserAccount`)
 
-  // var con = mysql.createConnection({
-  //       host: "localhost",
-  //       port: 56911,
-  //       database: "juice",
-  //       user: "root",
-  //       password: ""
-  //    })
-
-  // con.connect(function(err, result) {
-  //   if (err) throw err;
   let con = await db.checkConnection()
+  const access = req.params.access;
+  const role = req.params.role;
+  const email = req.params.email;
+  const id = req.params.id;
+  const sql = `UPDATE user SET access =?, role =?, email =? Where id =?`
+  const params = [ access, role, email, id ]
 
-    const access = req.params.access;
-    const role = req.params.role;
-    const email = req.params.email;
-    const id = req.params.id;
-    const sql = `UPDATE user SET access =?, role =?, email =? Where id =?`
-    const params = [ access, role, email, id ]
+  con.query(sql, params, (err, res) => {
+    if (err) throw err;
+    console.log("Updated: " + req.params.access + ' ' + req.params.role + ' ' + req.params.email)
 
-    con.query(sql, params, (err, res) => {
-        if (err) throw err;
-
-        console.log("Updated: " + req.params.access + ' ' + req.params.role + ' ' + req.params.email)
-        // con.end();
-
-        // Send a success reply
-        res.send({ status: 'ok' })
-        return next();
-      })
-  // })  
-  }); // - end of call
+    // Send a success reply
+    res.send({ status: 'ok' })
+    return next();
+  }) 
+}); // - end of call
   
 /*
  *  _userName: Select ENVIRONMENTS for /_userName on MySQL database
  *  ~~ This uses an innerjoin bt db's environment and environment_user ~~
  */
 server.get('/environments', auth, async (req, res, next) => {
-  console.log(`-----------------`);
   console.log(`GET /environments`);
 
   let userIdentity = req.payload.userIdentity
-  console.log(`userIdentity is:::`, userIdentity)
-
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // });
-
-  // con.connect(function(err) {
-  //   if (err) throw err;
-  //   console.log("Connected!");
   let con = await db.checkConnection()
-
-    const sql = `(SELECT environment.name, environment.description, environment.notes, environment.is_universal FROM environment INNER JOIN environment_user ON environment.name = environment_user.environment AND environment_user.user_id =?) UNION (SELECT environment.name, environment.description, environment.notes, environment.is_universal FROM environment WHERE environment.is_universal = 'yes')`
-    const params = [ userIdentity ]
-    
-    console.log(`SQL IS ${sql}`)
-    con.query(sql, params, function (err, result) {
-      if (err) throw err;
-      // console.log("Result: " + result);
-      // console.log(`result[0]=`, result[0]);
-      res.send({ environments: result })
-      // con.end()
-      next()
-    });
-  // });
+  const sql = `(SELECT environment.name, environment.description, environment.notes, environment.is_universal FROM environment INNER JOIN environment_user ON environment.name = environment_user.environment AND environment_user.user_id =?) UNION (SELECT environment.name, environment.description, environment.notes, environment.is_universal FROM environment WHERE environment.is_universal = 'yes')`
+  const params = [ userIdentity ]
+  
+  con.query(sql, params, function (err, result) {
+    if (err) throw err;
+    res.send({ environments: result })
+    next()
+  });
 }); // ******************** end of /_userNAME server calls *********************
 
 // ******************** All server calls related to /environment page *********************
@@ -843,31 +547,14 @@ server.get('/environments', auth, async (req, res, next) => {
 server.get('/showEnvironments', async (req, res, next) => {
   console.log(`GET /showEnvironments`);
 
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // });
-
-  // con.connect(function(err) {
-  //   if (err) throw err;
-  //   console.log("Connected!");
   let con = await db.checkConnection()
-
-    const sql = `SELECT * FROM environment`
-    
-    console.log(`SQL IS ${sql}`)
-    con.query(sql, function (err, result) {
-      if (err) throw err;
-      // console.log("Result: " + result);
-      // console.log(`result[0]=`, result[0]);
-      res.send({ environments: result })
-      // con.end()
-      next()
-    });
-  // });
+  const sql = `SELECT * FROM environment`
+  
+  con.query(sql, function (err, result) {
+    if (err) throw err;
+    res.send({ environments: result })
+    next()
+  });
 }); // ******************** end of /environment server calls *********************
 
 // ******************** All server calls related to /_environmentNAME page *********************
@@ -879,32 +566,16 @@ server.get('/environment', async (req, res, next) => {
   console.log(`GET /environment`);
 
   let environmentName = req.query.environmentName;
-
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // });
-
-  // con.connect(function(err) {
-  //   if (err) throw err;
-  //   console.log("Connected!");
   let con = await db.checkConnection()
+  const sql = `SELECT * from environment where name=?`
+  const params = [ environmentName ]
 
-    const sql = `SELECT * from environment where name=?`
-    const params = [ environmentName ]
-    con.query(sql, params, function (err, result) {
-      if (err) throw err;
-      console.log("Result: " + result);
-      // console.log(`result[0]=`, result[0]);
-      // res.send({ environments: result })
-      res.send({ record: result[0] })
-      // con.end()
-      next()
-    });
-  // });
+  con.query(sql, params, function (err, result) {
+    if (err) throw err;
+    console.log("Result: " + result);
+    res.send({ record: result[0] })
+    next()
+  });
 });
 
 /*
@@ -914,35 +585,17 @@ server.get('/environment', async (req, res, next) => {
 server.get('/deployments', async (req, res, next) => {
   console.log(`GET /deployments`);
 
-  // console.log(`PAERAMS IS `, req.query)
   let environmentName = req.query.environmentName
-
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // });
-
-  // con.connect(function(err) {
-  //   if (err) throw err;
-  //   console.log("Connected!");
   let con = await db.checkConnection()
-
-    const sql = `SELECT * from deployments where environment =?`
-    const params = [ environmentName ];
-    
-    console.log(`sql=${sql}`)
-    console.log(`params=`, params)
-    con.query(sql, params, function (err, result) {
-      if (err) throw err;
-      console.log("Result: " + result);
-      res.send({ deployments: result })
-      // con.end()
-      next()
-    });
-  // });
+  const sql = `SELECT * from deployments where environment =?`
+  const params = [ environmentName ];
+  
+  con.query(sql, params, function (err, result) {
+    if (err) throw err;
+    console.log("Result: " + result);
+    res.send({ deployments: result })
+    next()
+  });
 });
 
 /*
@@ -953,29 +606,15 @@ server.get('/environments_users', async (req, res, next) => {
   console.log(`GET /environments_users`);
   
   let environmentName = req.query.environmentName
-
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // })
-
-  // con.connect(function(err) {
-  //   if (err) throw err;
-  //   console.log(`Connected!`);
   let con = await db.checkConnection()
+  const sql = `SELECT EU.environment, EU.user_id, EU.access, U.first_name, U.last_name FROM environment_user EU left outer join user U on EU.user_id = U.id WHERE EU.environment=?`
+  let params = [ environmentName ]
 
-    const sql = `SELECT EU.environment, EU.user_id, EU.access, U.first_name, U.last_name FROM environment_user EU left outer join user U on EU.user_id = U.id WHERE EU.environment=?`
-    let params = [ environmentName ]
-    con.query(sql, params, function (err, result) {
-      if (err) throw err;
-      res.send({ users: result })
-      // con.end()
-      next()
-    })
-  // })
+  con.query(sql, params, function (err, result) {
+    if (err) throw err;
+    res.send({ users: result })
+    next()
+  })
 })
 
 /*
@@ -993,35 +632,21 @@ server.use(restify.plugins.acceptParser(server.acceptable));
 server.post('/editedEnv', async (req, res, next) => {
   console.log(`POST /editedEnv`)
 
-  // var con = mysql.createConnection({
-  //       host: "localhost",
-  //       port: 56911,
-  //       database: "juice",
-  //       user: "root",
-  //       password: ""
-  //    })
-
-  // con.connect(function(err, result) {
-  //   if (err) throw err;
   let con = await db.checkConnection()
+  const name = req.params.name;
+  const description = req.params.description;
+  const notes = req.params.notes;
+  const sql = `UPDATE environment SET description =?, notes =? WHERE name =?`
+  const params = [ description, notes, name ]
 
-    const name = req.params.name;
-    const description = req.params.description;
-    const notes = req.params.notes;
+  con.query(sql, params, (err, res) => {
+    if (err) throw err;
+    console.log("Result: " + req.params.name + ' ' + req.params.description + ' ' + req.params.notes)
 
-    const sql = `UPDATE environment SET description =?, notes =? WHERE name =?`
-    const params = [ description, notes, name ]
-    con.query(sql, params, (err, res) => {
-        if (err) throw err;
-
-        console.log("Result: " + req.params.name + ' ' + req.params.description + ' ' + req.params.notes)
-      // con.end();
-
-      // Send a success reply
-      res.send({ status: 'ok' })
-      return next();
-      })
-  // })  
+    // Send a success reply
+    res.send({ status: 'ok' })
+    return next();
+  }) 
 }); // End of section
 
 /*
@@ -1039,34 +664,19 @@ server.use(restify.plugins.acceptParser(server.acceptable));
 server.post('/newEnvironmentUser', async (req, res, next) => {
   console.log(`POST /newEnvironmentUser`)
 
-  // var con = mysql.createConnection({
-  //       host: "localhost",
-  //       port: 56911,
-  //       database: "juice",
-  //       user: "root",
-  //       password: ""
-  //   })
-
-  // con.connect(function(err, result) {
-  //   if (err) throw err;
   let con = await db.checkConnection()
+  const userValues = {user_id: req.params.id, environment: req.params.environment, access: req.params.access}
+  let sql = `INSERT INTO environment_user SET ?`
+  let params = [ userValues ]
 
-    const userValues = {user_id: req.params.id, environment: req.params.environment, access: req.params.access}
+  con.query( sql, params, (err, res) => {
+    if (err) throw err;
+    console.log("Result: NEW environment user- " + req.params.id + ' environment- ' + req.params.environment + " access- " + req.params.access) 
 
-    let sql = `INSERT INTO environment_user SET ?`
-    let params = [ userValues ]
-
-    con.query( sql, params, (err, res) => {
-        if (err) throw err;
-
-        console.log("Result: NEW environment user- " + req.params.id + ' environment- ' + req.params.environment + " access- " + req.params.access) 
-        // con.end();
-
-        // Send reply
-        res.send({ status: 'ok' })
-        return next();
-        })
-  // })  
+    // Send reply
+    res.send({ status: 'ok' })
+    return next();
+  })
 }); // End of section
 
 /*
@@ -1084,38 +694,21 @@ server.use(restify.plugins.acceptParser(server.acceptable));
 server.post('/editEnvUser', async (req, res, next) => {
   console.log(`POST /editEnvUser`)
 
-  // var con = mysql.createConnection({
-  //       host: "localhost",
-  //       port: 56911,
-  //       database: "juice",
-  //       user: "root",
-  //       password: ""
-  //   })
-
-  // con.connect(function(err, result) {
-  //   if (err) throw err;
   let con = await db.checkConnection()
+  const id = req.params.id;
+  const access = req.params.access;
+  const environment = req.params.environment;
+  let sql = `UPDATE environment_user SET access=? WHERE user_id=? AND environment=?`
+  let params = [ access, id, environment ]
 
-    const id = req.params.id;
-    const access = req.params.access;
-    const environment = req.params.environment;
+  con.query(sql, params, (err, res) => {
+    if (err) throw err;
+    console.log("Result: ", res)
 
-    let sql = `UPDATE environment_user SET access=? WHERE user_id=? AND environment=?`
-    let params = [ access, id, environment ]
-    console.log(`sql=${sql}`)
-    console.log(`params=`, params)
-
-    con.query(sql, params, (err, res) => {
-      if (err) throw err;
-
-      console.log("Result: ", res)
-      // con.end();
-
-      // Send a success reply
-      res.send({ status: 'ok' })
-      return next();
-    })
-  // })  
+    // Send a success reply
+    res.send({ status: 'ok' })
+    return next();
+  })
 }); // End of section
 
 /*
@@ -1130,37 +723,23 @@ server.use(restify.plugins.bodyParser({
   mapParams: true
 }));
 server.use(restify.plugins.acceptParser(server.acceptable));
+
 server.post('/newDeployment', async (req, res, next) => {
   console.log(`POST /newDeployment`)
 
-  // var con = mysql.createConnection({
-  //       host: "localhost",
-  //       port: 56911,
-  //       database: "juice",
-  //       user: "root",
-  //       password: ""
-  //   })
-
-  // con.connect(function(err, result) {
-  //   if (err) throw err;
   let con = await db.checkConnection()
+  const deploymentValues = {notes: req.params.notes, deployable: req.params.deployable, environment: req.params.environment}
+  let sql = `INSERT INTO deployments SET ?`
+  let params = [ deploymentValues ]
 
-    const deploymentValues = {notes: req.params.notes, deployable: req.params.deployable, environment: req.params.environment}
+  con.query( sql, params, (err, res) => {
+    if (err) throw err;
+    console.log("Result: NEW deployment " + req.params.deployable + " environment- " + req.params.environment + " notes- " + req.params.notes) 
 
-    let sql = `INSERT INTO deployments SET ?`
-    let params = [ deploymentValues ]
-
-    con.query( sql, params, (err, res) => {
-        if (err) throw err;
-
-        console.log("Result: NEW deployment " + req.params.deployable + " environment- " + req.params.environment + " notes- " + req.params.notes) 
-      // con.end();
-
-      // Send reply
-      res.send({ status: 'ok' })
-      return next();
-    })
-  // })  
+    // Send reply
+    res.send({ status: 'ok' })
+    return next();
+  }) 
 }); // ******************** end of /_environmentNAME server calls *********************
 
 // ******************** All server calls related to /users page *********************
@@ -1169,30 +748,16 @@ server.post('/newDeployment', async (req, res, next) => {
  *  
  */ 
 server.get('/users', async (req, res, next) => {
-  console.log(`----------`);
   console.log(`GET /users`);
 
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // });
-
-  // con.connect(function(err) {
-  //   if (err) throw err;
-  //   console.log("Connected!");
   let con = await db.checkConnection()
+  const sql = `SELECT * from user`
 
-    const sql = `SELECT * from user`
-    con.query(sql, function (err, result) {
-      if (err) throw err;
-      res.send({ users: result })
-      // con.end()
-      next()
-    });
-  // });
+  con.query(sql, function (err, result) {
+    if (err) throw err;
+    res.send({ users: result })
+    next()
+  });
 }); // ******************** end of /users server calls *********************
 
 // ******************** All server calls related to AUTHENTICATION *********************
@@ -1202,31 +767,16 @@ server.get('/currentUser', auth, async (req, res, next) => {
 
   let userIdentity = req.payload.userIdentity
   console.log(`userIdentity is:::`, userIdentity)
-
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // });
-
-  // con.connect(function(err) {
-  //   if (err) throw err;
-  //   console.log("Connected!");
   let con = await db.checkConnection()
+  const sql = `SELECT * FROM user WHERE user.id =?`
+  const params = [ userIdentity ]
 
-    const sql = `SELECT * FROM user WHERE user.id =?`
-    const params = [ userIdentity ]
-    con.query(sql, params, function (err, result) {
-      if (err) throw err;
-      res.send({ user: result })
-      // con.end()
-      next()
-    });
-  // });
+  con.query(sql, params, function (err, result) {
+    if (err) throw err;
+    res.send({ user: result })
+    next()
+  });
 }); // ******************** end of AUTHENTICATION server calls *********************
-
 
 // ******************** All server calls related to /config page *********************
 /*
@@ -1240,20 +790,10 @@ async function getVariables(deployable) {
   let con = await db.checkConnection()
 
   return new Promise(function(resolve, reject) {
-
-    // const con = mysql.createConnection({
-    //   host: "localhost",
-    //   port: 56911,
-    //   database: "juice",
-    //   user: "root",
-    //   password: ""
-    // });
     const sql = `SELECT * from variable where deployable=?`
     const params = [ deployable ]
-    console.log(`sql=${sql}`)
-    console.log(`params=`, params)
+
     con.query(sql, params, function (err, result) {
-      // con.end()
       if (err) return reject(err);
       console.log(`Got variables for ${deployable}:`, result)
       return resolve(result)
@@ -1267,19 +807,10 @@ async function getDependencies(deployable) {
   let con = await db.checkConnection()
 
   return new Promise(function(resolve, reject) {
-    // const con = mysql.createConnection({
-    //   host: "localhost",
-    //   port: 56911,
-    //   database: "juice",
-    //   user: "root",
-    //   password: ""
-    // });
     const sql = `SELECT * from dependency where parent=?`
     const params = [ deployable ]
-    console.log(`sql=${sql}`)
-    console.log(`params=`, params)
+
     con.query(sql, params, function (err, result) {
-      // con.end()
       if (err) return reject(err);
       console.log(`Got dependencies for ${deployable}:`, result)
       return resolve(result)
@@ -1300,7 +831,7 @@ async function getAllVariables_recursive(deployable, prefix, array) {
     })
   })
 
-  // // Select dependencies with SQL 
+  // Select dependencies with SQL 
   let dependencies = await getDependencies(deployable)
   for (let i = 0; i < dependencies.length; i++) {
     let dep = dependencies[i]
@@ -1321,7 +852,6 @@ server.get('/variablesConfig', (req, res, next) => {
     console.log(`RESPONSE IS: `, response)
     console.log(`array is `, array)
     res.send(array)
-    // con.end()
     next()
   })
   .catch (error => {
@@ -1337,34 +867,18 @@ server.get('/environmentIndex', async (req, res, next) => {
   console.log(`GET /environmentIndex`);
 
   let environmentName = req.query.environmentName;
-
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // });
-
-  // con.connect(function(err) {
-  //   if (err) throw err;
-  //   console.log("Connected!");
   let con = await db.checkConnection()
+  const sql = `SELECT * FROM environment WHERE name=?`
+  const params = [ environmentName ]
 
-    const sql = `SELECT * FROM environment WHERE name=?`
-    const params = [ environmentName ]
-    con.query(sql, params, function (err, result) {
-      if (err) throw err;
-      console.log("Result: " + result);
-      // console.log(`result[0]=`, result[0]);
-      // res.send({ environments: result })
-      res.send({ record: result[0] })
-      // con.end()
-      next()
-    });
-  // });
+  con.query(sql, params, function (err, result) {
+    if (err) throw err;
+    console.log("Result: " + result);
+
+    res.send({ record: result[0] })
+    next()
+  });
 });
-
 // ******************** end of /config server calls *********************
 
 // ******************** All server calls related to /newDeployable page *********************
@@ -1382,29 +896,16 @@ server.use(restify.plugins.acceptParser(server.acceptable));
 
 server.post('/newDeployable', async (req, res, next) => {
   console.log(`POST /newDeployable`)
-  // var con = mysql.createConnection({
-  //       host: "localhost",
-  //       port: 56911,
-  //       database: "juice",
-  //       user: "root",
-  //       password: ""
-  //    })
 
-  // con.connect(function(err, result) {
-  //   if (err) throw err;
   let con = await db.checkConnection()
-
   const sql = `INSERT INTO deployable SET ?`
   const newDeployable = {name: req.params.name, is_project: req.params.is_project, product_owner: req.params.product_owner, description: req.params.description}
 
-    con.query(sql, newDeployable, (err, res) => {
-        if (err) throw err;
-
-        console.log("Result: NEW Name- " + req.params.name + " Owner- " + req.params.product_owner + " Description- " + req.params.description + " Is project- " + req.params.is_project) 
-        // con.end();
-        return next();
-    })
-  // })  
+  con.query(sql, newDeployable, (err, res) => {
+    if (err) throw err;
+    console.log("Result: NEW Name- " + req.params.name + " Owner- " + req.params.product_owner + " Description- " + req.params.description + " Is project- " + req.params.is_project) 
+    return next();
+  }) 
 }); // ******************** end of /newDeployable server calls *********************
 
 // ******************** All server calls related to /newEnvironment page *********************
@@ -1423,29 +924,16 @@ server.use(restify.plugins.acceptParser(server.acceptable));
 server.post('/newEnvironment', async (req, res, next) => {
   console.log(`POST /newEnvironment`)
 
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // })
-
-  // con.connect(function(err, result) {
-  //   if (err) throw err;
   let con = await db.checkConnection()
   const sql = `INSERT INTO environment SET ?`
-    const newEnvironment = {name: req.params.name, description: req.params.description, notes: req.params.notes, is_universal: req.params.is_universal}
+  const newEnvironment = {name: req.params.name, description: req.params.description, notes: req.params.notes, is_universal: req.params.is_universal}
 
-    con.query(sql, newEnvironment, (err, res) => {
-        if (err) throw err;
-
-        console.log("Result: NEW Name- " + req.params.name + " Notes- " + req.params.notes + " Description- " + req.params.description + " isuniversal -" + req.params.is_universal) 
-      // con.end();
-      return next();
-    })
-    // })  
-}); // ******************** end of /newEnvironment server calls *********************
+  con.query(sql, newEnvironment, (err, res) => {
+    if (err) throw err;
+    console.log("Result: NEW Name- " + req.params.name + " Notes- " + req.params.notes + " Description- " + req.params.description + " isuniversal -" + req.params.is_universal) 
+    return next();
+  })
+}); // ******************** end of /newEnvironment server calls ***********************
 
 // ******************** All server calls related to /newUser page *********************
 /*
@@ -1463,33 +951,19 @@ server.use(restify.plugins.acceptParser(server.acceptable));
 server.post('/newUser', async (req, res, next) => {
   console.log(`POST /newUser`)
 
-  // var con = mysql.createConnection({
-  //   host: "localhost",
-  //   port: 56911,
-  //   database: "juice",
-  //   user: "root",
-  //   password: ""
-  // })
-
-  // con.connect(function(err, result) {
-  //   if (err) throw err;
   let con = await db.checkConnection()
+  const userValues = {first_name: req.params.first_name, last_name: req.params.last_name, role: req.params.role, access: req.params.access, email: req.params.email}
+  let sql = `INSERT INTO user SET ?`
+  let params = [ userValues ]
 
-    const userValues = {first_name: req.params.first_name, last_name: req.params.last_name, role: req.params.role, access: req.params.access, email: req.params.email}
-
-    let sql = `INSERT INTO user SET ?`
-    let params = [ userValues ]
-
-    con.query(sql, params, (err, res) => {
-      if (err) throw err;
-      console.log("Result: NEW user- " + req.params.first_name + ' ' + req.params.last_name +  " role- " + req.params.role + " access- " + req.params.access) 
-    // con.end();
+  con.query(sql, params, (err, res) => {
+    if (err) throw err;
+    console.log("Result: NEW user- " + req.params.first_name + ' ' + req.params.last_name +  " role- " + req.params.role + " access- " + req.params.access) 
 
     // Send reply
     res.send({ status: 'ok' })
     return next();
   })
-  // })  
 }); // ******************** end of /newUser server calls *********************
 
 /*

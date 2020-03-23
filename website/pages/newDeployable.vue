@@ -85,7 +85,7 @@ export default {
                 // If no error, send post request to server
                 try {
                     e.preventDefault();
-                    axios.post('${protocol}://${host}:${port}/newDeployable', {
+                    axios.post(`${protocol}://${host}:${port}/newDeployable`, {
                         name: this.form.new_deployable,
                         product_owner: this.form.new_owner,
                         description: this.form.new_description,

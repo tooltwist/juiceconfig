@@ -134,7 +134,7 @@ export default {
 
         // If no error, send post request to server
         try {
-          await axios.post('${protocol}://${host}:${port}/newUser', {
+          await axios.post(`${protocol}://${host}:${port}/newUser`, {
             first_name: this.form.user_firstname,
             last_name: this.form.user_lastname,
             role: this.form.user_role,

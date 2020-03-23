@@ -517,7 +517,7 @@ export default {
     // EDIT THE DETAILS OF THE SELECTED DEPLOYABLE
     async saveDeployable() {
       try {
-        await axios.post('${protocol}://${host}:${port}/deployable', {
+        await axios.post(`${protocol}://${host}:${port}/deployable`, {
           product_owner: this.form.new_owner,
           description: this.form.new_description,
           is_project: this.form.new_is_project,
@@ -560,7 +560,7 @@ export default {
 
         // If no error, send post request to server
         try {
-          await axios.post('${protocol}://${host}:${port}/newVariable', {
+          await axios.post(`${protocol}://${host}:${port}/newVariable`, {
             name: this.form.variable_name,
             description: this.form.variable_description,
             type: this.form.variable_type,
@@ -611,7 +611,7 @@ export default {
 
         // If no error, send post request to server
         try {
-          await axios.post('${protocol}://${host}:${port}/newProjectUser', {
+          await axios.post(`${protocol}://${host}:${port}/newProjectUser`, {
             id: this.form.new_projectuser,
             access: this.form.new_user_access,
             project: this.deployableName
@@ -636,7 +636,7 @@ export default {
 
     async saveEditedUser() {
       try {
-        await axios.post('${protocol}://${host}:${port}/editUser', {
+        await axios.post(`${protocol}://${host}:${port}/editUser`, {
             id: this.users.user_id,
             access: this.form.edit_useraccess,
             project: this.deployableName,
@@ -676,7 +676,7 @@ export default {
 
         // If no error, send post request to server
         try {
-          await axios.post('${protocol}://${host}:${port}/newDeployment', {
+          await axios.post(`${protocol}://${host}:${port}/newDeployment`, {
             environment: this.form.new_environment,
             notes: this.form.new_notes,
             deployable: this.deployableName,
@@ -739,7 +739,7 @@ export default {
 
         // If no error, send post request to server
         try {
-          await axios.post('${protocol}://${host}:${port}/newDependency', {
+          await axios.post(`${protocol}://${host}:${port}/newDependency`, {
             child: this.form.new_child,
             prefix: this.form.new_prefix,
             version: this.form.new_version,
@@ -766,7 +766,7 @@ export default {
     // SAVE AN EDITED VARIABLE WITH NEW VALUES - IN MODAL
     async saveVariable() {
       try {
-        await axios.post('${protocol}://${host}:${port}/variable', {
+        await axios.post(`${protocol}://${host}:${port}/variable`, {
           description: this.form.new_variable_description,
           type: this.form.new_variable_type,
           mandatory: this.form.new_variable_mandatory,
