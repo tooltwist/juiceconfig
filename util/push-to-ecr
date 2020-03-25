@@ -5,6 +5,7 @@
 #dir=$(cd `dirname $0`; pwd)
 #echo dir=${dir}
 IMAGE=tooltwist/juiceconfig
+ECR_REPOSITORY=tooltwist-juiceconfig
 REGION=ap-southeast-1
 ACCOUNT_ID=278087993445
 
@@ -26,9 +27,9 @@ aws ecr get-login-password --region ${REGION} | docker login --username AWS --pa
 [ "$?" != "0" ] && exit 1
 
 # Tag and push the image
-docker tag ${IMAGE}:latest ${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${IMAGE}:${TAG}
+docker tag ${IMAGE}:latest ${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${ECR_REPOSITORY}:${TAG}
 [ "$?" != "0" ] && exit 1
-docker push ${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${IMAGE}:${TAG}
+docker push ${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${ECR_REPOSITORY}:${TAG}
 [ "$?" != "0" ] && exit 1
 
 exit 0
