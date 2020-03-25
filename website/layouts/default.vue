@@ -2,7 +2,9 @@
 div 
   nav.headerStyle(class="navbar" role="navigation" aria-label="main navigation")
     div(class="navbar-brand")
-      a(class="navbar-item", href="/")
+    img.juiceHeaderLogo(src="../assets/header-logo.png")
+    a(class="navbar-item", href="/")
+    //a(class="navbar-item", href="/")
         .juiceLogo Juice.
 
     div(class="navbar-end")
@@ -46,6 +48,8 @@ div
 </template> 
 
 <script>
+//import headerLogoTemp from 'assets/header-logo.png'  // temporary logo until UI is completed
+ 
 export default {
   data () {
     return {
@@ -157,9 +161,18 @@ export default {
     margin: 5px;
   }
 
+    .juiceHeaderLogo {
+    float: left;
+    margin: 15px 20px;
+    max-height: 150px;
+    max-width: 200px;
+    width: 200px;
+    height: 65px;  
+    //object-fit: cover;
+  }
+
   .headerStyle {
     background-color: rgba(255, 166, 0, 0.884);
-    
   }
 
   .activeHighlight {
@@ -172,7 +185,7 @@ export default {
     color: white;
     display: flex;
     justify-content: space-evenly;
-    margin: 27px 0px;
+    margin: 35px 0px;
   }
 
   .dropMenuStyle {

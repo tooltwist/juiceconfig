@@ -3,8 +3,6 @@ import loginService from './loginservice-client';
 import juice from '@tooltwist/juice-client'
 import db from './database-mysql';
 
-
-
 /**
  * Get the access token from the authorization header value
  * The format of the Authorization should be:

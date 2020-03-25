@@ -420,7 +420,7 @@ server.post('/editUser', async (req, res, next) => {
     console.log("Result: ", res)
 
     // Send a success reply
-    res.send({ status: 'ok' })
+    res.send({ status: 'ok' });
     return next();
   })
 }); // ******************** end of /_deployableNAME server calls *********************
