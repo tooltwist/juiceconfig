@@ -8,12 +8,12 @@ div
         .juiceLogo Juice.
 
     div(class="navbar-end")
-      b-navbar-item(href="https://juiceconfig.io", target="_blank") Documentation
+      b-navbar-item(href="https://juiceconfig.io", target="_blank") Docs
       div.seperatorStyle(v-if="loggedIn", separator="true", custom="true") | 
       b-dropdown(v-if="loggedIn", position="is-bottom-left", aria-role="menu")
         a(class="navbar-item", slot="trigger", role="button")
           b-icon(icon="account")
-          span {{ fullname }}
+          span Account
           b-icon(icon="menu-down")
         b-dropdown-item(custom aria-role="menuitem") Logged in as {{ fullname }}
         b-dropdown-item(href="/myAccount", value="My Account")
@@ -28,7 +28,7 @@ div
       .columns(v-if="loggedIn")
         aside.column.is-3.section
           p.menu-label(v-if="loggedIn")
-            //| Welcome, {{fullname}}!
+            i Welcome, {{fullname}}!
           ul.menu-list
             b-menu-list(label="Menu")
               li(v-for="(item, key) of items", :key="key")
@@ -45,6 +45,9 @@ div
           nuxt
       div(v-else)
         nuxt
+  footer(class="footer")
+    div(class="content has-text-centered")
+      p <strong>Bulma</strong> by <a href="https://jgthms.com">Jeremy Thomas</a>. The source code is licensed <a href="http://opensource.org/licenses/mit-license.php"> MIT</a>. The website content is licensed <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
 </template> 
 
 <script>
