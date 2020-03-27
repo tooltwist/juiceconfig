@@ -12,14 +12,14 @@ export default {
     sitename: 'Juice',
     register: {
       password: true,
-      firstname: false,
+      firstname: true,
       middlename: false,
-      lastname: false,
+      lastname: true,
       resumeURL: 'http://localhost:3000/',
       termsMessage: 'Agree to our terms?',
       termsRoute: '/terms-and-conditions',
     },
-    forgot: false,
+    forgot: true,
     usernames: true,
     login: {
       registerMessage: 'Don\'t have an account yet?',
