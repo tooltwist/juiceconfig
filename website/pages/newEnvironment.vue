@@ -85,12 +85,19 @@ export default {
                 // If no error, send post request to server
                 try {
                     e.preventDefault();
+
+                    let jwt = app.$nuxtLoginservice.jwt
+                    let config = {
+                        headers: {
+                        authorization: `Bearer ${jwt}`,
+                        }
+                    }
                     await axios.post(`${protocol}://${host}:${port}/newEnvironment`, {
                         name: this.form.new_environment,
                         description: this.form.new_description,
                         notes: this.form.new_notes,
                         is_universal: this.form.is_universal
-                    })
+                    }, config)
                     // Prevent input error from showing
                     this.mode = false;
                     console.log('New environment successfully sent to the database.');

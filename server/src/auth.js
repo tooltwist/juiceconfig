@@ -199,6 +199,10 @@ export default async (req, res, next) => {
         let externalID = identity.id
         console.log('externalID = ', externalID)
 
+        req.identity = identity
+
+        let username = identity.username
+
         // Gets to this point then jumps over to deployables on server - is there something wrong with the get call? Or
         // should it be app.get?? Is it the route? Should I be using async await?
         // var con = mysql.createConnection({
@@ -226,8 +230,8 @@ export default async (req, res, next) => {
         //     // console.log("Connected!");
         let con = await db.checkConnection()
 
-            const sql = `SELECT * FROM user WHERE external_id=?`
-            const params = [ externalID ]
+            const sql = `SELECT * FROM user WHERE username=?`
+            const params = [ username ]
             con.query(sql, params, function (err, result) {
                 if (err) throw err;
                 // console.log('result:::', result)
@@ -241,7 +245,8 @@ export default async (req, res, next) => {
                   // console.log(`${result[0].last_name} vs ${identity.last_name}`)
                   const ourId = result[0].id
                   if (
-                    result[0].email === identity.email
+                    result[0].external_id === identity.id
+                    && result[0].email === identity.email
                     && result[0].first_name === identity.first_name
                     && result[0].last_name === identity.last_name
                   ) {
@@ -253,12 +258,13 @@ export default async (req, res, next) => {
 
                   // Need to update details
                   console.log(`updating user details`);
-                  const sql = `UPDATE user SET email=?, first_name=?, last_name=? WHERE id=?`
+                  const sql = `UPDATE user SET external_id=?, email=?, first_name=?, last_name=? WHERE username=?`
                   const params = [
+                    identity.id,
                     identity.email,
                     identity.first_name,
                     identity.last_name,
-                    ourId
+                    username
                   ]
                   con.query(sql, params, function (err, result) {
                     // con.end()
@@ -277,8 +283,9 @@ export default async (req, res, next) => {
                    *  We don't have this user in our database.
                    */
                   // console.log(`Add new user`);
-                  const sql = `INSERT INTO user (external_id, email, first_name, last_name, role, access) VALUES (?,?,?,?,?,?)`
+                  const sql = `INSERT INTO user (username, external_id, email, first_name, last_name, role, access) VALUES (?,?,?,?,?,?,?)`
                   const params = [
+                    username,
                     externalID,
                     identity.email,
                     identity.first_name,

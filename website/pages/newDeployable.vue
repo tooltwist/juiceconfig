@@ -88,12 +88,24 @@ export default {
                 // If no error, send post request to server
                 try {
                     e.preventDefault();
+
+                    let jwt = this.$loginservice.jwt
+                    let config = {
+                        headers: {
+                            authorization: `Bearer ${jwt}`,
+                        }
+                    }
+                    console.log(`config is`, config);
+                    
+
+                    console.log(`calling /newDeployable`);
+                    
                     await axios.post(`${protocol}://${host}:${port}/newDeployable`, {
                         name: this.form.new_deployable,
                         product_owner: this.form.new_owner,
                         description: this.form.new_description,
                         is_project: this.form.is_project,
-                    })
+                    }, config)
                     // Prevent input error from showing
                     this.mode = false;
                 } catch (err) {

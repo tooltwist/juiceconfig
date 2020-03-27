@@ -67,8 +67,13 @@ server.get('/deployables', auth, async (req, res, next) => {
 
   let userIdentity = req.payload.userIdentity
   // console.log(`userIdentity is:::`, userIdentity)
+  let me = req.identity.username
+  console.log(`I am ${me}`);
+  
 
-  const sql = `(SELECT deployable.name, deployable.is_project, deployable.product_owner, deployable.description FROM deployable INNER JOIN project_user ON deployable.name = project_user.project AND project_user.user_id =?) UNION (SELECT * FROM deployable WHERE deployable.is_project = 'no')`
+  const sql = `SELECT owner, name, is_project, product_owner, description FROM deployable`
+
+  // const sql = `(SELECT deployable.name, deployable.is_project, deployable.product_owner, deployable.description FROM deployable INNER JOIN project_user ON deployable.name = project_user.project AND project_user.user_id =?) UNION (SELECT * FROM deployable WHERE deployable.is_project = 'no')`
   const params = [ userIdentity ]
   console.log(`SQL IS ${sql}`)
 
@@ -345,6 +350,12 @@ server.get('/environments', auth, async (req, res, next) => {
 
   let userIdentity = req.payload.userIdentity
   console.log(`userIdentity is:::`, userIdentity)
+  console.log(`payload is`, req.payload);
+  console.log(`identity is`, req.identity);
+  
+  let me = req.identity.username
+  console.log(`I am ${me}`);
+
 
   // var con = mysql.createConnection({
   //   host: "localhost",
@@ -359,8 +370,9 @@ server.get('/environments', auth, async (req, res, next) => {
   //   console.log("Connected!");
   let con = await db.checkConnection()
 
-    const sql = `(SELECT environment.name, environment.description, environment.notes, environment.is_universal FROM environment INNER JOIN environment_user ON environment.name = environment_user.environment AND environment_user.user_id =?) UNION (SELECT environment.name, environment.description, environment.notes, environment.is_universal FROM environment WHERE environment.is_universal = 'yes')`
-    const params = [ userIdentity ]
+  const sql = `(SELECT environment.owner, environment.name, environment.description, environment.notes, environment.is_universal FROM environment)`
+  //const sql = `(SELECT environment.owner, environment.name, environment.description, environment.notes, environment.is_universal FROM environment INNER JOIN environment_user ON environment.name = environment_user.environment AND environment_user.user_id =?) UNION (SELECT environment.name, environment.description, environment.notes, environment.is_universal FROM environment WHERE environment.is_universal = 'yes')`
+  const params = [ userIdentity ]
     
     console.log(`SQL IS ${sql}`)
     con.query(sql, params, function (err, result) {
@@ -958,7 +970,8 @@ server.post('/editUserAccount', async (req, res, next) => {
   }));
   server.use(restify.plugins.acceptParser(server.acceptable));
   
-  server.post('/newDeployable', async (req, res, next) => {
+  server.post('/newDeployable', auth, async (req, res, next) => {
+    console.log('------------------------------')
     console.log(`POST /newDeployable`)
     // var con = mysql.createConnection({
     //       host: "localhost",
@@ -967,19 +980,33 @@ server.post('/editUserAccount', async (req, res, next) => {
     //       user: "root",
     //       password: ""
     //    })
-  
+    let me = req.identity.username
+  console.log(`I am ${me}`);
+
     // con.connect(function(err, result) {
     //   if (err) throw err;
     let con = await db.checkConnection()
 
     const sql = `INSERT INTO deployable SET ?`
-    const newDeployable = {name: req.params.name, is_project: req.params.is_project, product_owner: req.params.product_owner, description: req.params.description}
-
-      con.query(sql, newDeployable, (err, res) => {
+    const newDeployable = {
+      owner: me,
+      name: req.params.name,
+      is_project: req.params.is_project,
+      product_owner: req.params.product_owner,
+      description: req.params.description
+    }
+    console.log(`sql=${sql}`);
+    console.log(`params=`, newDeployable);
+    
+    
+      con.query(sql, newDeployable, (err, result) => {
           if (err) throw err;
   
           console.log("Result: NEW Name- " + req.params.name + " Owner- " + req.params.product_owner + " Description- " + req.params.description + " Is project- " + req.params.is_project) 
+          console.log(`result=`, result);
+          
           // con.end();
+          res.send({ ok: 'ok'})
           return next();
       })
     // })  
@@ -994,7 +1021,8 @@ server.post('/editUserAccount', async (req, res, next) => {
   }));
   server.use(restify.plugins.acceptParser(server.acceptable));
 
-  server.post('/newEnvironment', async (req, res, next) => {
+  server.post('/newEnvironment', auth, async (req, res, next) => {
+    console.log('------------------------------')
     console.log(`POST /newEnvironment`)
 
     // var con = mysql.createConnection({
@@ -1010,12 +1038,16 @@ server.post('/editUserAccount', async (req, res, next) => {
     let con = await db.checkConnection()
     const sql = `INSERT INTO environment SET ?`
       const newEnvironment = {name: req.params.name, description: req.params.description, notes: req.params.notes, is_universal: req.params.is_universal}
-
+      console.log(`sql=${sql}`);
+      console.log(`newEnv=`, newEnvironment);
+      
+      
       con.query(sql, newEnvironment, (err, res) => {
           if (err) throw err;
 
           console.log("Result: NEW Name- " + req.params.name + " Notes- " + req.params.notes + " Description- " + req.params.description + " isuniversal -" + req.params.is_universal) 
         // con.end();
+        res.send({ ok: 'ok'})
         return next();
       })
       // })  

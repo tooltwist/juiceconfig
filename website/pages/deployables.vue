@@ -8,7 +8,7 @@ section.section
   b-table(:data="listOfDeployables") 
     template(slot-scope="props")
       b-table-column(field="name", label="Name")
-        nuxt-link(:to="`/deployable/${props.row.name}`") {{ props.row.name }}
+        nuxt-link(:to="`/deployable/${props.row.name}`") {{ props.row.owner }}/{{ props.row.name }}
       b-table-column(field="product_owner" ,label="Owner")
         | {{ props.row.product_owner }}
       b-table-column(field="description", label="Description")
