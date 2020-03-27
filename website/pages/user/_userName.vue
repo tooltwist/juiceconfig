@@ -117,7 +117,7 @@ export default {
 
         async saveEditedUser() {
             try {
-                await axios.post('${protocol}://${host}:${port}/editUserAccount', {
+                await axios.post(`${protocol}://${host}:${port}/editUserAccount`, {
                     id: this.user.id,
                     email: this.form.new_accountemail,
                     role: this.form.new_accountrole,

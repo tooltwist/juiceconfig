@@ -54,14 +54,17 @@ export default {
                 is_project: ''
             },
             mode: false,
-            saveMode: false,
+            saveMode: '',
             deployables: '',
             deployableError: null,
         }
     },
 
     methods: {
-        newDeployable(e) {     
+        async newDeployable(e) {
+            console.log(`newDeployable()`, this);
+            
+            
             // Check that form is correctly filled out
             if (this.form.new_deployable && this.form.is_project && this.form.new_owner && this.form.new_description) {
                 
@@ -85,7 +88,7 @@ export default {
                 // If no error, send post request to server
                 try {
                     e.preventDefault();
-                    axios.post('${protocol}://${host}:${port}/newDeployable', {
+                    await axios.post(`${protocol}://${host}:${port}/newDeployable`, {
                         name: this.form.new_deployable,
                         product_owner: this.form.new_owner,
                         description: this.form.new_description,
@@ -93,8 +96,8 @@ export default {
                     })
                     // Prevent input error from showing
                     this.mode = false;
-                } catch (e) {
-                    console.log(`Could not send new deployable to the database`, e)
+                } catch (err) {
+                    console.log(`Could not send new deployable to the database`, err)
                 }
             } else {
                 this.mode = 'inputError';
@@ -105,9 +108,9 @@ export default {
             if (this.mode != 'inputError') {
                 try {
                     this.saveMode = 'Success'
-                    console.log(saveMode, 'Successful')
-                } catch (e) {
-                    console.log(`Could not change saveMode to Success :`, e)
+                    console.log(this.saveMode, 'Successful')
+                } catch (err) {
+                    console.log(`Could not change saveMode to Success :`, err)
                 }
             } 
             

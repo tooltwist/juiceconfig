@@ -44,7 +44,7 @@ import webconfig from '~/protected-config/website-config'
 const { protocol, host, port } = webconfig
 
 export default {
-    name: 'New_Deployable',
+    name: 'New_Environment',
     data () {
         return {
             form: {
@@ -61,7 +61,7 @@ export default {
     },
 
     methods: {
-        newEnvironment(e) {
+        async newEnvironment(e) {
             // Check that form is correctly filled out
             if (this.form.new_environment && this.form.new_description && this.form.new_notes && this.form.is_universal) {
 
@@ -85,7 +85,7 @@ export default {
                 // If no error, send post request to server
                 try {
                     e.preventDefault();
-                    axios.post(`${protocol}://${host}:${port}/newEnvironment`, {
+                    await axios.post(`${protocol}://${host}:${port}/newEnvironment`, {
                         name: this.form.new_environment,
                         description: this.form.new_description,
                         notes: this.form.new_notes,
@@ -106,7 +106,7 @@ export default {
             if (this.mode != 'inputError') {
                 try {
                     this.saveMode = 'Success'
-                    console.log(saveMode, 'Successful')
+                    console.log(this.saveMode, 'Successful')
                 } catch (e) {
                     console.log(`Could not change saveMode to Success :`, e)
                 }
