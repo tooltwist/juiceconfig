@@ -11,7 +11,7 @@ section.section
                 |, or 
                 a(href="/newEnvironment") create another environment?
     div(v-else)
-        h1.title Add new environment:
+        h1.title Add New Environment:
         div(v-if="mode === 'inputError'")
             article(class="message is-danger is-small")
                 div(class="message-header")
@@ -21,7 +21,7 @@ section.section
             div.form-group
                 div.formStyle(class="control") New environment name:
                     div(v-if="environmentError === null")
-                        input(name="new_environment", v-model="form.new_environment", class="input", type="text", placeholder="Environment Name")
+                        input(name="new_environment", v-model="form.new_environment", class="input", type="text", placeholder="Environment name")
                     div(v-else="environmentError === `Environment already exists`")
                         input(class="input is-danger", v-model="form.new_environment", type="text", placeholder="Environment Name")
                         p(class="help is-danger") This environment name already exists. Try again.
@@ -29,7 +29,7 @@ section.section
                     input(name="new_description", v-model="form.new_description", class="input", type="text", placeholder="Description")
                 div.formStyle(class="control") Notes:
                     input(name="new_notes", v-model="form.new_notes", class="input", type="text", placeholder="Notes")
-                div.formStyle Is this a universal environment? (Can anyone use it?):
+                div.formStyle Is this a universal (all-accessible) environment?
                     b-select(placeholder="Is this a universal environment?", v-model="form.is_universal")
                         option(value="yes") Yes
                         option(value="no") No
@@ -151,6 +151,6 @@ export default {
 }
 
 .formStyle {
-  margin: 10px 0px;
+  margin: 10px -20px;
 }
 </style>

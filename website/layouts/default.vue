@@ -2,16 +2,18 @@
 div 
   nav.headerStyle(class="navbar" role="navigation" aria-label="main navigation")
     div(class="navbar-brand")
-      a(class="navbar-item", href="/")
+    img.juiceHeaderLogo(src="../assets/header-logo.png")
+    a(class="navbar-item", href="/")
+    //a(class="navbar-item", href="/")
         .juiceLogo Juice.
 
     div(class="navbar-end")
-      b-navbar-item(href="/documentation") Documentation
-      b-navbar-item(v-if="loggedIn", separator="true", custom="true") | 
+      b-navbar-item(href="https://juiceconfig.io", target="_blank") Docs
+      div.seperatorStyle(v-if="loggedIn", separator="true", custom="true") | 
       b-dropdown(v-if="loggedIn", position="is-bottom-left", aria-role="menu")
         a(class="navbar-item", slot="trigger", role="button")
-          b-icon(icon="settings")
-          span {{ fullname }}
+          b-icon(icon="account")
+          span Account
           b-icon(icon="menu-down")
         b-dropdown-item(custom aria-role="menuitem") Logged in as {{ fullname }}
         b-dropdown-item(href="/myAccount", value="My Account")
@@ -26,7 +28,7 @@ div
       .columns(v-if="loggedIn")
         aside.column.is-3.section
           p.menu-label(v-if="loggedIn")
-            //| Welcome, {{fullname}}!
+            i Welcome, {{fullname}}!
           ul.menu-list
             b-menu-list(label="Menu")
               li(v-for="(item, key) of items", :key="key")
@@ -37,17 +39,20 @@ div
           ul.menu-list
             b-menu-list(label="Actions")
               a.href(href="#", @click="doLogout")
-                b-icon(icon="account")
+                b-icon(icon="logout")
                 | Logout
         div.container.column.is-9
           nuxt
       div(v-else)
         nuxt
+  footer(class="footer")
+    div(class="content has-text-centered")
+      p <strong>Bulma</strong> by <a href="https://jgthms.com">Jeremy Thomas</a>. The source code is licensed <a href="http://opensource.org/licenses/mit-license.php"> MIT</a>. The website content is licensed <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
 </template> 
 
 <script>
-
-
+//import headerLogoTemp from 'assets/header-logo.png'  // temporary logo until UI is completed
+ 
 export default {
   data () {
     return {
@@ -159,14 +164,31 @@ export default {
     margin: 5px;
   }
 
+    .juiceHeaderLogo {
+    float: left;
+    margin: 15px 20px;
+    max-height: 150px;
+    max-width: 200px;
+    width: 200px;
+    height: 65px;  
+    //object-fit: cover;
+  }
+
   .headerStyle {
-    background-color: rgba(255,165,0, 0.9);
+    background-color: rgba(255, 166, 0, 0.884);
   }
 
   .activeHighlight {
     background-color: rgba(255, 165, 0, 0.5);
     width: 100%;
     display: flex;
+  }
+
+  .seperatorStyle {
+    color: white;
+    display: flex;
+    justify-content: space-evenly;
+    margin: 35px 0px;
   }
 
   .dropMenuStyle {

@@ -38,7 +38,7 @@ section.section
         article(class="message is-success is-small")
           div(class="message-body") There are no deployments for this environment yet. Would you like to add one?
       div(v-else)
-        b-table(:data="deployments")
+        b-table(:data="deployments", focusable)
           template(slot-scope="props")
             b-table-column(field="environment", label="Environment")
               | {{ props.row.environment }}
@@ -62,7 +62,7 @@ section.section
           br
           article(class="message is-success is-small")
             div(class="message-body") There are no users for this environment yet. Would you like to add a new user?
-        b-table(:data="users")
+        b-table(:data="users", focusable)
           template(slot-scope="props")
             b-table-column(field="environment", label="Environment")
               | {{ props.row.environment }}
@@ -87,7 +87,8 @@ section.section
         div(class="modal-wrapper")
           div(class="modal-card")
             header(class="modal-card-head")
-              p(class="modal-card-title") Edit Environment: {{ environmentName }}
+              p(class="modal-card-title") Edit Environment 
+                b {{ environmentName }}
             section(class="modal-card-body")
               slot(name="body")
                 form
@@ -110,7 +111,8 @@ section.section
         div(class="modal-wrapper")
           div(class="modal-card")
             header(class="modal-card-head")
-              p(class="modal-card-title") Add new deployment for {{ environmentName }}
+              p(class="modal-card-title") Add New Deployment for 
+                b {{ environmentName }}
             section(class="modal-card-body")
               div(v-if="errormode === 'inputError'")
                 article(class="message is-danger is-small")
@@ -145,7 +147,8 @@ section.section
         div(class="modal-wrapper")
           div(class="modal-card")
             header(class="modal-card-head")
-              p(class="modal-card-title") Add new user for environment {{ environmentName }}
+              p(class="modal-card-title") Add New User for Environment 
+                b {{ environmentName }}
             section(class="modal-card-body")
               div(v-if="errormode === 'inputError'")
                 article(class="message is-danger is-small")
@@ -183,7 +186,8 @@ section.section
         div(class="modal-wrapper")
           div(class="modal-card")
             header(class="modal-card-head")
-              p(class="modal-card-title") Edit User: {{ users.first_name }} {{ users.last_name }}
+              p(class="modal-card-title") Edit User 
+                b {{ users.first_name }} {{ users.last_name }}
             section(class="modal-card-body")
               div(class="modal-body")
                 slot(name="body")

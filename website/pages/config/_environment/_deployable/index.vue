@@ -108,7 +108,7 @@ export default {
         const variables = res3.data.variables
 
         // Import dependencies with 'deployableName' as parent
-        const url4 = '${protocol}://${host}:${port}/dependencies1'
+        const url4 = `${protocol}://${host}:${port}/dependencies1`
         let res4 = await axios.get(url4, {
             params: {
                 deployableName: deployableName
@@ -124,7 +124,7 @@ export default {
         // const variablesDepend = res5.data.variables
 
         // Variables for dependencies and deployable (recursive array data)
-        const url6 = '${protocol}://${host}:${port}/variablesConfig'
+        const url6 = `${protocol}://${host}:${port}/variablesConfig`
         let res6 = await axios.get(url6, {
             params: {
                 deployable: deployableName

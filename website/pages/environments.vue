@@ -3,7 +3,7 @@
     h1.title Environments
       div(class="buttons has-text-weight-normal", style="float:right;")
         b-button(class="is-primary", tag="nuxt-link", to="/newEnvironment",  type="is-light")  + Add New Environment
-    b-table(:data="environments")
+    b-table(:data="environments", focusable)
       template(slot-scope="props")
         b-table-column(field="name", label="Name")
           nuxt-link(:to="`/environment/${props.row.name}`") {{ props.row.owner }} / {{ props.row.name }}
