@@ -6,7 +6,7 @@
     b-table(:data="environments", focusable)
       template(slot-scope="props")
         b-table-column(field="name", label="Name")
-          nuxt-link(:to="`/environment/${props.row.name}`") {{ props.row.name }}
+          nuxt-link(:to="`/environment/${props.row.name}`") {{ props.row.owner }} / {{ props.row.name }}
         b-table-column(field="description", label="Description")
           | {{ props.row.description }}
         b-table-column(field="notes", label="Notes")

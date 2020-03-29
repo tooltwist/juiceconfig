@@ -67,8 +67,13 @@ server.get('/deployables', auth, async (req, res, next) => {
 
   let userIdentity = req.payload.userIdentity
   // console.log(`userIdentity is:::`, userIdentity)
+  let me = req.identity.username
+  console.log(`I am ${me}`);
+  
 
-  const sql = `(SELECT deployable.name, deployable.is_project, deployable.product_owner, deployable.description FROM deployable INNER JOIN project_user ON deployable.name = project_user.project AND project_user.user_id =?) UNION (SELECT * FROM deployable WHERE deployable.is_project = 'no')`
+  const sql = `SELECT owner, name, is_project, product_owner, description FROM deployable`
+
+  // const sql = `(SELECT deployable.name, deployable.is_project, deployable.product_owner, deployable.description FROM deployable INNER JOIN project_user ON deployable.name = project_user.project AND project_user.user_id =?) UNION (SELECT * FROM deployable WHERE deployable.is_project = 'no')`
   const params = [ userIdentity ]
   console.log(`SQL IS ${sql}`)
 
@@ -279,23 +284,23 @@ server.use(restify.plugins.bodyParser({
   mapParams: true
 }));
 server.use(restify.plugins.acceptParser(server.acceptable));
-server.post('/newProjectUser', async (req, res, next) => {
-  console.log(`POST /newProjectUser`)
+// server.post('/newProjectUser', async (req, res, next) => {
+//   console.log(`POST /newProjectUser`)
 
-  let con = await db.checkConnection()
-  const userValues = {user_id: req.params.id, project: req.params.project, access: req.params.access}
-  let sql = `INSERT INTO project_user SET ?`
-  let params = [ userValues ]
+//   let con = await db.checkConnection()
+//   const userValues = {user_id: req.params.id, project: req.params.project, access: req.params.access}
+//   let sql = `INSERT INTO project_user SET ?`
+//   let params = [ userValues ]
 
-  con.query( sql, params, (err, res) => {
-    if (err) throw err;
-    console.log("Result: NEW project user- " + req.params.name + ' project- ' + req.params.project + " access- " + req.params.access) 
+//   con.query( sql, params, (err, res) => {
+//     if (err) throw err;
+//     console.log("Result: NEW project user- " + req.params.name + ' project- ' + req.params.project + " access- " + req.params.access) 
 
-    // Send reply
-    res.send({ status: 'ok' })
-    return next();
-    }) 
-}); // End of section
+//     // Send reply
+//     res.send({ status: 'ok' })
+//     return next();
+//     }) 
+// }); // End of section
 
 /*
  *  /_deployableNAME: Add a new VARIABLE for /_deployableNAME on MySQL db
@@ -528,18 +533,32 @@ server.get('/environments', auth, async (req, res, next) => {
   console.log(`GET /environments`);
 
   let userIdentity = req.payload.userIdentity
-  let con = await db.checkConnection()
-  const sql = `(SELECT environment.name, environment.description, environment.notes, environment.is_universal FROM environment INNER JOIN environment_user ON environment.name = environment_user.environment AND environment_user.user_id =?) UNION (SELECT environment.name, environment.description, environment.notes, environment.is_universal FROM environment WHERE environment.is_universal = 'yes')`
-  const params = [ userIdentity ]
+  console.log(`userIdentity is:::`, userIdentity)
+  console.log(`payload is`, req.payload);
+  console.log(`identity is`, req.identity);
   
-  con.query(sql, params, function (err, result) {
-    if (err) throw err;
-    res.send({ environments: result })
-    next()
-  });
-}); // ******************** end of /_userNAME server calls *********************
+  let me = req.identity.username
+  console.log(`I am ${me}`);
+
+  let con = await db.checkConnection()
+  const sql = `(SELECT environment.owner, environment.name, environment.description, environment.notes, environment.is_universal FROM environment)`
+  //const sql = `(SELECT environment.owner, environment.name, environment.description, environment.notes, environment.is_universal FROM environment INNER JOIN environment_user ON environment.name = environment_user.environment AND environment_user.user_id =?) UNION (SELECT environment.name, environment.description, environment.notes, environment.is_universal FROM environment WHERE environment.is_universal = 'yes')`
+  const params = [ userIdentity ]
+    
+    console.log(`SQL IS ${sql}`)
+    con.query(sql, params, function (err, result) {
+      if (err) throw err;
+      // console.log("Result: " + result);
+      // console.log(`result[0]=`, result[0]);
+      res.send({ environments: result })
+      // con.end()
+      next()
+    });
+  // });
+});
 
 // ******************** All server calls related to /environment page *********************
+
 /*
  *  /environment: Select ALL ENVIRONMENTS from MySQL database
  *  (See https://www.w3schools.com/nodejs/nodejs_mysql.asp)
@@ -894,19 +913,19 @@ server.use(restify.plugins.bodyParser({
 }));
 server.use(restify.plugins.acceptParser(server.acceptable));
 
-server.post('/newDeployable', async (req, res, next) => {
-  console.log(`POST /newDeployable`)
+// server.post('/newDeployable', async (req, res, next) => {
+//   console.log(`POST /newDeployable`)
 
-  let con = await db.checkConnection()
-  const sql = `INSERT INTO deployable SET ?`
-  const newDeployable = {name: req.params.name, is_project: req.params.is_project, product_owner: req.params.product_owner, description: req.params.description}
+//   let con = await db.checkConnection()
+//   const sql = `INSERT INTO deployable SET ?`
+//   const newDeployable = {name: req.params.name, is_project: req.params.is_project, product_owner: req.params.product_owner, description: req.params.description}
 
-  con.query(sql, newDeployable, (err, res) => {
-    if (err) throw err;
-    console.log("Result: NEW Name- " + req.params.name + " Owner- " + req.params.product_owner + " Description- " + req.params.description + " Is project- " + req.params.is_project) 
-    return next();
-  }) 
-}); // ******************** end of /newDeployable server calls *********************
+//   con.query(sql, newDeployable, (err, res) => {
+//     if (err) throw err;
+//     console.log("Result: NEW Name- " + req.params.name + " Owner- " + req.params.product_owner + " Description- " + req.params.description + " Is project- " + req.params.is_project) 
+//     return next();
+//   }) 
+// }); // ******************** end of /newDeployable server calls *********************
 
 // ******************** All server calls related to /newEnvironment page *********************
 /*
@@ -921,19 +940,19 @@ server.use(restify.plugins.bodyParser({
 }));
 server.use(restify.plugins.acceptParser(server.acceptable));
 
-server.post('/newEnvironment', async (req, res, next) => {
-  console.log(`POST /newEnvironment`)
+// server.post('/newEnvironment', async (req, res, next) => {
+//   console.log(`POST /newEnvironment`)
 
-  let con = await db.checkConnection()
-  const sql = `INSERT INTO environment SET ?`
-  const newEnvironment = {name: req.params.name, description: req.params.description, notes: req.params.notes, is_universal: req.params.is_universal}
+//   let con = await db.checkConnection()
+//   const sql = `INSERT INTO environment SET ?`
+//   const newEnvironment = {name: req.params.name, description: req.params.description, notes: req.params.notes, is_universal: req.params.is_universal}
 
-  con.query(sql, newEnvironment, (err, res) => {
-    if (err) throw err;
-    console.log("Result: NEW Name- " + req.params.name + " Notes- " + req.params.notes + " Description- " + req.params.description + " isuniversal -" + req.params.is_universal) 
-    return next();
-  })
-}); // ******************** end of /newEnvironment server calls ***********************
+//   con.query(sql, newEnvironment, (err, res) => {
+//     if (err) throw err;
+//     console.log("Result: NEW Name- " + req.params.name + " Notes- " + req.params.notes + " Description- " + req.params.description + " isuniversal -" + req.params.is_universal) 
+//     return next();
+//   })
+// }); // ******************** end of /newEnvironment server calls ***********************
 
 // ******************** All server calls related to /newUser page *********************
 /*
@@ -948,23 +967,502 @@ server.use(restify.plugins.bodyParser({
 }));
 server.use(restify.plugins.acceptParser(server.acceptable));
 
-server.post('/newUser', async (req, res, next) => {
-  console.log(`POST /newUser`)
+// server.post('/newUser', async (req, res, next) => {
+//   console.log(`POST /newUser`)
 
-  let con = await db.checkConnection()
-  const userValues = {first_name: req.params.first_name, last_name: req.params.last_name, role: req.params.role, access: req.params.access, email: req.params.email}
-  let sql = `INSERT INTO user SET ?`
-  let params = [ userValues ]
+//   let con = await db.checkConnection()
+//   const userValues = {first_name: req.params.first_name, last_name: req.params.last_name, role: req.params.role, access: req.params.access, email: req.params.email}
+//   let sql = `INSERT INTO user SET ?`
+//   let params = [ userValues ]
 
-  con.query(sql, params, (err, res) => {
-    if (err) throw err;
-    console.log("Result: NEW user- " + req.params.first_name + ' ' + req.params.last_name +  " role- " + req.params.role + " access- " + req.params.access) 
+//     const access = req.params.access;
+//     const role = req.params.role;
+//     const email = req.params.email;
+//     const id = req.params.id;
+//     const sql = `UPDATE user SET access =?, role =?, email =? Where id =?`
+//     const params = [ access, role, email, id ]
 
-    // Send reply
-    res.send({ status: 'ok' })
-    return next();
-  })
-}); // ******************** end of /newUser server calls *********************
+//     con.query(sql, params, (err, res) => {
+//         if (err) throw err;
+
+//         console.log("Updated: " + req.params.access + ' ' + req.params.role + ' ' + req.params.email)
+//         // con.end();
+
+//         // Send a success reply
+//         res.send({ status: 'ok' })
+//         return next();
+//       })
+//   // })  
+//   }); // End of section
+
+  // Adding a new deployable to the DB
+  server.use(restify.plugins.queryParser({
+    mapParams: true
+  }));
+  server.use(restify.plugins.bodyParser({
+    mapParams: true
+  }));
+  server.use(restify.plugins.acceptParser(server.acceptable));
+  
+  server.post('/newDeployable', auth, async (req, res, next) => {
+    console.log('------------------------------')
+    console.log(`POST /newDeployable`)
+    // var con = mysql.createConnection({
+    //       host: "localhost",
+    //       port: 56911,
+    //       database: "juice",
+    //       user: "root",
+    //       password: ""
+    //    })
+    let me = req.identity.username
+  console.log(`I am ${me}`);
+
+    // con.connect(function(err, result) {
+    //   if (err) throw err;
+    let con = await db.checkConnection()
+
+    const sql = `INSERT INTO deployable SET ?`
+    const newDeployable = {
+      owner: me,
+      name: req.params.name,
+      is_project: req.params.is_project,
+      product_owner: req.params.product_owner,
+      description: req.params.description
+    }
+    console.log(`sql=${sql}`);
+    console.log(`params=`, newDeployable);
+    
+    
+      con.query(sql, newDeployable, (err, result) => {
+          if (err) throw err;
+  
+          console.log("Result: NEW Name- " + req.params.name + " Owner- " + req.params.product_owner + " Description- " + req.params.description + " Is project- " + req.params.is_project) 
+          console.log(`result=`, result);
+          
+          // con.end();
+          res.send({ ok: 'ok'})
+          return next();
+      })
+    // })  
+  }); // End of section
+
+  // Adding a new environment to the DB
+  server.use(restify.plugins.queryParser({
+    mapParams: true
+  }));
+  server.use(restify.plugins.bodyParser({
+    mapParams: true
+  }));
+  server.use(restify.plugins.acceptParser(server.acceptable));
+
+  server.post('/newEnvironment', auth, async (req, res, next) => {
+    console.log('------------------------------')
+    console.log(`POST /newEnvironment`)
+
+    // var con = mysql.createConnection({
+    //   host: "localhost",
+    //   port: 56911,
+    //   database: "juice",
+    //   user: "root",
+    //   password: ""
+    // })
+
+    // con.connect(function(err, result) {
+    //   if (err) throw err;
+    let con = await db.checkConnection()
+    const sql = `INSERT INTO environment SET ?`
+      const newEnvironment = {name: req.params.name, description: req.params.description, notes: req.params.notes, is_universal: req.params.is_universal}
+      console.log(`sql=${sql}`);
+      console.log(`newEnv=`, newEnvironment);
+      
+      
+      con.query(sql, newEnvironment, (err, res) => {
+          if (err) throw err;
+
+          console.log("Result: NEW Name- " + req.params.name + " Notes- " + req.params.notes + " Description- " + req.params.description + " isuniversal -" + req.params.is_universal) 
+        // con.end();
+        res.send({ ok: 'ok'})
+        return next();
+      })
+      // })  
+  }); // End of section
+
+  // Adding a new user to the DB
+  server.use(restify.plugins.queryParser({
+    mapParams: true
+  }));
+  server.use(restify.plugins.bodyParser({
+    mapParams: true
+  }));
+  server.use(restify.plugins.acceptParser(server.acceptable));
+
+  server.post('/newUser', async (req, res, next) => {
+    console.log(`POST /newUser`)
+
+    // var con = mysql.createConnection({
+    //   host: "localhost",
+    //   port: 56911,
+    //   database: "juice",
+    //   user: "root",
+    //   password: ""
+    // })
+
+    // con.connect(function(err, result) {
+    //   if (err) throw err;
+    let con = await db.checkConnection()
+
+      const userValues = {first_name: req.params.first_name, last_name: req.params.last_name, role: req.params.role, access: req.params.access, email: req.params.email}
+
+      let sql = `INSERT INTO user SET ?`
+      let params = [ userValues ]
+
+      con.query(sql, params, (err, res) => {
+        if (err) throw err;
+        console.log("Result: NEW user- " + req.params.first_name + ' ' + req.params.last_name +  " role- " + req.params.role + " access- " + req.params.access) 
+      // con.end();
+
+      // Send reply
+      res.send({ status: 'ok' })
+      return next();
+    })
+    // })  
+  }); // End of section
+
+  // Adding a new project user to the DB
+  server.use(restify.plugins.queryParser({
+    mapParams: true
+  }));
+  server.use(restify.plugins.bodyParser({
+    mapParams: true
+  }));
+  server.use(restify.plugins.acceptParser(server.acceptable));
+  server.post('/newProjectUser', async (req, res, next) => {
+    console.log(`POST /newProjectUser`)
+
+    let con = await db.checkConnection()
+      const userValues = {user_id: req.params.id, project: req.params.project, access: req.params.access}
+      let sql = `INSERT INTO project_user SET ?`
+      let params = [ userValues ]
+
+      con.query( sql, params, (err, res) => {
+        if (err) throw err;
+
+        console.log("Result: NEW project user- " + req.params.name + ' project- ' + req.params.project + " access- " + req.params.access) 
+        // con.end();
+
+        // Send reply
+        res.send({ status: 'ok' })
+        return next();
+        })
+    // })  
+  }); // End of section
+
+  // Adding a new environment user to the DB (_environmentName)
+  // server.use(restify.plugins.queryParser({
+  //   mapParams: true
+  // }));
+  // server.use(restify.plugins.bodyParser({
+  //   mapParams: true
+  // }));
+  // server.use(restify.plugins.acceptParser(server.acceptable));
+
+  // server.post('/newEnvironmentUser', async (req, res, next) => {
+  //   console.log(`POST /newEnvironmentUser`)
+
+  //   let con = await db.checkConnection()
+
+  //     const userValues = {user_id: req.params.id, environment: req.params.environment, access: req.params.access}
+
+  //     let sql = `INSERT INTO environment_user SET ?`
+  //     let params = [ userValues ]
+
+  //     con.query( sql, params, (err, res) => {
+  //         if (err) throw err;
+
+  //         console.log("Result: NEW environment user- " + req.params.id + ' environment- ' + req.params.environment + " access- " + req.params.access) 
+  //         // con.end();
+
+  //         // Send reply
+  //         res.send({ status: 'ok' })
+  //         return next();
+  //         })
+  //   // })  
+  // }); // End of section
+
+  // Adding a new variable to the DB
+  // server.use(restify.plugins.queryParser({
+  //   mapParams: true
+  // }));
+  // server.use(restify.plugins.bodyParser({
+  //   mapParams: true
+  // }));
+  // server.use(restify.plugins.acceptParser(server.acceptable));
+  // server.post('/newVariable', async (req, res, next) => {
+  //   console.log(`POST /newVariable`)
+  //   // var con = mysql.createConnection({
+  //   //       host: "localhost",
+  //   //       port: 56911,
+  //   //       database: "juice",
+  //   //       user: "root",
+  //   //       password: ""
+  //   //   })
+
+  //   // con.connect(function(err, result) {
+  //   //   if (err) throw err;
+  //   let con = await db.checkConnection()
+
+  //     const variableValues = {name: req.params.name, description: req.params.description, type: req.params.type, mandatory: req.params.mandatory, deployable: req.params.deployable, is_external: req.params.external}
+
+  //     let sql = `INSERT INTO variable SET ?`
+  //     let params = [ variableValues ]
+
+  //     con.query( sql, params, (err, res) => {
+  //         if (err) throw err;
+
+  //         console.log("Result: NEW variable- " + req.params.name + " deployable- " + req.params.deployable + " Description- " + req.params.description) 
+  //         // con.end();
+
+  //         // Send reply
+  //         res.send({ status: 'ok' })
+  //         return next();
+  //         })
+  //   // })  
+  //   }); // End of section
+
+  // // Adding a new deployment to the DB
+  // server.use(restify.plugins.queryParser({
+  //   mapParams: true
+  // }));
+  // server.use(restify.plugins.bodyParser({
+  //   mapParams: true
+  // }));
+  // server.use(restify.plugins.acceptParser(server.acceptable));
+  // server.post('/newDeployment', async (req, res, next) => {
+  //   console.log(`POST /newDeployment`)
+
+  //   // var con = mysql.createConnection({
+  //   //       host: "localhost",
+  //   //       port: 56911,
+  //   //       database: "juice",
+  //   //       user: "root",
+  //   //       password: ""
+  //   //   })
+
+  //   // con.connect(function(err, result) {
+  //   //   if (err) throw err;
+  //   let con = await db.checkConnection()
+
+  //     const deploymentValues = {notes: req.params.notes, deployable: req.params.deployable, environment: req.params.environment}
+
+  //     let sql = `INSERT INTO deployments SET ?`
+  //     let params = [ deploymentValues ]
+
+  //     con.query( sql, params, (err, res) => {
+  //         if (err) throw err;
+
+  //         console.log("Result: NEW deployment " + req.params.deployable + " environment- " + req.params.environment + " notes- " + req.params.notes) 
+  //       // con.end();
+
+  //       // Send reply
+  //       res.send({ status: 'ok' })
+  //       return next();
+  //     })
+  //   // })  
+  //   }); // End of section
+
+  // // Adding a new dependency to the DB
+  // server.use(restify.plugins.queryParser({
+  //   mapParams: true
+  // }));
+  // server.use(restify.plugins.bodyParser({
+  //   mapParams: true
+  // }));
+  // server.use(restify.plugins.acceptParser(server.acceptable));
+  // server.post('/newDependency', async (req, res, next) => {
+  //   console.log(`POST /newDependency`)
+
+  //   // var con = mysql.createConnection({
+  //   //       host: "localhost",
+  //   //       port: 56911,
+  //   //       database: "juice",
+  //   //       user: "root",
+  //   //       password: ""
+  //   //   })
+
+  //   // con.connect(function(err, result) {
+  //   //   if (err) throw err;
+  //   let con = await db.checkConnection()
+
+  //     const dependencyValues = {parent: req.params.deployable, child: req.params.child, prefix: req.params.prefix, version: req.params.version}
+
+  //     let sql = `INSERT INTO dependency SET ?`
+  //     let params = [ dependencyValues ]
+
+  //     con.query( sql, params, (err, res) => {
+  //         if (err) throw err;
+
+  //         console.log("Result: NEW dependency " + req.params.deployable + " child- " + req.params.child + " prefix- " + req.params.prefix) 
+  //         // con.end();
+
+  //         // Send reply
+  //         res.send({ status: 'ok' })
+  //         return next();
+  //         })
+  //   // })  
+  //   }); // End of section
+
+  // Editing a variable on the DB
+  // server.use(restify.plugins.queryParser({
+  //   mapParams: true
+  // }));
+  // server.use(restify.plugins.bodyParser({
+  //   mapParams: true
+  // }));
+  // server.use(restify.plugins.acceptParser(server.acceptable));
+
+  // server.post('/variable', async (req, res, next) => {
+  //   console.log(`POST /variable`)
+
+  //   // var con = mysql.createConnection({
+  //   //       host: "localhost",
+  //   //       port: 56911,
+  //   //       database: "juice",
+  //   //       user: "root",
+  //   //       password: ""
+  //   //   })
+
+  //   // con.connect(function(err, result) {
+  //   //   if (err) throw err;
+  //   let con = await db.checkConnection()
+      
+  //     const deployable = req.params.deployable;
+  //     const name = req.params.name;
+  //     const description = req.params.description;
+  //     const type = req.params.type;
+  //     const mandatory = req.params.mandatory;
+  //     const is_external = req.params.external;
+ 
+  //     let sql = `UPDATE variable SET type=?, description =?, mandatory=?, is_external=? WHERE name=? AND deployable=?`
+  //     let params = [ type, description, mandatory, is_external, name, deployable ]
+  //     console.log(`sql=${sql}`)
+  //     console.log(`params=`, params)
+
+  //     con.query(sql, params, (err, res) => {
+  //       if (err) throw err;
+
+  //       console.log("Result: ", res)
+  //       // con.end();
+
+  //       // Send a success reply
+  //       res.send({ status: 'ok' })
+  //       return next();
+  //       })
+  //   // })  
+  // }); // End of section
+
+  // // Editing a user on the project_user DB
+  // server.use(restify.plugins.queryParser({
+  //   mapParams: true
+  // }));
+  // server.use(restify.plugins.bodyParser({
+  //   mapParams: true
+  // }));
+  // server.use(restify.plugins.acceptParser(server.acceptable));
+
+  // server.post('/editUser', async (req, res, next) => {
+  //   console.log(`POST /editUser`)
+
+  //   // var con = mysql.createConnection({
+  //   //       host: "localhost",
+  //   //       port: 56911,
+  //   //       database: "juice",
+  //   //       user: "root",
+  //   //       password: ""
+  //   //   })
+
+  //   // con.connect(function(err, result) {
+  //   //   if (err) throw err;
+  //   let con = await db.checkConnection()
+      
+  //     const id = req.params.id;
+  //     const access = req.params.access;
+  //     const project = req.params.project;
+ 
+  //     let sql = `UPDATE project_user SET access=? WHERE user_id=? AND project=?`
+  //     let params = [ access, id, project ]
+  //     console.log(`sql=${sql}`)
+  //     console.log(`params=`, params)
+
+  //     con.query(sql, params, (err, res) => {
+  //       if (err) throw err;
+
+  //       console.log("Result: ", res)
+  //       // con.end();
+
+  //       // Send a success reply
+  //       res.send({ status: 'ok' })
+  //       return next();
+  //       })
+  //   // })  
+  // }); // End of section
+
+  // // Editing a user on the environment_user DB
+  // server.use(restify.plugins.queryParser({
+  //   mapParams: true
+  // }));
+  // server.use(restify.plugins.bodyParser({
+  //   mapParams: true
+  // }));
+  // server.use(restify.plugins.acceptParser(server.acceptable));
+
+  // server.post('/editEnvUser', async (req, res, next) => {
+  //   console.log(`POST /editEnvUser`)
+
+  //   // var con = mysql.createConnection({
+  //   //       host: "localhost",
+  //   //       port: 56911,
+  //   //       database: "juice",
+  //   //       user: "root",
+  //   //       password: ""
+  //   //   })
+
+  //   // con.connect(function(err, result) {
+  //   //   if (err) throw err;
+  //   let con = await db.checkConnection()
+
+  //     const id = req.params.id;
+  //     const access = req.params.access;
+  //     const environment = req.params.environment;
+ 
+  //     let sql = `UPDATE environment_user SET access=? WHERE user_id=? AND environment=?`
+  //     let params = [ access, id, environment ]
+  //     console.log(`sql=${sql}`)
+  //     console.log(`params=`, params)
+
+  //     con.query(sql, params, (err, res) => {
+  //       if (err) throw err;
+
+  //       console.log("Result: ", res)
+  //       // con.end();
+
+  //       // Send a success reply
+  //       res.send({ status: 'ok' })
+  //       return next();
+  //     })
+  //   // })  
+  // }); // End of section
+
+// =======
+//   con.query(sql, params, (err, res) => {
+//     if (err) throw err;
+//     console.log("Result: NEW user- " + req.params.first_name + ' ' + req.params.last_name +  " role- " + req.params.role + " access- " + req.params.access) 
+
+//     // Send reply
+//     res.send({ status: 'ok' })
+//     return next();
+//   })
+// }); // ******************** end of /newUser server calls *********************
+// >>>>>>> b358488128689c398a8de1ef6e727f3a03c99cfc
 
 /*
 *       Display a nice banner.

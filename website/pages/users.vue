@@ -5,6 +5,8 @@
         button(@click.prevent="newUser(users)", class="button is-primary", type="is-light")  + Add New User
     b-table(:data="users", focusable)
       template(slot-scope="props")
+        b-table-column(field="username", label="Username")
+          | {{ props.row.username }}
         b-table-column(field="first_name", label="First Name")
           | {{ props.row.first_name }}
         b-table-column(field="last_name", label="Last Name")
