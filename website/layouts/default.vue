@@ -40,18 +40,17 @@ div
             b-menu-list(label="Actions")
               a.href(href="#", @click="doLogout")
                 b-icon(icon="logout")
-                | Logout
+                | Logout       
         div.container.column.is-9
           nuxt
       div(v-else)
         nuxt
   footer(class="footer")
     div(class="content has-text-centered")
-      p <strong>Bulma</strong> by <a href="https://jgthms.com">Jeremy Thomas</a>. The source code is licensed <a href="http://opensource.org/licenses/mit-license.php"> MIT</a>. The website content is licensed <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
+      p <strong>Juice Config</strong> by <a href="https://tooltwist.com">Tooltwist</a>. The source code is licensed <a href="http://opensource.org/licenses/mit-license.php"> MIT</a>. The website content is licensed <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
 </template> 
 
 <script>
-//import headerLogoTemp from 'assets/header-logo.png'  // temporary logo until UI is completed
  
 export default {
   data () {
@@ -96,6 +95,7 @@ export default {
       return this.loggedIn ? this.$loginservice.user.fullname : ''
     }
   },
+
   methods: {
     doLogout: function () {
       this.$loginservice.logout()
@@ -199,5 +199,13 @@ export default {
   .contentStyle {
     padding: 0px;
     margin: 0px;
+  }
+
+  .sidenav {
+  position: fixed;
+  z-index: 1;
+  top: 80px;
+  left: 10px;
+  overflow-x: hidden;
   }
 </style>
