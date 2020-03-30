@@ -523,7 +523,7 @@ export default {
           is_project: this.form.new_is_project,
           name: this.deployableName
         })
-        console.log('Edited deployable successfully saved: ', this.form.new_is_project)
+        //console.log('Edited deployable successfully saved: ', this.form.new_is_project)
 
         // Display new deployable details
         this.editDeployableStatus = 'null'

@@ -20,7 +20,7 @@
             p(class="is-small") Get started quickly with our easy-to-follow tutorial:
             br
             div
-              youtube(:video-id="videoId")
+              youtube(:video-id="videoId", host="https://www.youtube.com", SameSite="None", Secure)
             br 
             br
             p(is-small) Powered by:
