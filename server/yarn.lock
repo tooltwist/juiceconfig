@@ -678,10 +678,6 @@
 "@tooltwist/juice-client@^1.0.16":
   version "1.0.16"
   resolved "https://registry.yarnpkg.com/@tooltwist/juice-client/-/juice-client-1.0.16.tgz#1c4d4bbe352181e6c9bbbb11071aff8a47da010c"
-<<<<<<< HEAD
-=======
-  integrity sha512-w/swteWoPrm/+G00xvY/haD4jKMgQbY206qDqJhQeiaRee0nGRhwmYKORYA7yOl4N1F2BhbP5TkZVQdTT57uvg==
->>>>>>> b358488128689c398a8de1ef6e727f3a03c99cfc
   dependencies:
     aws-sdk "^2.620.0"
     axios "^0.19.2"

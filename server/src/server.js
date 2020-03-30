@@ -263,7 +263,7 @@ server.post('/deployable', async (req, res, next) => {
   const sql = `UPDATE deployable SET product_owner =?, description =?, is_project =? WHERE name =?`
   const params = [ product_owner, description, is_project, name ]
 
-  con.query(sql, params, (err, res) => {
+  con.query(sql, params, (err, result) => {
     if (err) throw err;
     console.log("Result: " + req.params.product_owner + ' ' + req.params.description + ' ' + req.params.is_project)
 
@@ -292,7 +292,7 @@ server.use(restify.plugins.acceptParser(server.acceptable));
 //   let sql = `INSERT INTO project_user SET ?`
 //   let params = [ userValues ]
 
-//   con.query( sql, params, (err, res) => {
+//   con.query( sql, params, (err, result) => {
 //     if (err) throw err;
 //     console.log("Result: NEW project user- " + req.params.name + ' project- ' + req.params.project + " access- " + req.params.access) 
 
@@ -321,7 +321,7 @@ server.post('/newVariable', async (req, res, next) => {
   let sql = `INSERT INTO variable SET ?`
   let params = [ variableValues ]
 
-  con.query( sql, params, (err, res) => {
+  con.query( sql, params, (err, result) => {
     if (err) throw err;
 
     console.log("Result: NEW variable- " + req.params.name + " deployable- " + req.params.deployable + " Description- " + req.params.description) 
@@ -358,9 +358,9 @@ server.post('/variable', async (req, res, next) => {
   let sql = `UPDATE variable SET type=?, description =?, mandatory=?, is_external=? WHERE name=? AND deployable=?`
   let params = [ type, description, mandatory, is_external, name, deployable ]
 
-  con.query(sql, params, (err, res) => {
+  con.query(sql, params, (err, result) => {
     if (err) throw err;
-    console.log("Result: ", res)
+    console.log("Result: ", result)
 
     // Send a success reply
     res.send({ status: 'ok' })
@@ -388,7 +388,7 @@ server.post('/newDependency', async (req, res, next) => {
   let sql = `INSERT INTO dependency SET ?`
   let params = [ dependencyValues ]
 
-  con.query( sql, params, (err, res) => {
+  con.query( sql, params, (err, result) => {
     if (err) throw err;
     console.log("Result: NEW dependency " + req.params.deployable + " child- " + req.params.child + " prefix- " + req.params.prefix) 
 
@@ -420,9 +420,9 @@ server.post('/editUser', async (req, res, next) => {
   let sql = `UPDATE project_user SET access=? WHERE user_id=? AND project=?`
   let params = [ access, id, project ]
 
-  con.query(sql, params, (err, res) => {
+  con.query(sql, params, (err, result) => {
     if (err) throw err;
-    console.log("Result: ", res)
+    console.log("Result: ", result)
 
     // Send a success reply
     res.send({ status: 'ok' });
@@ -515,7 +515,7 @@ server.post('/editUserAccount', async (req, res, next) => {
   const sql = `UPDATE user SET access =?, role =?, email =? Where id =?`
   const params = [ access, role, email, id ]
 
-  con.query(sql, params, (err, res) => {
+  con.query(sql, params, (err, result) => {
     if (err) throw err;
     console.log("Updated: " + req.params.access + ' ' + req.params.role + ' ' + req.params.email)
 
@@ -658,10 +658,11 @@ server.post('/editedEnv', async (req, res, next) => {
   const sql = `UPDATE environment SET description =?, notes =? WHERE name =?`
   const params = [ description, notes, name ]
 
-  con.query(sql, params, (err, res) => {
+  con.query(sql, params, (err, result) => {
     if (err) throw err;
-    console.log("Result: " + req.params.name + ' ' + req.params.description + ' ' + req.params.notes)
-
+    console.log("Saved: " + req.params.name + ' ' + req.params.description + ' ' + req.params.notes)
+    console.log(`Result is `, result);
+    
     // Send a success reply
     res.send({ status: 'ok' })
     return next();
@@ -688,7 +689,7 @@ server.post('/newEnvironmentUser', async (req, res, next) => {
   let sql = `INSERT INTO environment_user SET ?`
   let params = [ userValues ]
 
-  con.query( sql, params, (err, res) => {
+  con.query( sql, params, (err, result) => {
     if (err) throw err;
     console.log("Result: NEW environment user- " + req.params.id + ' environment- ' + req.params.environment + " access- " + req.params.access) 
 
@@ -720,9 +721,9 @@ server.post('/editEnvUser', async (req, res, next) => {
   let sql = `UPDATE environment_user SET access=? WHERE user_id=? AND environment=?`
   let params = [ access, id, environment ]
 
-  con.query(sql, params, (err, res) => {
+  con.query(sql, params, (err, result) => {
     if (err) throw err;
-    console.log("Result: ", res)
+    console.log("Result: ", result)
 
     // Send a success reply
     res.send({ status: 'ok' })
@@ -751,7 +752,7 @@ server.post('/newDeployment', async (req, res, next) => {
   let sql = `INSERT INTO deployments SET ?`
   let params = [ deploymentValues ]
 
-  con.query( sql, params, (err, res) => {
+  con.query( sql, params, (err, result) => {
     if (err) throw err;
     console.log("Result: NEW deployment " + req.params.deployable + " environment- " + req.params.environment + " notes- " + req.params.notes) 
 
@@ -920,7 +921,7 @@ server.use(restify.plugins.acceptParser(server.acceptable));
 //   const sql = `INSERT INTO deployable SET ?`
 //   const newDeployable = {name: req.params.name, is_project: req.params.is_project, product_owner: req.params.product_owner, description: req.params.description}
 
-//   con.query(sql, newDeployable, (err, res) => {
+//   con.query(sql, newDeployable, (err, result) => {
 //     if (err) throw err;
 //     console.log("Result: NEW Name- " + req.params.name + " Owner- " + req.params.product_owner + " Description- " + req.params.description + " Is project- " + req.params.is_project) 
 //     return next();
@@ -947,7 +948,7 @@ server.use(restify.plugins.acceptParser(server.acceptable));
 //   const sql = `INSERT INTO environment SET ?`
 //   const newEnvironment = {name: req.params.name, description: req.params.description, notes: req.params.notes, is_universal: req.params.is_universal}
 
-//   con.query(sql, newEnvironment, (err, res) => {
+//   con.query(sql, newEnvironment, (err, result) => {
 //     if (err) throw err;
 //     console.log("Result: NEW Name- " + req.params.name + " Notes- " + req.params.notes + " Description- " + req.params.description + " isuniversal -" + req.params.is_universal) 
 //     return next();
@@ -982,7 +983,7 @@ server.use(restify.plugins.acceptParser(server.acceptable));
 //     const sql = `UPDATE user SET access =?, role =?, email =? Where id =?`
 //     const params = [ access, role, email, id ]
 
-//     con.query(sql, params, (err, res) => {
+//     con.query(sql, params, (err, result) => {
 //         if (err) throw err;
 
 //         console.log("Updated: " + req.params.access + ' ' + req.params.role + ' ' + req.params.email)
@@ -1076,7 +1077,7 @@ server.use(restify.plugins.acceptParser(server.acceptable));
       console.log(`newEnv=`, newEnvironment);
       
       
-      con.query(sql, newEnvironment, (err, res) => {
+      con.query(sql, newEnvironment, (err, result) => {
           if (err) throw err;
 
           console.log("Result: NEW Name- " + req.params.name + " Notes- " + req.params.notes + " Description- " + req.params.description + " isuniversal -" + req.params.is_universal) 
@@ -1116,7 +1117,7 @@ server.use(restify.plugins.acceptParser(server.acceptable));
       let sql = `INSERT INTO user SET ?`
       let params = [ userValues ]
 
-      con.query(sql, params, (err, res) => {
+      con.query(sql, params, (err, result) => {
         if (err) throw err;
         console.log("Result: NEW user- " + req.params.first_name + ' ' + req.params.last_name +  " role- " + req.params.role + " access- " + req.params.access) 
       // con.end();
@@ -1144,7 +1145,7 @@ server.use(restify.plugins.acceptParser(server.acceptable));
       let sql = `INSERT INTO project_user SET ?`
       let params = [ userValues ]
 
-      con.query( sql, params, (err, res) => {
+      con.query( sql, params, (err, result) => {
         if (err) throw err;
 
         console.log("Result: NEW project user- " + req.params.name + ' project- ' + req.params.project + " access- " + req.params.access) 
@@ -1176,7 +1177,7 @@ server.use(restify.plugins.acceptParser(server.acceptable));
   //     let sql = `INSERT INTO environment_user SET ?`
   //     let params = [ userValues ]
 
-  //     con.query( sql, params, (err, res) => {
+  //     con.query( sql, params, (err, result) => {
   //         if (err) throw err;
 
   //         console.log("Result: NEW environment user- " + req.params.id + ' environment- ' + req.params.environment + " access- " + req.params.access) 
@@ -1216,7 +1217,7 @@ server.use(restify.plugins.acceptParser(server.acceptable));
   //     let sql = `INSERT INTO variable SET ?`
   //     let params = [ variableValues ]
 
-  //     con.query( sql, params, (err, res) => {
+  //     con.query( sql, params, (err, result) => {
   //         if (err) throw err;
 
   //         console.log("Result: NEW variable- " + req.params.name + " deployable- " + req.params.deployable + " Description- " + req.params.description) 
@@ -1257,7 +1258,7 @@ server.use(restify.plugins.acceptParser(server.acceptable));
   //     let sql = `INSERT INTO deployments SET ?`
   //     let params = [ deploymentValues ]
 
-  //     con.query( sql, params, (err, res) => {
+  //     con.query( sql, params, (err, result) => {
   //         if (err) throw err;
 
   //         console.log("Result: NEW deployment " + req.params.deployable + " environment- " + req.params.environment + " notes- " + req.params.notes) 
@@ -1298,7 +1299,7 @@ server.use(restify.plugins.acceptParser(server.acceptable));
   //     let sql = `INSERT INTO dependency SET ?`
   //     let params = [ dependencyValues ]
 
-  //     con.query( sql, params, (err, res) => {
+  //     con.query( sql, params, (err, result) => {
   //         if (err) throw err;
 
   //         console.log("Result: NEW dependency " + req.params.deployable + " child- " + req.params.child + " prefix- " + req.params.prefix) 
@@ -1347,10 +1348,10 @@ server.use(restify.plugins.acceptParser(server.acceptable));
   //     console.log(`sql=${sql}`)
   //     console.log(`params=`, params)
 
-  //     con.query(sql, params, (err, res) => {
+  //     con.query(sql, params, (err, result) => {
   //       if (err) throw err;
 
-  //       console.log("Result: ", res)
+  //       console.log("Result: ", result)
   //       // con.end();
 
   //       // Send a success reply
@@ -1393,10 +1394,10 @@ server.use(restify.plugins.acceptParser(server.acceptable));
   //     console.log(`sql=${sql}`)
   //     console.log(`params=`, params)
 
-  //     con.query(sql, params, (err, res) => {
+  //     con.query(sql, params, (err, result) => {
   //       if (err) throw err;
 
-  //       console.log("Result: ", res)
+  //       console.log("Result: ", result)
   //       // con.end();
 
   //       // Send a success reply
@@ -1439,10 +1440,10 @@ server.use(restify.plugins.acceptParser(server.acceptable));
   //     console.log(`sql=${sql}`)
   //     console.log(`params=`, params)
 
-  //     con.query(sql, params, (err, res) => {
+  //     con.query(sql, params, (err, result) => {
   //       if (err) throw err;
 
-  //       console.log("Result: ", res)
+  //       console.log("Result: ", result)
   //       // con.end();
 
   //       // Send a success reply
@@ -1453,7 +1454,7 @@ server.use(restify.plugins.acceptParser(server.acceptable));
   // }); // End of section
 
 // =======
-//   con.query(sql, params, (err, res) => {
+//   con.query(sql, params, (err, result) => {
 //     if (err) throw err;
 //     console.log("Result: NEW user- " + req.params.first_name + ' ' + req.params.last_name +  " role- " + req.params.role + " access- " + req.params.access) 
 
