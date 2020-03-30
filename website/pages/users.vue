@@ -146,7 +146,7 @@ export default {
           this.newUserModal = false
           console.log(`New user successfully sent to database`);
         } catch (e) {
-          console.log(`Could not send new user to the database: `, e)
+          console.log(`Error while sending new user to the database: `, e)
         }
 
         // Once data sent, reload with the new user
@@ -154,7 +154,7 @@ export default {
           this.reloadUsers(); 
           console.log(`Users have been reloaded on the browser.`)
         } catch (e) {
-          console.log(`Users could not be reloaded on the browser: `, e)
+          console.log(`Error while reloading users on the browser: `, e)
         }
       } else {
         this.errormode = 'inputError'
@@ -188,7 +188,7 @@ export default {
           users: users
         }
     } catch (error) {
-      error({ statusCode: 404, message: 'Could not fetch projects' })
+      error({ statusCode: 404, message: 'Error while fetching projects' })
     }
   },
 }

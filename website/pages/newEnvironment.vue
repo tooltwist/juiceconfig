@@ -102,7 +102,7 @@ export default {
                     this.mode = false;
                     console.log('New environment successfully sent to the database.');
                 } catch (e) {
-                    console.log(`Could not send new environment to the database`, e)
+                    console.log(`Error while sending new environment to the database: `, e)
                 }
             } else {
                 this.mode = 'inputError';
@@ -115,7 +115,7 @@ export default {
                     this.saveMode = 'Success'
                     console.log(this.saveMode, 'Successful')
                 } catch (e) {
-                    console.log(`Could not change saveMode to Success :`, e)
+                    console.log(`Error while changing saveMode to success: `, e)
                 }
             }
         },
@@ -137,7 +137,7 @@ export default {
             environments: reply.data.environments
         }
     } catch (e) {
-        console.log(`Could not fetch environments: `, e)
+        console.log(`Error while fetching environments: `, e)
     }
   }
 

@@ -127,7 +127,7 @@ export default {
                 this.reloadUsers();
 
             } catch (e) {
-                console.log(`Could not send edited account details to the server: `, e)
+                console.log(`Error while sending edited account details to the server: `, e)
             }
         },
 
@@ -186,7 +186,7 @@ export default {
                 environments: environments,
             }
         } catch (e) {
-            console.log(`Could not fetch user: `, e)
+            console.log(`Error while fetching user: `, e)
         }
     }
 }

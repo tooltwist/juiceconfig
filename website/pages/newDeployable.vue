@@ -109,7 +109,7 @@ export default {
                     // Prevent input error from showing
                     this.mode = false;
                 } catch (err) {
-                    console.log(`Could not send new deployable to the database`, err)
+                    console.log(`Error while sending new deployable to the database: `, err)
                 }
             } else {
                 this.mode = 'inputError';
@@ -122,7 +122,7 @@ export default {
                     this.saveMode = 'Success'
                     console.log(this.saveMode, 'Successful')
                 } catch (err) {
-                    console.log(`Could not change saveMode to Success :`, err)
+                    console.log(`Error while updating saveMode to success: `, err)
                 }
             } 
             
@@ -144,7 +144,7 @@ export default {
             }
         })
         .catch((e) => {
-            error({ statusCode: 404, message: 'Could not fetch deployables' })
+            error({ statusCode: 404, message: 'Error while fetching deployables' })
         })
     }//- methods
 }

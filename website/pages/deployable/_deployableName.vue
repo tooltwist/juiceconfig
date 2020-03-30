@@ -532,7 +532,7 @@ export default {
         this.deployable.is_project = this.form.new_is_project
         console.log('New deployable details have been updated on the browser.')
       } catch (e) {
-        console.log(`Could not update browser:`, e)
+        console.log(`Error while updating browser: `, e)
       } 
     }, // - saveDeployable
 
@@ -571,7 +571,7 @@ export default {
           this.newVariableModal = false
           console.log(`New variable successfully sent to database`);
         } catch (e) {
-          console.log(`Could not send new variable to the database: `, e)
+          console.log(`Error while adding new variable to the database: `, e)
         }
 
         // Once data sent, reload with the new variable
@@ -579,7 +579,7 @@ export default {
           this.reloadVariables(); 
           console.log(`Variables have been reloaded on the browser.`)
         } catch (e) {
-          console.log(`Variables could not be reloaded on the browser: `, e)
+          console.log(`Error while reloading variables on the browser: `, e)
         }
       } else {
         this.errormode = 'inputError'
@@ -619,7 +619,7 @@ export default {
           this.newUserModal = false
           console.log(`New project user successfully sent to database`);
         } catch (e) {
-          console.log(`Could not send new project user to the database: `, e)
+          console.log(`Error while sending new project user to the database: `, e)
         }
 
         // Once data sent, reload with the new deployment
@@ -627,7 +627,7 @@ export default {
           this.reloadUsers(); 
           console.log(`Reloading...`)
         } catch (e) {
-          console.log(`Users could not be reloaded on the browser: `, e)
+          console.log(`Error while reloading users on the browser: `, e)
         }
       } else {
         this.errormode = 'inputError'
@@ -648,7 +648,7 @@ export default {
         this.reloadUsers();
         console.log('New user details have been updated on the browser.')
       } catch (e) {
-        console.log(`Could not update browser with edited user:`, e)
+        console.log(`Error whilst updating browser with edited user:`, e)
       } 
     }, // - saveEditedUser
 
@@ -684,7 +684,7 @@ export default {
           this.newDeploymentModal = false
           console.log(`New deployment successfully sent to database`);
         } catch (e) {
-          console.log(`Could not send new deployment to the database: `, e)
+          console.log(`Error while sending new deployment to the database: `, e)
         }
 
         // Once data sent, reload with the new deployment
@@ -692,7 +692,7 @@ export default {
           this.reloadDeployments(); 
           console.log(`Reloading...`)
         } catch (e) {
-          console.log(`Deployments could not be reloaded on the browser: `, e)
+          console.log(`Error while reloading deployments on the browser: `, e)
         }
       } else {
         this.errormode = 'inputError'
@@ -748,7 +748,7 @@ export default {
           this.newDependencyModal = false
           console.log(`New dependency successfully sent to database`);
         } catch (e) {
-          console.log(`Could not send new dependency to the database: `, e)
+          console.log(`Error while sending new dependency to the database: `, e)
         }
 
         // Once data sent, reload with the new dependency
@@ -756,7 +756,7 @@ export default {
           this.reloadDependencies(); 
           console.log(`Reloading...`)
         } catch (e) {
-          console.log(`Dependencies could not be reloaded on the browser: `, e)
+          console.log(`Error while reloading dependencies on the browser: `, e)
         }
       } else {
         this.errormode = 'inputError'
@@ -777,14 +777,14 @@ export default {
         this.showModal = false
         console.log(`Updated variable successfully sent to database`)
       } catch (e) {
-        console.log(`Could not send edited variable to the database: `, e)
+        console.log(`Error while sending edited variable to the database: `, e)
       }
 
       try {
         this.reloadVariables(); 
         console.log(`Variables have been reloaded`)
       } catch (e) {
-        console.log(`Variables could not be reloaded`, e)
+        console.log(`Error while reloading variables`, e)
       }
     }, // -saveVariable
 
@@ -1010,7 +1010,7 @@ export default {
       }
     } catch (e) {
       console.log(`Could not fetch project:`, e)
-      alert(`Could not fetch project ${deployableName}`)
+      alert(`Error while fetching project ${deployableName}`)
     }
   }
 }

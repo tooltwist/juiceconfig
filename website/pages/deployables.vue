@@ -74,7 +74,7 @@ export default {
         projects: projects,
       }
     } catch (e) {
-      console.log(`Could not fetch projects:`, e)
+      console.log(`Error while fetching projects:`, e)
     }
   }
 }

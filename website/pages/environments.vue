@@ -52,7 +52,7 @@ export default {
         environments: reply.data.environments
       }
     } catch (e) {
-      console.log(`Could not fetch environments: `, e)
+      console.log(`Error while fetching environments: `, e)
     }
   }
 }

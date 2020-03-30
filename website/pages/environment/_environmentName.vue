@@ -293,7 +293,7 @@ export default {
           this.newDeploymentModal = false
           console.log(`New deployment successfully sent to database`);
         } catch (e) {
-          console.log(`Could not send new deployment to the database: `, e)
+          console.log(`Error while sending new deployment to the database: `, e)
         }
 
         // Once data sent, reload with the new deployment
@@ -301,7 +301,7 @@ export default {
           this.reloadDeployments(); 
           console.log(`Reloading...`)
         } catch (e) {
-          console.log(`Deployments could not be reloaded on the browser: `, e)
+          console.log(`Error while reloading deployments on the browser: `, e)
         }
       } else {
         this.errormode = 'inputError'
@@ -319,14 +319,14 @@ export default {
         this.editEnvInfo = null
         console.log(`Updated environment successfully sent to database`)
       } catch (e) {
-        console.log(`Could not send edited environment to the database: `, e)
+        console.log(`Error while sending edited environment to the database: `, e)
       }
 
       try {
         this.reloadEnvironment(); 
         console.log(`Environment has been reloaded`)
       } catch (e) {
-        console.log(`Environment could not be reloaded`, e)
+        console.log(`Error while reloading environment: `, e)
       }
     }, // -saveEditedEnv
 
@@ -393,7 +393,7 @@ export default {
           this.newUserModal = false
           console.log(`New environment user successfully sent to database`);
         } catch (e) {
-          console.log(`Could not send new environment user to the database: `, e)
+          console.log(`Error while sending new environment user to the database: `, e)
         }
 
         // Once data sent, reload with the new deployment
@@ -401,7 +401,7 @@ export default {
           this.reloadUsers(); 
           console.log(`Reloading...`)
         } catch (e) {
-          console.log(`Users could not be reloaded on the browser: `, e)
+          console.log(`Error while reloading users on the browser: `, e)
         }
       } else {
         this.errormode = 'inputError'
@@ -422,7 +422,7 @@ export default {
         this.reloadUsers();
         console.log('New user details have been updated on the browser.')
       } catch (e) {
-        console.log(`Could not update browser with edited user:`, e)
+        console.log(`Error while updating browser with edited user:`, e)
       } 
     }, // - saveEditedUser
 
@@ -549,7 +549,7 @@ export default {
       }
     } catch (e) {
       console.log(`Could not fetch project:`, e)
-      alert(`Could not fetch project ${environmentName}`)
+      alert(`Error while fetching project ${environmentName}`)
     }
   }
 }
