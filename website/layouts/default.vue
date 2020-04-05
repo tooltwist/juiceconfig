@@ -15,7 +15,9 @@ div
           b-icon(icon="account")
           span Account
           b-icon(icon="menu-down")
-        b-dropdown-item(custom aria-role="menuitem") Logged in as {{ fullname }}
+        b-dropdown-item(custom aria-role="menuitem") Logged in as&nbsp;
+          b {{ username }}
+          | .
         b-dropdown-item(href="/myAccount", value="My Account")
           b-icon(icon="account") 
           | My Account
@@ -28,9 +30,10 @@ div
       .columns(v-if="loggedIn")
         aside.column.is-3.section
           p.menu-label(v-if="loggedIn")
-            i Welcome, {{fullname}}!
+            i Welcome, {{username}}!
           ul.menu-list
-            b-menu-list(label="Menu")
+            //b-menu-list(label="Menu")
+            b-menu-list(label="")
               li(v-for="(item, key) of items", :key="key")
                 nuxt-link(:to="item.to", exact-active-class="activeHighlight")
                   b-icon(:icon="item.icon")
@@ -67,17 +70,22 @@ export default {
         },
         {
           title: 'Deployables',
-          icon: 'atom',
+          icon: 'android-studio',
           to: { name: 'deployables' }
         },
         {
           title: 'Environments',
-          icon: 'cloud',
+          icon: 'cloud-outline',
           to: { name: 'environments' }
         },
         {
+          title: 'Applications',
+          icon: 'rocket',
+          to: { name: 'deployments' }
+        },
+        {
           title: 'Users',
-          icon: 'account-multiple',
+          icon: 'account-multiple-outline',
           to: { name: 'users' }
         }
       ],
@@ -91,8 +99,8 @@ export default {
       }
       return false
     },
-    fullname: function() {
-      return this.loggedIn ? this.$loginservice.user.fullname : ''
+    username: function() {
+      return this.loggedIn ? this.$loginservice.user.username : ''
     }
   },
 

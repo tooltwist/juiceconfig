@@ -86,7 +86,8 @@ export default {
                 try {
                     e.preventDefault();
 
-                    let jwt = app.$nuxtLoginservice.jwt
+                    // let jwt = app.$nuxtLoginservice.jwt
+                    let jwt = this.$loginservice.jwt
                     let config = {
                         headers: {
                         authorization: `Bearer ${jwt}`,

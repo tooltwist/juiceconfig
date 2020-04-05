@@ -1093,4 +1093,14 @@ FORM STYLING
   padding: 0px 20px;
 }
 
+a.my-not-input-a {
+    position: relative;
+    top: 6px;
+}
+
+.my-not-input-p {
+    position: relative;
+    top: 6px;
+}
+
 </style>

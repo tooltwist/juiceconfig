@@ -5,26 +5,137 @@ section.section
   
   b-tabs(v-model="activeTab", :animated="false")
     b-tab-item(label="Information")
-      // Environment information
-      table(style="width:100%")
-        tr
-          td(style="justify:right;") 
-            label Name:
-          td(style="justify:left;")
-            | {{environment.name}}
-        tr 
-          td(style="justify:right;")
-            label Description:
-          td(style="justify:left;")
-            | {{environment.description}}
-        tr
-          td(style="justify:right;")
-            label Notes:
-          td(style="justify:left;")
-            | {{environment.notes}}
-      br
-      div(v-if="currentUser[0].access == 'full' || 'write' || 'super'")
-        b-button.stop(@click="setEditMode", type="is-primary is-outlined is-light", size="is-small")  Edit
+      form.formStyle
+        .field.is-horizontal
+            .field-label.is-normal
+                label.label(style="width:200px;") Name: 
+            .field-body
+                .field
+                    .control
+                        p.my-not-input-p() &nbsp;{{environment.name}}
+        .field.is-horizontal
+            .field-label.is-normal
+                label.label(style="width:200px;") Type: 
+            .field-body
+                .field
+                    .control
+                        select.select(v-model="environment.type", :disabled="!editingDetails")
+                          option(value="aws") Amazon Web Services (AWS)
+                          option(value="local") Local development machine
+                          option(value="other") Other
+                        //- | &nbsp;{{environment.type}}
+                        //- input.input(v-if="editingDetails", v-model.trim="environment.description", placeholder="URL to ECS Service", @input="saveDetails")
+                        //- a.my-not-input-a(v-else-if="validUrl(environment.description)", :href="deployment.description", target="_blank") &nbsp;{{deployment.description}}
+                        //- p.my-not-input-p(v-else) &nbsp;{{environment.description}}
+        .field.is-horizontal
+            .field-label.is-normal
+                label.label(style="width:200px;") Description: 
+            .field-body
+                .field
+                    .control
+                        input.input(v-if="editingDetails", v-model.trim="environment.description", placeholder="URL to ECS Service", @input="saveDetails")
+                        a.my-not-input-a(v-else-if="validUrl(environment.description)", :href="deployment.description", target="_blank") &nbsp;{{deployment.description}}
+                        p.my-not-input-p(v-else) &nbsp;{{environment.description}}
+        .field.is-horizontal
+            .field-label.is-normal
+                label.label(style="width:200px;") Notes: 
+            .field-body
+                .field
+                    .control
+                        textarea.textarea(v-model.trim="environment.notes", placeholder="Notes", :disabled="!editingDetails", @input="saveDetails")
+                        //- input.input(v-if="editingDetails", v-model.trim="environment.notes", placeholder="URL to ECS Service", @input="saveDetails")
+                        //- a.my-not-input-a(v-else-if="validUrl(environment.notes)", :href="environment.notes", target="_blank") &nbsp;{{environment.notes}}
+                        //- p.my-not-input-p(v-else) &nbsp;{{environment.notes}}
+        hr(v-if="environment.type==='aws'")
+        .field.is-horizontal(v-if="environment.type==='aws'")
+            .field-label.is-normal
+                label.label(style="width:200px;") Region: 
+            .field-body
+                .field
+                    .control
+                        input.input(v-if="editingDetails", v-model.trim="environment.aws_region", placeholder="URL to ECS Service", @input="saveDetails")
+                        a.my-not-input-a(v-else-if="validUrl(environment.aws_region)", :href="environment.aws_region", target="_blank") &nbsp;{{environment.aws_region}}
+                        p.my-not-input-p(v-else) &nbsp;{{environment.aws_region}}
+        .field.is-horizontal(v-if="environment.type==='aws'")
+            .field-label.is-normal
+                label.label(style="width:200px;") Stack: 
+            .field-body
+                .field
+                    .control
+                        input.input(v-if="editingDetails", v-model.trim="environment.aws_cf_stack", placeholder="URL to ECS Service", @input="saveDetails")
+                        a.my-not-input-a(v-else-if="validUrl(environment.aws_cf_stack)", :href="environment.aws_cf_stack", target="_blank") &nbsp;{{environment.aws_cf_stack}}
+                        p.my-not-input-p(v-else) &nbsp;{{environment.aws_cf_stack}}
+        .field.is-horizontal(v-if="environment.type==='aws'")
+            .field-label.is-normal
+                label.label(style="width:200px;") Cluster: 
+            .field-body
+                .field
+                    .control
+                        input.input(v-if="editingDetails", v-model.trim="environment.aws_cluster_url", placeholder="URL to ECS Service", @input="saveDetails")
+                        a.my-not-input-a(v-else-if="validUrl(environment.aws_cluster_url)", :href="environment.aws_cluster_url", target="_blank") &nbsp;{{environment.aws_cluster_url}}
+                        p.my-not-input-p(v-else) &nbsp;{{environment.aws_cluster_url}}
+        .field.is-horizontal(v-if="environment.type==='aws'")
+            .field-label.is-normal
+                label.label(style="width:200px;") VPC URL: 
+            .field-body
+                .field
+                    .control
+                        input.input(v-if="editingDetails", v-model.trim="environment.aws_vpc_url", placeholder="URL to ECS Service", @input="saveDetails")
+                        a.my-not-input-a(v-else-if="validUrl(environment.aws_vpc_url)", :href="environment.aws_vpc_url", target="_blank") &nbsp;{{environment.aws_vpc_url}}
+                        p.my-not-input-p(v-else) &nbsp;{{environment.aws_vpc_url}}
+      .control
+          button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
+
+      //- // Environment information
+      //- table(style="width:100%")
+      //-   //- tr
+      //-     td(style="justify:right;") 
+      //-       label Name:
+      //-     td(style="justify:left;")
+      //-       | {{environment.name}}
+      //-   //- tr 
+      //-     td(style="justify:right;")
+      //-       label Description:
+      //-     td(style="justify:left;")
+      //-       | {{environment.description}}
+      //-   tr
+      //-     td(style="justify:right;")
+      //-       label Notes:
+      //-     td(style="justify:left;")
+      //-       | {{environment.notes}}
+      //-   tr
+      //-     td(style="justify:right;")
+      //-       label Type:
+      //-     td(style="justify:left;")
+      //-       select.select(v-model="environment.type")
+      //-         option(value="aws") Amazon Web Services (AWS)
+      //-         option(value="local") Local development machine
+      //-         option(value="other") Other
+      //-       | &nbsp;{{environment.type}}
+      //-   tr
+      //-     td(style="justify:right;")
+      //-       label Region:
+      //-     td(style="justify:left;")
+      //-       | {{environment.aws_region}}
+      //-   tr
+      //-     td(style="justify:right;")
+      //-       label Cloudformation Stack:
+      //-     td(style="justify:left;")
+      //-       | {{environment.aws_cf_stack}}
+      //-   tr
+      //-     td(style="justify:right;")
+      //-       label ECS Cluster URL:
+      //-     td(style="justify:left;")
+      //-       | {{environment.aws_cluster_url}}
+      //-   tr
+      //-     td(style="justify:right;")
+      //-       label VPC URL:
+      //-     td(style="justify:left;")
+      //-       | {{environment.aws_vpc_url}}
+      //- | {{environment}}
+      //- br
+      //- div(v-if="currentUser[0].access == 'full' || 'write' || 'super'")
+      //-   b-button.stop(@click="setEditMode", type="is-primary is-outlined is-light", size="is-small")  Edit
 
     b-tab-item(label="Deployments")
       // Deployments
@@ -209,6 +320,8 @@ section.section
 import axios from 'axios'
 import webconfig from '~/protected-config/website-config'
 const { protocol, host, port } = webconfig
+import standardStuff from '../../lib/standard-stuff'
+
 
 export default {
   name: 'Environment',
@@ -230,6 +343,7 @@ export default {
         new_environmentuser: '',
         new_user_access: '',
       },
+      editingDetails: false,
 
       users: [],
       allUsers: [],
@@ -261,6 +375,8 @@ export default {
   }, // - data
 
   methods: {
+    ...standardStuff.methods,
+
     // ADD A NEW DEPLOYMENT TO THE DATABASE - FROM MODAL 
     async saveNewDeployment() {
       //Check that form is filled correctly
@@ -468,8 +584,26 @@ export default {
       this.users.user_id = users.user_id,
       this.form.edit_useraccess = users.access
       return false
-    }, // -editUser
-  },
+    }, //- editUser
+
+
+    saveDetails: async function () {
+        let self = this
+        if (self.updateDelay) {
+            clearTimeout(self.updateDelay)
+        }
+        self.updateDelay = setTimeout(async function () {
+            // console.log(`Updating...`, self.deployment);
+            self.updateDelay = null
+            const url = `${protocol}://${host}:${port}/environment`
+console.log(`UPDATING ENVIRONMENT`, self.environment);
+
+           let result = await axios.put(url, self.environment)
+            // console.log(`result is `, result);
+        }, 500)
+    }
+
+  },//- methods
 
   /*
    *  Call our API using Axios, to get the project data.
@@ -495,7 +629,7 @@ export default {
           environmentName: environmentName
         }
       })
-      console.log(`API returned`, res.data);
+      console.log(`API returned environment`, res.data);
       const environment = res.data.record
 
       // Select the deployments for this environment
@@ -522,7 +656,7 @@ export default {
       const url4 = `${protocol}://${host}:${port}/deployables`
       let res4 = await axios.get(url4, config)
 
-      const deployables = res4.data.list
+      const deployables = res4.data.deployables
 
       // Import all users for creating new user (on the selected project)
       const url5 = `${protocol}://${host}:${port}/users`
@@ -563,6 +697,16 @@ FORM STYLING
 
 .formStyle {
   margin: 10px 0px;
+}
+
+a.my-not-input-a {
+    position: relative;
+    top: 6px;
+}
+
+.my-not-input-p {
+    position: relative;
+    top: 6px;
 }
 
 </style>
