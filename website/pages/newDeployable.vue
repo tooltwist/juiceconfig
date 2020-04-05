@@ -140,7 +140,7 @@ export default {
         return axios.get(url)
         .then((res) => {
             return {
-                deployables: res.data.list,
+                deployables: res.data.deployables,
             }
         })
         .catch((e) => {

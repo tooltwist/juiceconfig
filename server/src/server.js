@@ -80,7 +80,7 @@ server.get('/deployables', auth, async (req, res, next) => {
   let con = await db.checkConnection()
   con.query(sql, params, function (err, result) {
     if (err) throw err;
-    res.send({ list: result })
+    res.send({ deployables: result })
     next()
   });
 });
@@ -604,10 +604,35 @@ server.get('/environment', async (req, res, next) => {
 server.get('/deployments', async (req, res, next) => {
   console.log(`GET /deployments`);
 
+  let environmentOwner = req.query.environmentOwner
   let environmentName = req.query.environmentName
+  let deployableOwner = req.query.deployableOwner
+  let deployableName = req.query.deployableName
+
+  // Either the environment or the deployable must be for the
+  // current user. They can't just go looking at everyone's stuff.
+  //ZZZZ
+
   let con = await db.checkConnection()
-  const sql = `SELECT * from deployments where environment =?`
+  let sql = `SELECT * from deployments`
+  // let sql = `SELECT * from deployments where environment =?`
   const params = [ environmentName ];
+  let first = true
+  if (environmentName) {
+    sql += (first ? ' where ':' and ') + `environment=?` //ZZZ should set owner
+    params.push(environmentName)
+  }
+  if (deployableName) {
+    sql += (first ? ' where ':' and ') + `deployable=?` //ZZZ should set owner
+    params.push(deployableName)
+  }
+  if (first) {
+    // Select the deployables involving the current user's environments or deployables.
+    // res.send(new restify.errors.BadRequestError('Must specify environment or deployable'))
+    // sql += `where environmentOwner=? OR deployableOwner=?` //ZZZ should set owner
+    // let me = ?????
+    // params.push(me, me )
+  }
   
   con.query(sql, params, function (err, result) {
     if (err) throw err;
@@ -744,23 +769,154 @@ server.use(restify.plugins.bodyParser({
 }));
 server.use(restify.plugins.acceptParser(server.acceptable));
 
-server.post('/newDeployment', async (req, res, next) => {
+server.post('/newDeployment', auth, async (req, res, next) => {
   console.log(`POST /newDeployment`)
 
-  let con = await db.checkConnection()
-  const deploymentValues = {notes: req.params.notes, deployable: req.params.deployable, environment: req.params.environment}
-  let sql = `INSERT INTO deployments SET ?`
-  let params = [ deploymentValues ]
+  // Get the values passed in.
+  let environmentOwner = req.params.environment_owner
+  let environment = req.params.environment
+  let deployableOwner = req.params.deployable_owner
+  let deployable = req.params.deployable
+  let notes = req.params.notes
+  let applicationName = req.params.application_
 
-  con.query( sql, params, (err, result) => {
+  let obj = { }
+  if (req.params.environment_owner) {
+    obj.environment_owner = req.params.environment_owner
+  }
+  if (req.params.environment) {
+    obj.environment = req.params.environment
+  }
+  if (req.params.deployable_owner) {
+    obj.deployable_owner = req.params.deployable_owner
+  }
+  if (req.params.deployable) {
+    obj.deployable = req.params.deployable
+  }
+  if (req.params.application_name) {
+    obj.application_name = req.params.application_name
+  }
+  if (req.params.notes) {
+    obj.notes = req.params.notes
+  }
+  console.log(`will save this:`, obj);
+  
+
+  //ZZZZ Check we are allowed to do this.
+
+
+
+  let con = await db.checkConnection()
+  // const deploymentValues = {notes: req.params.notes, deployable: req.params.deployable, environment: req.params.environment}
+  let sql = `INSERT INTO deployments SET ?`
+  // let params = [ deploymentValues ]
+
+  con.query( sql, obj, (err, result) => {
     if (err) throw err;
-    console.log("Result: NEW deployment " + req.params.deployable + " environment- " + req.params.environment + " notes- " + req.params.notes) 
+    console.log("Result: NEW deployment ", result) 
 
     // Send reply
     res.send({ status: 'ok' })
     return next();
   }) 
 }); // ******************** end of /_environmentNAME server calls *********************
+
+server.put('/deployment', async (req, res, next) => {
+  console.log(`PUT /deployment`)
+
+  let con = await db.checkConnection()
+  const deploymentValues = {
+  }
+  if (req.params.notes) {
+    deploymentValues.notes = req.params.notes
+  }
+  if (req.params.healthcheck_url) {
+    deploymentValues.healthcheck_url = req.params.healthcheck_url
+  }
+  if (req.params.aws_service) {
+    deploymentValues.aws_service = req.params.aws_service
+  }
+  if (req.params.aws_loadbalancer) {
+    deploymentValues.aws_loadbalancer = req.params.aws_loadbalancer
+  }
+  if (req.params.aws_targetgroup) {
+    deploymentValues.aws_targetgroup = req.params.aws_targetgroup
+  }
+  if (req.params.aws_logfile_url) {
+    deploymentValues.aws_logfile_url = req.params.aws_logfile_url
+  }
+  if (req.params.aws_secretsmanager_secret) {
+    deploymentValues.aws_secretsmanager_secret = req.params.aws_secretsmanager_secret
+  }
+
+  let sql = `UPDATE deployments SET ? WHERE environment=? AND deployable=?`
+  let params = [ deploymentValues, req.params.environment, req.params.deployable ]
+
+  console.log(`sql=`, sql);
+  console.log(`params=`, params);
+  
+  
+  con.query( sql, params, (err, result) => {
+    if (err) throw err;
+    // console.log("Result: UPDATE deployment result", result) 
+
+    // Send reply
+    res.send({ status: 'ok' })
+    return next();
+  }) 
+}); // ******************** end of /_environmentNAME server calls *********************
+
+server.put('/environment', async (req, res, next) => {
+  console.log(`PUT /environment`)
+
+  let con = await db.checkConnection()
+  const record = {
+  }
+  if (typeof(req.params.is_universal) != 'undefined') {
+    record.is_universal = req.params.is_universal
+  }
+  if (typeof(req.params.is_secure_environment) != 'undefined') {
+    record.is_secure_environment = req.params.is_secure_environment
+  }
+  if (typeof(req.params.description) != 'undefined') {
+    record.description = req.params.description
+  }
+  if (typeof(req.params.notes) != 'undefined') {
+    record.notes = req.params.notes
+  }
+  if (typeof(req.params.type) != 'undefined') {
+    record.type = req.params.type
+  }
+  if (typeof(req.params.aws_region) != 'undefined') {
+    record.aws_region = req.params.aws_region
+  }
+  if (typeof(req.params.aws_cf_stack) != 'undefined') {
+    record.aws_cf_stack = req.params.aws_cf_stack
+  }
+  if (typeof(req.params.aws_cluster_url) != 'undefined') {
+    record.aws_cluster_url = req.params.aws_cluster_url
+  }
+  if (typeof(req.params.aws_vpc_url) != 'undefined') {
+    record.aws_vpc_url = req.params.aws_vpc_url
+  }
+
+  // let sql = `UPDATE environment SET ? WHERE owner=? AND environment=?`
+  let sql = `UPDATE environment SET ? WHERE name=?`
+  let params = [ record, req.params.name ]
+
+  console.log(`sql=`, sql);
+  console.log(`params=`, params);
+  
+  
+  con.query( sql, params, (err, result) => {
+    if (err) throw err;
+    // console.log("Result: UPDATE deployment result", result) 
+
+    // Send reply
+    res.send({ status: 'ok' })
+    return next();
+  }) 
+}); // ******************** end of PUT /environment *********************
 
 // ******************** All server calls related to /users page *********************
 /*
@@ -805,7 +961,7 @@ server.get('/currentUser', auth, async (req, res, next) => {
  *
  */
 async function getVariables(deployable) {
-  console.log(`   -------------\ngtVariables(${deployable})`)
+  console.log(`   -------------\ngetVariables(${deployable})`)
   // return null
   let con = await db.checkConnection()
 
@@ -815,7 +971,7 @@ async function getVariables(deployable) {
 
     con.query(sql, params, function (err, result) {
       if (err) return reject(err);
-      console.log(`Got variables for ${deployable}:`, result)
+      // console.log(`Got variables for ${deployable}:`, result)
       return resolve(result)
     })
   });//- promise
@@ -1072,7 +1228,13 @@ server.use(restify.plugins.acceptParser(server.acceptable));
     //   if (err) throw err;
     let con = await db.checkConnection()
     const sql = `INSERT INTO environment SET ?`
-      const newEnvironment = {name: req.params.name, description: req.params.description, notes: req.params.notes, is_universal: req.params.is_universal}
+      const newEnvironment = {
+        owner: req.identity.username,
+        name: req.params.name,
+        description: req.params.description,
+        notes: req.params.notes,
+        is_universal: req.params.is_universal
+      }
       console.log(`sql=${sql}`);
       console.log(`newEnv=`, newEnvironment);
       
