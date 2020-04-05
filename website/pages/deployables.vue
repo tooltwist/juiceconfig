@@ -8,7 +8,7 @@ section.section
   b-table(:data="listOfDeployables", focusable) 
     template(slot-scope="props")
       b-table-column(field="name", label="Name")
-        nuxt-link(:to="`/deployable/${props.row.name}`") {{ props.row.owner }}/{{ props.row.name }}
+        nuxt-link(:to="`/deployable/${props.row.name}`") {{stdOwnerPrefix(props.row.owner)}}{{ props.row.name }}
       b-table-column(field="product_owner" ,label="Owner")
         | {{ props.row.product_owner }}
       b-table-column(field="description", label="Description")
@@ -22,6 +22,7 @@ section.section
 import axios from 'axios'
 import webconfig from '~/protected-config/website-config'
 const { protocol, host, port } = webconfig
+import standardStuff from '../lib/standard-stuff'
 
 export default {
   name: 'Projects',
@@ -67,8 +68,8 @@ export default {
       }
       console.log(`Calling ${url}`);
       let res = await axios.get(url, config);
-      const projects = res.data.list;
-      console.log(`data::: `, res.data.list)
+      const projects = res.data.deployables;
+      console.log(`data::: `, res.data.deployables)
 
       return {
         projects: projects,
@@ -76,7 +77,11 @@ export default {
     } catch (e) {
       console.log(`Error while fetching projects:`, e)
     }
-  }
+  },
+
+  methods: {
+    ...standardStuff.methods
+  }//- methods
 }
 </script>
 

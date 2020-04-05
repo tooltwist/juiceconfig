@@ -3,10 +3,24 @@
     h1.title Environments
       div(class="buttons has-text-weight-normal", style="float:right;")
         b-button(class="is-primary", tag="nuxt-link", to="/newEnvironment",  type="is-light")  + Add New Environment
+    b-notification(aria-close-label="Close notification")
+      | An &nbsp;
+      b environment
+      | &nbsp;provides the infrastructure to run&nbsp;
+      b applications
+      | . To run an application you deploy one or more&nbsp;
+      b deployables
+      | &nbsp;onto the environment.
+      | Environments typically support the various stage
+      | of software development - local machine, CI (Continuous Integration),
+      | testing, UAT, staging and production.
+      | Projects and applications can share environments, rather than
+      | having dedicated servers for each stage. When deploying to AWS, each environment corresponds to an ECS Cluster.
+
     b-table(:data="environments", focusable)
       template(slot-scope="props")
         b-table-column(field="name", label="Name")
-          nuxt-link(:to="`/environment/${props.row.name}`") {{ props.row.owner }} / {{ props.row.name }}
+          nuxt-link(:to="`/environment/${props.row.name}`") {{stdOwnerPrefix(props.row.owner)}}{{ props.row.name }}
         b-table-column(field="description", label="Description")
           | {{ props.row.description }}
         b-table-column(field="notes", label="Notes")
@@ -17,6 +31,7 @@
 import axios from 'axios'
 import webconfig from '~/protected-config/website-config'
 const { protocol, host, port } = webconfig
+import standardStuff from '../lib/standard-stuff'
 
 export default {
   name: 'Environments',
@@ -54,6 +69,10 @@ export default {
     } catch (e) {
       console.log(`Error while fetching environments: `, e)
     }
+  },
+
+  methods: {
+    ...standardStuff.methods,
   }
 }
 </script>
