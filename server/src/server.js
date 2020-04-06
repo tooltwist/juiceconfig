@@ -608,6 +608,11 @@ server.get('/deployments', async (req, res, next) => {
   let environmentName = req.query.environmentName
   let deployableOwner = req.query.deployableOwner
   let deployableName = req.query.deployableName
+  console.log(`environmentOwner=${environmentOwner}`);
+  console.log(`environmentName=${environmentName}`);
+  console.log(`deployableOwner=${deployableOwner}`);
+  console.log(`deployableName=${deployableName}`);
+  
 
   // Either the environment or the deployable must be for the
   // current user. They can't just go looking at everyone's stuff.
@@ -616,15 +621,17 @@ server.get('/deployments', async (req, res, next) => {
   let con = await db.checkConnection()
   let sql = `SELECT * from deployments`
   // let sql = `SELECT * from deployments where environment =?`
-  const params = [ environmentName ];
+  const params = [ ];
   let first = true
   if (environmentName) {
     sql += (first ? ' where ':' and ') + `environment=?` //ZZZ should set owner
     params.push(environmentName)
+    first = false
   }
   if (deployableName) {
     sql += (first ? ' where ':' and ') + `deployable=?` //ZZZ should set owner
     params.push(deployableName)
+    first = false
   }
   if (first) {
     // Select the deployables involving the current user's environments or deployables.
@@ -633,7 +640,9 @@ server.get('/deployments', async (req, res, next) => {
     // let me = ?????
     // params.push(me, me )
   }
-  
+
+  console.log(`sql=${sql}`);
+  console.log(`params=`, params);    
   con.query(sql, params, function (err, result) {
     if (err) throw err;
     console.log("Result: " + result);
