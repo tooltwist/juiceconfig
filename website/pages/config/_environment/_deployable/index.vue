@@ -29,7 +29,7 @@ section.section
                     .field-body
                         .field
                             .control
-                                textarea.textarea(:disabled="!editingDetails", v-model="deployment.notes", placeholder="Add any notes or comments here")
+                                textarea.textarea(:disabled="!editingDetails", v-model="deployment.notes", placeholder="Add any notes or comments here", @input="saveDetails")
                                 //- input.input(v-if="editingDetails", v-model.trim="deployment.aws_service", placeholder="URL to ECS Service")
                                 //- a.my-not-input-a(v-else-if="validUrl(deployment.aws_service)", :href="deployment.aws_service", target="_blank") &nbsp;{{deployment.aws_service}}
                                 //- p.my-not-input-p(v-else) &nbsp;{{deployment.aws_service}}
@@ -48,19 +48,9 @@ section.section
                     .field-body
                         .field
                             .control
-                                input.input(v-if="editingDetails", v-model.trim="deployment.aws_service", placeholder="URL to ECS Service")
+                                input.input(v-if="editingDetails", v-model.trim="deployment.aws_service", placeholder="URL to ECS Service", @input="saveDetails")
                                 a.my-not-input-a(v-else-if="validUrl(deployment.aws_service)", :href="deployment.aws_service", target="_blank") &nbsp;{{deployment.aws_service}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.aws_service}}
-                .field.is-horizontal
-                    .field-label.is-normal
-                        label.label(style="width:200px;") Load balancer: 
-                    .field-body
-                        .field
-                            .control
-                                input.input(v-if="editingDetails", v-model.trim="deployment.aws_loadbalancer", placeholder="URL to ECS Service")
-                                a.my-not-input-a(v-else-if="validUrl(deployment.aws_loadbalancer)", :href="deployment.aws_loadbalancer", target="_blank") &nbsp;{{deployment.aws_loadbalancer}}
-                                p.my-not-input-p(v-else) &nbsp;{{deployment.aws_loadbalancer}}
-
                 .field.is-horizontal
                     .field-label.is-normal
                         label.label(style="width:200px;") Target group: 
@@ -68,9 +58,18 @@ section.section
                         .field
                             .control
                                 //- input.input(type="text", :class="{ myEditing: !editingDetails } ", v-model="deployment.aws_targetGroup", placeholder="URL to target group")
-                                input.input(v-if="editingDetails", v-model.trim="deployment.aws_targetgroup", placeholder="URL to ECS Service")
+                                input.input(v-if="editingDetails", v-model.trim="deployment.aws_targetgroup", placeholder="URL to ECS Service", @input="saveDetails")
                                 a.my-not-input-a(v-else-if="validUrl(deployment.aws_targetgroup)", :href="deployment.aws_targetgroup", target="_blank") &nbsp;{{deployment.aws_targetgroup}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.aws_targetgroup}}
+                .field.is-horizontal
+                    .field-label.is-normal
+                        label.label(style="width:200px;") Load balancer: 
+                    .field-body
+                        .field
+                            .control
+                                input.input(v-if="editingDetails", v-model.trim="deployment.aws_loadbalancer", placeholder="URL to ECS Service", @input="saveDetails")
+                                a.my-not-input-a(v-else-if="validUrl(deployment.aws_loadbalancer)", :href="deployment.aws_loadbalancer", target="_blank") &nbsp;{{deployment.aws_loadbalancer}}
+                                p.my-not-input-p(v-else) &nbsp;{{deployment.aws_loadbalancer}}
                 .field.is-horizontal
                     .field-label.is-normal
                         label.label(style="width:200px;") Cloudwatch: 
@@ -78,7 +77,7 @@ section.section
                         .field
                             .control
                                 //- input.input(type="text", :class="{ myEditing: !editingDetails } ", v-model="deployment.aws_logfile_url", placeholder="URL to Cloudwatch logs")
-                                input.input(v-if="editingDetails", v-model.trim="deployment.aws_logfile_url", placeholder="URL to ECS Service")
+                                input.input(v-if="editingDetails", v-model.trim="deployment.aws_logfile_url", placeholder="URL to ECS Service", @input="saveDetails")
                                 a.my-not-input-a(v-else-if="validUrl(deployment.aws_logfile_url)", :href="deployment.aws_logfile_url", target="_blank") &nbsp;{{deployment.aws_logfile_url}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.aws_logfile_url}}
                 .field.is-horizontal
@@ -88,7 +87,7 @@ section.section
                         .field
                             .control
                                 //- input.input(type="text", :class="{ myEditing: !editingDetails } ", v-model="deployment.aws_secretsmanager_secret", placeholder="Secret name")
-                                input.input(v-if="editingDetails", v-model.trim="deployment.aws_secretsmanager_secret", placeholder="URL to ECS Service")
+                                input.input(v-if="editingDetails", v-model.trim="deployment.aws_secretsmanager_secret", placeholder="URL to ECS Service", @input="saveDetails")
                                 a.my-not-input-a(v-else-if="validUrl(deployment.aws_secretsmanager_secret)", :href="deployment.aws_secretsmanager_secret", target="_blank") &nbsp;{{deployment.aws_secretsmanager_secret}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.aws_secretsmanager_secret}}
 
@@ -217,7 +216,7 @@ export default {
                 environmentOwner: '',
                 environmentName: environmentName,
                 deployableOwner: '',
-                deployabletName: deployableName
+                deployableName: deployableName
             }
         })
         console.log(`API returned deployments`, res.data.deployments);

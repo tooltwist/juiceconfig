@@ -1,6 +1,11 @@
 <template lang="pug">
 section.section 
-    div(v-if="saveMode === 'Success'")
+    div(v-if="initialisationError")
+        // If we have just saved successfully, display a message.
+        article.message.is-warning
+            .message-header
+                p Error while loading initial data. Cannot continue.
+    div(v-else-if="savedMode")
         article(class="message is-success")
             div(class="message-header")
                 p Success!
@@ -12,29 +17,35 @@ section.section
                 a(href="/newDeployable") create another deployable?
     div(v-else)
         h1.title Add New Deployable:
-        div(v-if="mode === 'inputError'")
+        //- div(v-if="mode === 'inputError'")
             article(class="message is-danger is-small")
                 div(class="message-header")
                     p Form Error
                 div(class="message-body") Please ensure that all fields have values before saving.
         form
-            div.form-group
-                div.formStyle(class="control") New deployable name:
-                    div(v-if="deployableError === null")
-                        input(name="new_deployable", v-model="form.new_deployable", class="input", type="text", placeholder="Deployable Name")
-                    div(v-else="variableError === `Deployable already exists`")
-                        input(class="input is-danger", v-model="form.new_deployable", type="text", placeholder="Deployable Name")
-                        p(class="help is-danger") This deployable name already exists. Try again.
-                div.formStyle(class="control") Product owner:
-                    input(name="new_owner", v-model="form.new_owner", class="input", type="text", placeholder="Product Owner")
-                div.formStyle(class="control") Description:
-                    input(name="new_description", v-model="form.new_description", class="input", type="text", placeholder="Description")
-                div.formStyle Is this a project?
-                    b-select(placeholder="Is this a project?", v-model="form.is_project") Is this a project?
+            .field
+                label.label Owner:
+                    input.input(v-model="form.new_owner", type="text", :disabled="true")
+            .field
+                label.label New deployable name:
+                    input.input(v-model="form.new_deployable", type="text", placeholder="Deployable Name")
+                    //- div(v-else="variableError === `Deployable already exists`")
+                    //- input(class="input is-danger", v-model="form.new_deployable", type="text", placeholder="Deployable Name")
+                    p.help.is-danger(v-if="deployableExists") This deployable name already exists.
+            .field
+                label.label Description:
+                    input(v-model="form.new_description", class="input", type="text", placeholder="Description")
+            .field
+                label.label Is this a project?
+                    b-select(v-model="form.is_project", placeholder="Is this a project?") Is this a project?
                         option(value="1") Yes
                         option(value="0") No
-                div(class="control")
-                    b-button.buttonStyle(@click.prevent="newDeployable", value="save", type="is-primary is-light")  Save
+            .field
+                label.label Product owner:
+                    input.input(v-model="form.new_product_owner", type="text", placeholder="Product Owner")
+            .field
+                .control
+                    b-button.buttonStyle(@click.prevent="newDeployable", value="save", type="is-primary is-light", :disabled="!readyToSave")  Save
                     b-button.buttonStyle(tag="nuxt-link", to="/deployables", type="is-danger is-outlined") Cancel
 </template>
 
@@ -47,106 +58,169 @@ export default {
     name: 'New_Deployable',
     data () {
         return {
+            initialisationError: false,
+            axiosConfig: null,
+            
             form: {
-                new_deployable: '',
                 new_owner: '',
-                new_description: '',  
-                is_project: ''
+                new_deployable: '',
+                new_product_owner: '',
+                new_description: '',
+                is_project: 0
             },
-            mode: false,
-            saveMode: '',
-            deployables: '',
+            // mode: false,
+            savedMode: false,
+            deployables: [ ],
             deployableError: null,
         }
+    },
+
+    /*
+     *  Call our API using Axios, to get the project data.
+     *  See https://nuxtjs.org/guide/async-data#handling-errors
+     */
+    async asyncData ({ params, error, app }) {
+
+        let jwt = app.$nuxtLoginservice.jwt
+        let me = app.$nuxtLoginservice.user.username
+        // alert(`I am ${me}`)
+        // let jwt = this.$loginservice.jwt
+        let axiosConfig = {
+            headers: {
+                authorization: `Bearer ${jwt}`,
+            }
+        }
+        
+        try {
+            // const url = `${protocol}://${host}:${port}/showDeployables`
+            const url = `${protocol}://${host}:${port}/deployables`
+            console.log(`Calling ${url}`);
+            let result = await axios.get(url, axiosConfig)
+            console.log(`result=`, result);
+            
+            return {
+                axiosConfig,
+                deployables: result.data.deployables,
+                form: {
+                    new_owner: me
+                }
+            }
+         } catch (e) {
+            console.log(`Error while fetching deployables: `, e)
+            // error({ statusCode: 400, message: 'Error while fetching deployables' })
+            return {
+                axiosConfig,
+                initialisationError: true
+            }
+        }
+    },//- asyncData
+
+    computed: {
+
+        // Check for existing deployable name
+        deployableExists () {
+            if (this.form.new_deployable) {
+                let found = false
+                this.deployables.forEach(deployable => {
+                    if (deployable.name === this.form.new_deployable) {
+                        console.log(`There is already an existing deployable with this name!`)
+                        found = true
+                    }
+                })
+                return found
+            }
+            return false
+        },//- deployableExists
+
+        readyToSave () {
+            if (!this.form.new_deployable) {
+                console.log(`readyToSave 1`);
+                return false // Need a name
+            }
+            if (this.deployableExists) {
+                console.log(`readyToSave 2`);
+                return false // Name is already used
+            }
+            console.log(`readyToSave 4`);
+            return true
+        },//- readyToSave
     },
 
     methods: {
         async newDeployable(e) {
             console.log(`newDeployable()`, this);
-            
+
+            // Check that form is correctly filled out
+            if (!this.readyToSave) {
+                return
+            }
             
             // Check that form is correctly filled out
-            if (this.form.new_deployable && this.form.is_project && this.form.new_owner && this.form.new_description) {
+            // if (this.form.new_deployable && this.form.is_project && this.form.new_product_owner && this.form.new_description) {
                 
-                // Check for existing deployable name
-                let found = false
-                this.deployables.forEach(deployable => {
-                    if (deployable.name === this.form.new_deployable) {
-                        console.log(`There is already an existing deployable with these values!`)
-                        found = true
-                    }
-                })
-
-                // If matching deployable is found, send error 
-                if (found) {
-                    console.log(`There is already a deployable with these values... Error message shown!`)
-                    this.deployableError = `Deployable already exists`
-                    return 
-                }
-                this.deployableError = null
+                // // Check for existing deployable name
+                // let found = false
+                // this.deployables.forEach(deployable => {
+                //     if (deployable.name === this.form.new_deployable) {
+                //         console.log(`There is already an existing deployable with these values!`)
+                //         found = true
+                //     }
+                // })
+                // 
+                // // If matching deployable is found, send error 
+                // if (found) {
+                //     console.log(`There is already a deployable with these values... Error message shown!`)
+                //     this.deployableError = `Deployable already exists`
+                //     return 
+                // }
+                // this.deployableError = false
 
                 // If no error, send post request to server
                 try {
                     e.preventDefault();
 
-                    let jwt = this.$loginservice.jwt
-                    let config = {
-                        headers: {
-                            authorization: `Bearer ${jwt}`,
-                        }
-                    }
-                    console.log(`config is`, config);
+                    // let jwt = this.$loginservice.jwt
+                    // let config = {
+                    //     headers: {
+                    //         authorization: `Bearer ${jwt}`,
+                    //     }
+                    // }
+                    // console.log(`config is`, config);
                     
 
                     console.log(`calling /newDeployable`);
-                    
-                    await axios.post(`${protocol}://${host}:${port}/newDeployable`, {
+                    let record = {
+                        owner: this.form.new_owner,
                         name: this.form.new_deployable,
-                        product_owner: this.form.new_owner,
+                        product_owner: this.form.new_product_owner,
                         description: this.form.new_description,
                         is_project: this.form.is_project,
-                    }, config)
+                    }
+                    console.log(`record = `, record);
+                    
+                    await axios.post(`${protocol}://${host}:${port}/newDeployable`, record, this.axiosConfig)
                     // Prevent input error from showing
-                    this.mode = false;
+                    // this.mode = false;
                 } catch (err) {
                     console.log(`Error while sending new deployable to the database: `, err)
                 }
-            } else {
-                this.mode = 'inputError';
-                console.log('Input error: please ensure all fields are filled.')
-            }
+            // } else {
+            //     this.mode = 'inputError';
+            //     console.log('Input error: please ensure all fields are filled.')
+            // }
 
-            // Show successful save message
-            if (this.mode != 'inputError') {
-                try {
-                    this.saveMode = 'Success'
-                    console.log(this.saveMode, 'Successful')
-                } catch (err) {
-                    console.log(`Error while updating saveMode to success: `, err)
-                }
-            } 
+            // // Show successful save message
+            // if (this.mode != 'inputError') {
+            //     try {
+                    this.savedMode = true
+                    console.log(this.savedMode, 'Successful')
+            //     } catch (err) {
+            //         console.log(`Error while updating savedMode to success: `, err)
+            //     }
+            // } 
             
         },
-    },
-
-   /*
-   *  Call our API using Axios, to get the project data.
-   *  See https://nuxtjs.org/guide/async-data#handling-errors
-   */
-    asyncData ({ params, error }) {
-
-        const url = `${protocol}://${host}:${port}/showDeployables`
-        console.log(`Calling ${url}`);
-        return axios.get(url)
-        .then((res) => {
-            return {
-                deployables: res.data.deployables,
-            }
-        })
-        .catch((e) => {
-            error({ statusCode: 404, message: 'Error while fetching deployables' })
-        })
-    }//- methods
+    },//- methods
 }
 </script>
 
