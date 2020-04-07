@@ -35,11 +35,14 @@
     b-table(:data="deployments", focusable)
       template(slot-scope="props")
         b-table-column(field="environment", label="Environment")
-          nuxt-link(:to="`/environment/${props.row.name}`") {{stdOwnerPrefix(props.row.environment_owner)}}{{ props.row.environment }}
+          nuxt-link(:to="`/environment/${std_toQualifiedName(props.row.environment_owner,props.row.environment)}`")
+            span(v-html="std_toQualifiedDisplay(props.row.environment_owner,props.row.environment,true)")
+          //- {{stdOwnerPrefix(props.row.environment_owner)}}{{ props.row.environment }}
         b-table-column(field="application_name", label="Name")
           | {{ props.row.application_name }}
         b-table-column(field="deployable", label="Deployable")
-          nuxt-link(:to="`/environment/${props.row.name}`") {{stdOwnerPrefix(props.row.deployable_owner)}}{{ props.row.deployable }}
+          nuxt-link(:to="`/deployable/${std_toQualifiedName(props.row.deployable_owner,props.row.deployable)}`")
+            span(v-html="std_toQualifiedDisplay(props.row.deployable_owner,props.row.deployable,true)")
         //- b-table-column(field="description", label="Description")
         //  | {{ props.row.description }}
         //b-table-column(field="notes", label="Notes")
@@ -49,7 +52,7 @@
            b-button(class="button is-small is-primary is-outlined", tag="nuxt-link", :to="`../config/${props.row.environment}/${props.row.deployable}`") Configure
         b-table-column(field="", label="")
           //- div(v-if="currentUser[0].access == 'full' || 'write' || 'super'")
-          b-button(class="button is-small is-primary is-outlined", tag="nuxt-link", :to="`../config/${props.row.environment}/${props.row.deployable}`") Configure
+          b-button(class="button is-small is-primary is-outlined", tag="nuxt-link", :to="`../deployment/${props.row.environment_owner}:${props.row.environment}/${props.row.application_name}`") Configure
 
 
       //- // Edit User Modal starts below:

@@ -1,7 +1,8 @@
 <template lang="pug">
 div
   section.section
-    h1.title Deployable {{deployableName}}
+    h1.title Deployable&nbsp;
+      span(v-html="std_deployableDisplay(deployable)")
 
     b-tabs(v-model="activeTab", :animated="false")
       b-tab-item(label="Status")
@@ -15,6 +16,11 @@ div
                     label Name:
                   td(style="justify:left;")
                     | {{ deployable.name }}
+                tr
+                  td(style="justify:right;")
+                    label(for='type') Type:
+                  td(style="justify:left;")
+                    | {{deployable.type}}
                 tr
                   td(style="justify:right;")
                     label(for='product_owner') Product Owner:
@@ -64,7 +70,7 @@ div
                 div(v-if="isEditable")
                   a(href="", @click.prevent="editVariable(props.row)")
                     b-icon(icon="circle-edit-outline")
-          modal(v-if="showModal", @close="showModal = false")
+          //- modal(v-if="showModal", @close="showModal = false")
             h3(slot="header") Edit Variable
             button.button(@click="showModal=false") Hide
 
@@ -83,11 +89,14 @@ div
           b-table(:data="deployments", focusable)
             template(slot-scope="props")
               b-table-column(field="environment", label="Environment")
-                nuxt-link(:to="`/environment/${props.row.environment}`") {{ props.row.environment }}
-              b-table-column(field="deployable", label="Deployable")
-                | {{ props.row.deployable }}
+                nuxt-link(:to="`/environment/${props.row.environment}`")
+                  span(v-html="std_toQualifiedDisplay(props.row.environmentOwner, props.row.environment)")
+              b-table-column(field="deployable", label="Application")
+                | {{ props.row.application_name }}
               b-table-column(field="notes", label="Notes")
                 | {{ props.row.notes }}
+              b-table-column(field="", label="")
+                b-button(class="button is-small is-primary is-outlined", tag="nuxt-link", :to="`../deployment/${props.row.environment_owner}:${props.row.environment}/${props.row.application_name}`") Configure
 
       b-tab-item(label="Dependencies")
         // Dependencies
@@ -160,6 +169,9 @@ div
                     div.formStyle Edit description:
                       div(class="control")
                         input(name="description", v-model="form.new_description", class="input", type="text", value="description", placeholder="Description")
+                    div.formStyle Edit type:
+                      div(class="control")
+                        input(name="type", v-model="form.new_type", class="input", type="text", value="type", placeholder="Type")
                     div.formStyle Edit is this a project?
                       div(class="control")
                         b-select(placeholder="Is this a project?", v-model="form.new_is_project", value="is_project") Is this deployable a project?:
@@ -395,9 +407,10 @@ div
 import axios from 'axios'
 import webconfig from '~/protected-config/website-config'
 const { protocol, host, port } = webconfig
+import standardStuff from '../../lib/standard-stuff'
 
 export default {
-  name: 'Deployables',
+  name: 'Deployable',
 
   components: {
     modal: {
@@ -410,6 +423,7 @@ export default {
       form: {
         // Editing the existing deployable
         new_owner: '',
+        new_type: '',
         new_description: '',
         new_is_project: '',
   
@@ -514,11 +528,14 @@ export default {
   },
 
   methods: {
+    ...standardStuff.methods,
+
     // EDIT THE DETAILS OF THE SELECTED DEPLOYABLE
     async saveDeployable() {
       try {
         await axios.post(`${protocol}://${host}:${port}/deployable`, {
           product_owner: this.form.new_owner,
+          type: this.form.new_type,
           description: this.form.new_description,
           is_project: this.form.new_is_project,
           name: this.deployableName
@@ -528,6 +545,7 @@ export default {
         // Display new deployable details
         this.editDeployableStatus = 'null'
         this.deployable.product_owner = this.form.new_owner
+        this.deployable.type = this.form.new_type
         this.deployable.description = this.form.new_description
         this.deployable.is_project = this.form.new_is_project
         console.log('New deployable details have been updated on the browser.')
@@ -539,7 +557,7 @@ export default {
     // ADD A NEW VARIABLE TO THE DATABASE - FROM MODAL 
     async saveNewVariable() {
       //Check that form is filled correctly
-      if (this.form.variable_name && this.form.variable_description && this.form.variable_type && this.form.variable_mandatory && this.form.variable_is_external) {
+      if (this.form.variable_name && this.form.variable_type && this.form.variable_mandatory && this.form.variable_is_external) {
         
         // Check for existing variable names
         let found = false
@@ -852,6 +870,7 @@ export default {
     setEditMode() { 
       this.editDeployableStatus = 'edit'
       this.form.new_owner = this.deployable.product_owner
+      this.form.new_type = this.deployable.type
       this.form.new_description = this.deployable.description
       this.form.new_is_project = this.deployable.is_project
     }, // -setEditMode
@@ -912,10 +931,11 @@ export default {
    *  See https://nuxtjs.org/guide/async-data#handling-errors
    */
   async asyncData ({ app, params, error }) {
-    let deployableName = params.deployableName
+    let username = app.$nuxtLoginservice.user.username
+    let {owner:deployableOwner, name:deployableName} = standardStuff.methods.std_fromQualifiedName(params.deployableName, username)
+console.log(`deployable=> ${deployableOwner}, ${deployableName}`);
 
     let jwt = app.$nuxtLoginservice.jwt
-
     let config = {
       headers: {
         authorization: `Bearer ${jwt}`,
