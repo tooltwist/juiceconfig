@@ -71,7 +71,7 @@ server.get('/deployables', auth, async (req, res, next) => {
   console.log(`I am ${me}`);
   
 
-  const sql = `SELECT owner, name, is_project, product_owner, description FROM deployable`
+  const sql = `SELECT owner, name, type, is_project, product_owner, description FROM deployable`
 
   // const sql = `(SELECT deployable.name, deployable.is_project, deployable.product_owner, deployable.description FROM deployable INNER JOIN project_user ON deployable.name = project_user.project AND project_user.user_id =?) UNION (SELECT * FROM deployable WHERE deployable.is_project = 'no')`
   const params = [ userIdentity ]
@@ -301,6 +301,180 @@ server.use(restify.plugins.acceptParser(server.acceptable));
 //     return next();
 //     }) 
 // }); // End of section
+server.get('/variableValues', async (req, res, next) => {
+  console.log(`GET /variableValues`);
+
+  let environmentOwner = req.query.environmentOwner
+  let environment = req.query.environment
+  let applicationName = req.query.applicationName
+
+  let con = await db.checkConnection()
+  const sql = `SELECT * FROM variable_value WHERE environment_owner=? AND environment=? AND application_name=?`
+  const params = [ environmentOwner, environment, applicationName ]
+
+  con.query(sql, params, function (err, result) {
+    if (err) throw err;
+    console.log("Result: ", result);
+    res.send({ variableValues: result })
+    next()
+  });
+});
+
+server.post('/variableValues', auth, async (req, res, next) => {
+  console.log(`POST /variableValues`);
+
+  console.log(`rec.params=`, req.params);
+
+  // See what variables we currently have in th DB
+  let environmentOwner = req.params.environmentOwner
+  let environment = req.params.environment
+  let applicationName = req.params.applicationName
+  let variableValues = req.params.variableValues
+
+  let con = await db.checkConnection()
+  const sql = `SELECT * FROM variable_value WHERE environment_owner=? AND environment=? AND application_name=?`
+  const params = [ environmentOwner, environment, applicationName ]
+
+  // let result = await con.query(sql, params)
+  // console.log(`result=`, result);
+
+  let toAdd = []
+  let toUpdate = []
+  let toDelete = []
+  
+  con.query(sql, params, function (err, result) {
+    if (err) throw err;
+    // console.log("Result: ", result);
+
+    // See what we have in the database that can be deleted.
+    let dbIndex = { } // Hash of variables and values in the DB
+    result.forEach(row => {
+      let variableName = row.variable_name
+      dbIndex[variableName] = row.value
+      if (typeof(variableValues[variableName]) === 'undefined') {
+        // console.log(`  -> delete ${variableName}`);
+        toDelete.push(variableName)
+      }
+    })
+
+    // See what we're received that can be added or updated
+    for (let variableName in variableValues) {
+      let newValue = variableValues[variableName]
+      // console.log(`check ${variableName}`);
+      let oldValue = dbIndex[variableName]
+      if (typeof(oldValue) === 'undefined') {
+        // console.log(`  -> add ${variableName} (${newValue})`);
+        toAdd.push({ variableName, value: newValue })
+      } else if (oldValue !== newValue) {
+        // console.log(`  -> update ${variableName} (${newValue})`);        
+        toUpdate.push({ variableName, value: newValue })
+      }
+    }
+
+    deleteVariableValues(con, environmentOwner, environment, applicationName, toDelete, (err) => {
+      if (err) throw err
+      addVariableValues(con, environmentOwner, environment, applicationName, toAdd, (err) => {
+        if (err) throw err
+        updateVariableValues(con, environmentOwner, environment, applicationName, toUpdate, err => {
+          if (err) throw err
+
+          // Seems all worked.
+          res.send({ status: 'ok' })
+          next()
+        })
+      })  
+    })
+  });
+
+});
+
+async function deleteVariableValues(connection, environmentOwner, environment, applicationName, array, cb) {
+  console.log(`deleteVariableValues()`, array);
+
+  if (array.length === 0) {
+    return cb(null)
+  }
+  let sql = `DELETE FROM variable_value WHERE environment_owner=? AND environment=? AND application_name=? AND (`
+  let params = [ environmentOwner, environment, applicationName ]
+  let sep = ''
+  array.forEach(variableName => {
+    sql += `${sep}variable_name=?`
+    params.push(variableName)
+    sep = ' OR '
+  })
+  sql += ')'
+
+  console.log(`sql=${sql}`);
+  console.log(`params=`, params);
+  connection.query(sql, params, function (err, result) {
+    if (err) throw err;
+    // console.log("Result: ", result);
+    return cb(null)
+  })
+}
+
+async function addVariableValues(connection, environmentOwner, environment, applicationName, array, cb) {
+  console.log(`addVariableValues()`, array);
+
+  let doAdd = (index) => {
+    if (index >= array.length) {
+      return cb(null)
+    }
+
+    let sql = `INSERT INTO variable_value SET ?`
+    let params = {
+      environment_owner: environmentOwner,
+      environment: environment,
+      application_name: applicationName,
+      variable_name: array[index].variableName,
+      value: array[index].value
+    }
+    console.log(`sql=${sql}`);
+    console.log(`params=`, params);
+    connection.query(sql, params, function (err, result) {
+      if (err) throw err;
+      // console.log("Result: ", result);
+  
+      // We use setTimeout so the stack does not overflow
+      setTimeout(()=> {
+        doAdd(index + 1)
+      }, 0)
+    })
+  }
+  doAdd(0)
+}
+
+async function updateVariableValues(connection, environmentOwner, environment, applicationName, array, cb) {
+  console.log(`updateVariableValues()`, array);
+
+  let doUpdate = (index) => {
+    if (index >= array.length) {
+      return cb(null)
+    }
+
+    let sql = `UPDATE variable_value SET value=? WHERE environment_owner=? AND environment=? AND application_name=? AND variable_name=?`
+    let params = [
+      array[index].value,
+      environmentOwner,
+      environment,
+      applicationName,
+      array[index].variableName
+    ]
+    console.log(`sql=${sql}`);
+    console.log(`params=`, params);
+
+    connection.query(sql, params, function (err, result) {
+      if (err) throw err;
+      // console.log("Result: ", result);
+  
+      // We use setTimeout so the stack does not overflow
+      setTimeout(()=> {
+        doUpdate(index + 1)
+      }, 0)
+    })
+  }
+  doUpdate(0)
+}
 
 /*
  *  /_deployableNAME: Add a new VARIABLE for /_deployableNAME on MySQL db
@@ -367,6 +541,35 @@ server.post('/variable', async (req, res, next) => {
     return next();
   })
 }); // End of section
+
+// server.put('/variableValue', async (req, res, next) => {
+//   console.log(`PUT /variableValue`)
+
+//   console.log(`params=`, req.params);
+//   res.send({ status: 'ok' })
+//   return next();
+
+//   let con = await db.checkConnection()
+//   const deployable = req.params.deployable;
+//   const name = req.params.name;
+//   const description = req.params.description;
+//   const type = req.params.type;
+//   const mandatory = req.params.mandatory;
+//   const is_external = req.params.external;
+//   let sql = `INSERT INTO variable_value SET ?`
+
+//   // let sql = `UPDATE variable SET type=?, description =?, mandatory=?, is_external=? WHERE name=? AND deployable=?`
+//   let params = [ type, description, mandatory, is_external, name, deployable ]
+
+//   con.query(sql, params, (err, result) => {
+//     if (err) throw err;
+//     console.log("Result: ", result)
+
+//     // Send a success reply
+//     res.send({ status: 'ok' })
+//     return next();
+//   })
+// }); // End of section
 
 /*
  *  /_deployableNAME: Add a new DEPENDENCY for /_deployableNAME on MySQL db
@@ -606,10 +809,12 @@ server.get('/deployments', async (req, res, next) => {
 
   let environmentOwner = req.query.environmentOwner
   let environmentName = req.query.environmentName
+  let applicationName = req.query.applicationName
   let deployableOwner = req.query.deployableOwner
   let deployableName = req.query.deployableName
   console.log(`environmentOwner=${environmentOwner}`);
   console.log(`environmentName=${environmentName}`);
+  console.log(`applicationName=${applicationName}`);
   console.log(`deployableOwner=${deployableOwner}`);
   console.log(`deployableName=${deployableName}`);
   
@@ -624,12 +829,19 @@ server.get('/deployments', async (req, res, next) => {
   const params = [ ];
   let first = true
   if (environmentName) {
-    sql += (first ? ' where ':' and ') + `environment=?` //ZZZ should set owner
+    sql += (first ? ' WHERE ':' AND ') + `environment_owner=? AND environment=?`
+    params.push(environmentOwner)
     params.push(environmentName)
     first = false
   }
+  if (applicationName) {
+    sql += (first ? ' WHERE ':' AND ') + `application_name=?`
+    params.push(applicationName)
+    first = false
+  }
   if (deployableName) {
-    sql += (first ? ' where ':' and ') + `deployable=?` //ZZZ should set owner
+    sql += (first ? ' WHERE ':' AND ') + `deployable_owner=? AND deployable=?`
+    params.push(deployableOwner)
     params.push(deployableName)
     first = false
   }
