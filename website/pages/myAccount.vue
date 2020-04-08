@@ -8,19 +8,19 @@
                         tr  
                             td(style="justify:right;") 
                                 label Full name: 
-                            td(style="justify:left;") {{fullname}}
+                            td(style="justify:left;") {{fullname}} {{user.id}}
                         tr  
                             td(style="justify:right;") 
                                 label Email:
-                            td(style="justify:left;") Display data
+                            td(style="justify:left;") {{user.email}}
                         tr  
                             td(style="justify:right;") 
                                 label Role:
-                            td(style="justify:left;") Display data
+                            td(style="justify:left;") {{user.role}}
                         tr  
                             td(style="justify:right;") 
                                 label Access:
-                            td(style="justify:left;") Display data
+                            td(style="justify:left;") {{user.access}}
                 b-tab-item(label="Deployables")
                     article(class="message is-gray is-small")
                         div(class="message-body")
@@ -33,7 +33,18 @@
 </template>
 
 <script>
+import axios from 'axios'
+import webconfig from '~/protected-config/website-config'
+const { protocol, host, port } = webconfig
+//import standardStuff from '/opt/Development/Projects/juice/juiceconfig/website/lib/standard-stuff.js'
+
 export default {
+    data () {
+        return {
+            user: [ ],
+        }
+    },
+
     computed: {
         loggedIn: function() {
         if (this.$loginservice && this.$loginservice.user) {
@@ -45,7 +56,40 @@ export default {
         return this.loggedIn ? this.$loginservice.user.fullname : ''
         }
     },
+
+    async asyncData ({ app, error }) {
+        let jwt = app.$nuxtLoginservice.jwt
+        let userName = app.$nuxtLoginservice.user
+        console.log('userName = ', userName.username)
+
+        let config = {
+            headers: {
+                authorization: `Bearer ${jwt}`,
+            }
+        }
+
+        try {
+            // Select the deployable for this page
+            const url = `${protocol}://${host}:${port}/myaccount`
+            console.log(`Calling ${url}`);
+            let res = await axios.get(url, { 
+                params: {
+                    userName: userName.username
+                }
+            })
+            console.log(`API returned`, res.data);
+            const user = res.data.record
+
+            return {
+                user: user,
+            }
+        } catch (e) {
+            console.log(`Could not fetch user details:`, e)
+        }
+    }
 }
+
+
 </script>
 <style scoped>
 
