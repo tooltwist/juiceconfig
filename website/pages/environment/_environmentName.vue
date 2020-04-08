@@ -1,7 +1,9 @@
 <template lang="pug">
 
 section.section
-  h1.title Environment {{environmentName}}
+  h1.title Environment&nbsp;
+    span(v-html="std_environmentDisplay(environment)")
+
   
   b-tabs(v-model="activeTab", :animated="false")
     b-tab-item(label="Information")
@@ -160,6 +162,7 @@ section.section
             b-table-column(field="", label="")
               div(v-if="currentUser[0].access == 'full' || 'write' || 'super'")
                 b-button(class="button is-small is-primary is-outlined", tag="nuxt-link", :to="`../config/${props.row.environment}/${props.row.deployable}`") Configure
+            //- | {{props.row.environment}}
     
     div(v-if="environmentName !== 'localhost'")
       b-tab-item(label="Users")
@@ -610,10 +613,12 @@ console.log(`UPDATING ENVIRONMENT`, self.environment);
    *  See https://nuxtjs.org/guide/async-data#handling-errors
    */
   async asyncData ({ app, params, error }) {
-    let environmentName = params.environmentName
+    // let environmentName = params.environmentName
+    let username = app.$nuxtLoginservice.user.username
+    let {owner:environmentOwner, name:environmentName} = standardStuff.methods.std_fromQualifiedName(params.environmentName, username)
+console.log(`environment=> ${environmentOwner}, ${environmentName}`);
 
     let jwt = app.$nuxtLoginservice.jwt
-
     let config = {
       headers: {
         authorization: `Bearer ${jwt}`,

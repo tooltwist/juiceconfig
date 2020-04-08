@@ -1,13 +1,29 @@
 <template lang="pug">
 section.section
     h1.title(class="is-paddingless is-marginless") Deployment
-    p(class="is-size-5 has-text-weight-semibold is-italic")
+    //- p(class="is-size-5 has-text-weight-semibold is-italic")
         | Project 
-        span.is-warning {{ deployableName }} 
+        span.is-warning {{ applicationName }} 
         span on environment 
         span.is-warning {{ environmentName }} 
     br
-    //h1.title.is-size-4 Configuration
+    table
+        tr
+            td(style="width:110px;") Environment:&nbsp;
+            td
+                b
+                    span(v-html="std_toQualifiedDisplay(environmentOwner, environmentName)")
+
+        tr
+            td Application:&nbsp;
+            td
+                b {{applicationName}}
+        tr
+            td Deployable:&nbsp;
+            td
+                b
+                    span(v-html="std_toQualifiedDisplay(deployment.deployable_owner, deployment.deployable)")
+    br
 
     .field
         b-checkbox(v-model="isSecureEnvironment")
@@ -16,7 +32,6 @@ section.section
         //- button.delete
         | This is a secure environment, so you will not be able to
         | specify configuration details here.
-        br
         | You will however be able to download templates and scripts to help create configurations.
 
     //- | {{ deployment }}
@@ -40,7 +55,7 @@ section.section
                         .field
                             .control
                                 input.input(v-if="editingDetails", v-model.trim="deployment.healthcheck_url", placeholder="URL to ECS Service", @input="saveDetails")
-                                a.my-not-input-a(v-else-if="validUrl(deployment.healthcheck_url)", :href="deployment.healthcheck_url", target="_blank") &nbsp;{{deployment.healthcheck_url}}
+                                a.my-not-input-a(v-else-if="validUrl(deployment.healthcheck_url)", :href="deployment.healthcheck_url", target="_blank") &nbsp;{{trimUrl(deployment.healthcheck_url)}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.healthcheck_url}}
                 .field.is-horizontal
                     .field-label.is-normal
@@ -49,7 +64,7 @@ section.section
                         .field
                             .control
                                 input.input(v-if="editingDetails", v-model.trim="deployment.aws_service", placeholder="URL to ECS Service", @input="saveDetails")
-                                a.my-not-input-a(v-else-if="validUrl(deployment.aws_service)", :href="deployment.aws_service", target="_blank") &nbsp;{{deployment.aws_service}}
+                                a.my-not-input-a(v-else-if="validUrl(deployment.aws_service)", :href="deployment.aws_service", target="_blank") &nbsp;{{trimUrl(deployment.aws_service)}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.aws_service}}
                 .field.is-horizontal
                     .field-label.is-normal
@@ -59,7 +74,7 @@ section.section
                             .control
                                 //- input.input(type="text", :class="{ myEditing: !editingDetails } ", v-model="deployment.aws_targetGroup", placeholder="URL to target group")
                                 input.input(v-if="editingDetails", v-model.trim="deployment.aws_targetgroup", placeholder="URL to ECS Service", @input="saveDetails")
-                                a.my-not-input-a(v-else-if="validUrl(deployment.aws_targetgroup)", :href="deployment.aws_targetgroup", target="_blank") &nbsp;{{deployment.aws_targetgroup}}
+                                a.my-not-input-a(v-else-if="validUrl(deployment.aws_targetgroup)", :href="deployment.aws_targetgroup", target="_blank") &nbsp;{{trimUrl(deployment.aws_targetgroup)}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.aws_targetgroup}}
                 .field.is-horizontal
                     .field-label.is-normal
@@ -68,7 +83,7 @@ section.section
                         .field
                             .control
                                 input.input(v-if="editingDetails", v-model.trim="deployment.aws_loadbalancer", placeholder="URL to ECS Service", @input="saveDetails")
-                                a.my-not-input-a(v-else-if="validUrl(deployment.aws_loadbalancer)", :href="deployment.aws_loadbalancer", target="_blank") &nbsp;{{deployment.aws_loadbalancer}}
+                                a.my-not-input-a(v-else-if="validUrl(deployment.aws_loadbalancer)", :href="deployment.aws_loadbalancer", target="_blank") &nbsp;{{trimUrl(deployment.aws_loadbalancer)}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.aws_loadbalancer}}
                 .field.is-horizontal
                     .field-label.is-normal
@@ -78,7 +93,7 @@ section.section
                             .control
                                 //- input.input(type="text", :class="{ myEditing: !editingDetails } ", v-model="deployment.aws_logfile_url", placeholder="URL to Cloudwatch logs")
                                 input.input(v-if="editingDetails", v-model.trim="deployment.aws_logfile_url", placeholder="URL to ECS Service", @input="saveDetails")
-                                a.my-not-input-a(v-else-if="validUrl(deployment.aws_logfile_url)", :href="deployment.aws_logfile_url", target="_blank") &nbsp;{{deployment.aws_logfile_url}}
+                                a.my-not-input-a(v-else-if="validUrl(deployment.aws_logfile_url)", :href="deployment.aws_logfile_url", target="_blank") &nbsp;{{trimUrl(deployment.aws_logfile_url)}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.aws_logfile_url}}
                 .field.is-horizontal
                     .field-label.is-normal
@@ -88,7 +103,7 @@ section.section
                             .control
                                 //- input.input(type="text", :class="{ myEditing: !editingDetails } ", v-model="deployment.aws_secretsmanager_secret", placeholder="Secret name")
                                 input.input(v-if="editingDetails", v-model.trim="deployment.aws_secretsmanager_secret", placeholder="URL to ECS Service", @input="saveDetails")
-                                a.my-not-input-a(v-else-if="validUrl(deployment.aws_secretsmanager_secret)", :href="deployment.aws_secretsmanager_secret", target="_blank") &nbsp;{{deployment.aws_secretsmanager_secret}}
+                                //- a.my-not-input-a(v-else-if="validUrl(deployment.aws_secretsmanager_secret)", :href="deployment.aws_secretsmanager_secret", target="_blank") &nbsp;{{deployment.aws_secretsmanager_secret}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.aws_secretsmanager_secret}}
 
             .control
@@ -97,7 +112,7 @@ section.section
                 //- button.button.is-small(@click="updateDeployment") update
 
 
-        b-tab-item(label="App Config.")
+        b-tab-item(label="Values")
             .panel(v-if="variableRecursive.length === 0")
                 h1 No variables are required for this deployable.
                 br
@@ -109,55 +124,110 @@ section.section
                 br
                 br
                 br
-            div(v-else)
-                form(v-for="(variable, index) in variableRecursive") 
+            div(v-if="variableRecursive.length > 0")
+                form(v-for="(variable, index) in variableRecursive")
                     div.formStyle(class="field is-horizontal")
                         div(class="field-label is-normal")
                             label(class="label", style="width:200px;") {{ variable.variableName }}: 
                         div(class="field-body")
                             div(class="field")
-                                p(class="control")
-                                    input(class="input", style="width:100%;", type="text", v-model="variable.value", placeholder="Configuration Value")
-                br
-                div(class="field is-grouped is-grouped-right")
-                    p(class="control")
-                        a(@click="submitConfig", class="button is-primary", style="background-color:orange") Submit
-                    p(class="control")
-                        b-button(class="button is-danger is-outlined is-light", tag="nuxt-link", to="/environments") Cancel
+                                p.control()
+                                    input.input(v-if="editingValues", style="width:100%;", type="text", v-model="variable.value", placeholder="Configuration Value")
+                                    //- p.control(v-else)
+                                    p.my-not-input-p(v-if="!editingValues") &nbsp;{{variable.value}}
 
-            // Submit Modal 
-            div(v-show="submitModal")
-                transition(name="modal")
-                    div(class="modal-mask")
-                        div(class="modal-wrapper")
-                            div(class="modal-container")
-                                div(class="modal-header")
-                                    slot(name="header")
-                                        div(class="is-size-5 has-text-weight-semibold") Add New Configuration:
-                                        i Adding new configuration for {{ deployableName }} on {{ environmentName }}
-                                    div(class="modal-body")
-                                        slot(name="body")
-                                            article(class="message is-info is-small")
-                                                div(class="message-body") Please check fields for missing or incorrect values before saving.
-                                            div.formStyle(v-for="variables in variableRecursive")
-                                                p {{variables.variableName}}: {{variables.value}}
-                                    div(class="buttons is-centered")
-                                        b-button(@click.stop="saveNewVariable",  type="is-light", size="is-small")  Save    
-                                        b-button(@click="submitModal = false", type="is-danger", size="is-small") Cancel
+            section(v-if="unusedValues.length > 0")
+                hr
+                | The following values are defined but they are not used by&nbsp;
+                b
+                    span(v-html="std_toQualifiedDisplay(deployment.deployable_owner, deployment.deployable)")
+                | &nbsp;or it's dependancies.
+
+                form(v-for="(val, index) in unusedValues")
+                    div.formStyle.field.is-horizontal(v-show="!val.deleted")
+                        div.field-label.is-normal
+                            label.label(style="width:200px;") {{ val.variableName }}: 
+                        div(class="field-body")
+                            b-field(v-if="editingValues")
+                                b-input(
+                                    v-model="val.value"
+                                    icon-right="close-circle"
+                                    icon-right-clickable
+                                    @icon-right-click="deleteUnusedValue(val.variableName)")
+                            b-field(v-else)
+                                p.my-not-input-p &nbsp;{{val.value}}
+            br
+
+            .control(v-if="editingValues", )
+                button.button.is-success(@click="saveVariableValues") Save Changes
+                | &nbsp;&nbsp;
+                b-button.button.is-danger.is-outlined.is-light(tag="nuxt-link", to="/deployments") Cancel
+            .control(v-else)
+                button.button.is-warning(@click="editingValues= !editingValues") Edit
+
+            //- // Submit Modal 
+            //- div(v-show="submitModal")
+            //-     transition(name="modal")
+            //-         div(class="modal-mask")
+            //-             div(class="modal-wrapper")
+            //-                 div(class="modal-container")
+            //-                     div(class="modal-header")
+            //-                         slot(name="header")
+            //-                             div(class="is-size-5 has-text-weight-semibold") Add New Configuration:
+            //-                             i Adding new configuration for {{ applicationName }} on {{ environmentName }}
+            //-                         div(class="modal-body")
+            //-                             slot(name="body")
+            //-                                 article(class="message is-info is-small")
+            //-                                     div(class="message-body") Please check fields for missing or incorrect values before saving.
+            //-                                 div.formStyle(v-for="variables in variableRecursive")
+            //-                                     p {{variables.variableName}}: {{variables.value}}
+            //-                         div(class="buttons is-centered")
+            //-                             b-button(@click.stop="saveNewVariable",  type="is-light", size="is-small")  Save    
+            //-                             b-button(@click="submitModal = false", type="is-danger", size="is-small") Cancel
 
 
-        b-tab-item(label="Config File")
-            textarea.textarea.my-textarea(ref="configFileContent", readonly="true", style="font-family: courier;")
-                | {{configFileContent}}
-            button.button.is-small.is-success(@click="downloadConfigFile") Download
-        b-tab-item(label="Secrets manager")
-            textarea.textarea.my-textarea(readonly="true", style="font-family: courier;")
-                | {{codeForSecretsManager}}
-            button.button.is-small.is-success(@click="downloadSetSecret") Download
-        b-tab-item(label="Environment variable")
-            textarea.textarea.my-textarea(readonly="true", style="font-family: courier;")
-                | {{codeToSetEnvVariable}}
-            button.button.is-small.is-success(@click="downloadSetEnvironment") Download
+        b-tab-item(label="Configuration")
+            p How will you provide the configuration to this application?
+            br
+            section
+                .block(style="margin-left: 80px;")
+                    b-radio(v-model="configType", size="is-small", name="configType", native-value="file")
+                        | Configuration file&nbsp;&nbsp;&nbsp;
+                    b-radio(v-model="configType", size="is-small", name="configType", native-value="secrets")
+                        | Amazon Secrets Manager&nbsp;&nbsp;&nbsp;
+                    b-radio(v-model="configType", size="is-small", name="configType", native-value="environment")
+                        | Environment variable
+
+            br
+
+            // Configuration file
+            div(v-if="configType==='file'")
+                .notification
+                    | JUICE_CONFIG=file:::/
+                    i path-to-configuration
+                    | /{{environmentName}}-{{applicationName}}.config`
+                textarea.textarea.my-textarea(ref="configFileContent", readonly="true", style="font-family: courier;")
+                    | {{configFileContent}}
+                button.button.is-small.is-success(@click="downloadConfigFile") Download
+
+            // Amazon secrets manager
+            div(v-else-if="configType==='secrets'")
+                .notification
+                    | JUICE_CONFIG=secrets_manager:::{{environment.aws_region}}:::{{deployment.aws_secretsmanager_secret}}
+                    br
+                    br
+                    | The script below uses the AWS CLI to update the secret in Secrets Manager.
+                textarea.textarea.my-textarea(readonly="true", style="font-family: courier;")
+                    | {{codeForSecretsManager}}
+                button.button.is-small.is-success(@click="downloadSetSecret") Download
+
+            // Environment variable
+            div(v-else-if="configType==='environment'")
+                .notification
+                    | The script below sets the JUICE_CONFIG environment variable.
+                textarea.textarea.my-textarea(readonly="true", style="font-family: courier;")
+                    | {{codeToSetEnvVariable}}
+                button.button.is-small.is-success(@click="downloadSetEnvironment") Download
 
    
 </template>
@@ -165,7 +235,7 @@ section.section
 <script>
 import axios from 'axios'
 import webconfig from '~/protected-config/website-config'
-import standardStuff from '../../../../lib/standard-stuff'
+import standardStuff from '../../../lib/standard-stuff'
 const { protocol, host, port } = webconfig
 
 const NUM_START = `ZNUZM(`
@@ -177,49 +247,65 @@ const BOOL_END = `)BOZOLZ`
 export default {
     data () {
         return {
+            axiosConfig: null,
+
+            environmentOwner: '',
             environmentName: '',
-            deployableName: '',
-            variables: [],
-            deployables: [],
+            applicationName: '',
             deployment: {},
+            //deployableName: '',//ZZZZ
+            variables: [],
+            unusedValues: [],
+            deployables: [],
             environment: {},
             dependencies: [],
-            submitModal: false,
+            // submitModal: false,
             variableRecursive: [],
 
             activeTab: 0,
             noSecureValues: true,
             editingDetails: false,
-            updateDelay: null
+            editingValues: false,
+            updateDelay: null,
+
+            configType: 'file'
         }
     },
 
     async asyncData ({ app, params, error }) {
-        let environmentName = params.environment
-        let deployableName = params.deployable
+        let username = app.$nuxtLoginservice.user.username
+        let {owner:environmentOwner, name:environmentName} = standardStuff.methods.std_fromQualifiedName(params.environment, username)
+        let applicationName = params.application
+        // let deployableName = params.deployable
+        console.log(`deployment=> ${environmentOwner}, ${environmentName}, ${applicationName}`);
+        
+
         try {
 
         let jwt = app.$nuxtLoginservice.jwt
-
-        let config = {
+        let axiosConfig = {
             headers: {
                 authorization: `Bearer ${jwt}`,
             }
         }   
         
         
-        // Select the deployment for this page
+        // Select this deployment for this page
         let url = `${protocol}://${host}:${port}/deployments`
         console.log(`Calling ${url}`);
         let res = await axios.get(url, { 
             params: {
-                environmentOwner: '',
-                environmentName: environmentName,
-                deployableOwner: '',
-                deployableName: deployableName
+                environmentOwner,
+                environmentName,
+                applicationName,
+                // deployableOwner: '',
+                // deployableName: deployableName
             }
-        })
+        }, axiosConfig)
         console.log(`API returned deployments`, res.data.deployments);
+        if (res.data.deployments.length > 1) {
+            return error({status: 500, message: 'Returned too many deployments'})
+        }
         const deployment = res.data.deployments[0]
 console.log(`YYYYY YARP 1`, deployment);
 
@@ -232,36 +318,45 @@ console.log(`YYYYY YARP 1`, deployment);
             params: {
                 environmentName: environmentName
             }
-        })
+        }, axiosConfig)
         console.log(`API returned environment`, res.data);
+        if (res.data.record.length > 1) {
+            return error({status: 500, message: 'Returned too many environments'})
+        }
         const environment = res.data.record
+        console.log(`Environment is`, environment);
+        
 
-        // Import deployables to be used in deployments form
+        // Import deployables to be shown in dropdown
         const url2 = `${protocol}://${host}:${port}/deployables`
-        let res2 = await axios.get(url2, config)
+        let res2 = await axios.get(url2, axiosConfig)
         const deployables = res2.data.deployables
 
+        // Find our specific deployable
+        // let deployableOwner = null
+        // let deployableName = null
+        // for (let i = 0; i < deployables.length; )
 
+        // // Select the variables for this deployable
+        // const url3 = `${protocol}://${host}:${port}/variables`
+        // let res3 = await axios.get(url3, { 
+        //     params: {
+        //         deployableName: deployableName
+        //     }
+        // })
+        // // console.log(`API3 returned`, res3.data);
+        // const variables = res3.data.variables
 
-        // Select the variables for this deployable
-        const url3 = `${protocol}://${host}:${port}/variables`
-        let res3 = await axios.get(url3, { 
-            params: {
-                deployableName: deployableName
-            }
-        })
-        // console.log(`API3 returned`, res3.data);
-        const variables = res3.data.variables
-
-        // Import dependencies with 'deployableName' as parent
-        const url4 = `${protocol}://${host}:${port}/dependencies1`
-        let res4 = await axios.get(url4, {
-            params: {
-                deployableName: deployableName
-            }
-        })
-        // console.log(`API4 returned`, res4.data)
-        const dependencies = res4.data.dependencies
+        // // Import dependencies with 'deployableName' as parent
+        // const url4 = `${protocol}://${host}:${port}/dependencies1`
+        // let res4 = await axios.get(url4, {
+        //     params: {
+        //         owner: deployment.deployable_owner,
+        //         name: deployment.deployable
+        //     }
+        // })
+        // console.log(`API4 dependencies`, res4.data)
+        // const dependencies = res4.data.dependencies
 
         // // Select all variables for dependencies
         // const url5 = '${protocol}://${host}:${port}/variablesAll'
@@ -273,23 +368,76 @@ console.log(`YYYYY YARP 1`, deployment);
         const url6 = `${protocol}://${host}:${port}/variablesConfig`
         let res6 = await axios.get(url6, {
             params: {
-                deployable: deployableName
+                deployable_owner: deployment.deployable_owner,
+                deployable: deployment.deployable
             }
-        })
-        // console.log(`API6 returned`, res6.data)
+        }, axiosConfig)
+        console.log(`API6 variablesConfig=`, res6.data)
         const variableRecursive = res6.data
+
+// console.log(`YYYYY YARP 2`, deployment);
+
+        // Select variable values for this deployment
+console.log(`YARP XUT 1`);
+
+        const url7 = `${protocol}://${host}:${port}/variableValues`
+        let result7 = await axios.get(url7, {
+            params: {
+                environmentOwner: environmentOwner,
+                environment: environmentName,
+                applicationName: applicationName
+            }
+        }, axiosConfig)
+console.log(`YARP XUT 1`);
+        console.log(`API7 variableValues=`, result7.data)
+        const variableValues = result7.data.variableValues
 
 console.log(`YYYYY YARP 2`, deployment);
 
+        // If we have any values defined that are not used, we might want
+        // to keep them - perhaps they'll be added back to the deployable.
+        let unusedValues = [ ]
+
+        // Patch the variable values in to the variable list
+        // This is inefficient, but the list isn't too long...
+        variableValues.forEach((vv) => {
+            let used = false
+            for (let i = 0; i < variableRecursive.length; i++) {
+                let v = variableRecursive[i]
+                if (v.variableName === vv.variable_name) {
+                    v.value = vv.value
+                    used = true
+                    break                    
+                }
+            }//- for
+
+            // If this value is not used by any defined variable, let's put it in the "unused values" list.
+            if (!used) {
+                unusedValues.push({
+                    variableName: vv.variable_name,
+                    value: vv.value,
+                    deleted: false
+                })
+            }
+        })//- variableValues.forEach
+
+        console.log(`unusedValues=`, unusedValues);
+        
+
+
         return {
+            axiosConfig,
+            environmentOwner,
+            environmentName,
+            applicationName,
             deployment: deployment,
-            environmentName: environmentName,
-            deployableName: deployableName,
+            // deployableName: deployableName,
             environment: environment,
             deployables: deployables,
-            variables: variables,
-            dependencies: dependencies,
+            // variables: variables,
+            // dependencies: dependencies,
             variableRecursive: variableRecursive,
+            unusedValues,
         }
         } catch (e) {
             console.log(`Could not fetch data:`, e)
@@ -392,10 +540,10 @@ console.log(`YYYYY YARP 2`, deployment);
         // },
 
         // Submitting the configuration values to a modal for confirmation (for now)
-        submitConfig() {
-            this.submitModal = true
-            console.log(this.variableRecursive)
-        },
+        // submitConfig() {
+        //     this.submitModal = true
+        //     console.log(this.variableRecursive)
+        // },
 
         jsonAsString(mode/*value|type|envvar*/) {
             let sep = '    '
@@ -492,7 +640,7 @@ console.log(`YYYYY YARP 2`, deployment);
         },//- environmentVariableName
 
         downloadConfigFile: function () {
-            const filename = `${this.environmentName}-${this.deployableName}.config`
+            const filename = `${this.environmentName}-${this.applicationName}.config`
             let content = this.configFileContent
             var myblob = new Blob([content], {
                 type: 'text/json'
@@ -506,7 +654,7 @@ console.log(`YYYYY YARP 2`, deployment);
         },
 
         downloadSetEnvironment: function () {
-            const filename = `environment-${this.environmentName}-${this.deployableName}.sh`
+            const filename = `environment-${this.environmentName}-${this.applicationName}.sh`
             let content = this.codeToSetEnvVariable
             var myblob = new Blob([content], {
                 type: 'text/plain'
@@ -520,7 +668,7 @@ console.log(`YYYYY YARP 2`, deployment);
         },
 
         downloadSetSecret: function () {
-            const filename = `set-secret-${this.environmentName}-${this.deployableName}.sh`
+            const filename = `set-secret-${this.environmentName}-${this.applicationName}.sh`
             let content = this.codeForSecretsManager
             var myblob = new Blob([content], {
                 type: 'text/plain'
@@ -537,7 +685,7 @@ console.log(`YYYYY YARP 2`, deployment);
             console.log(`updateDeployment() `, this.deployment);
 
             const url = `${protocol}://${host}:${port}/deployment`
-            let result = await axios.put(url, this.deployment)
+            let result = await axios.put(url, this.deployment, this.axiosConfig)
             // console.log(`API4 returned`, res4.data)
             // const dependencies = res4.data.dependencies
             console.log(`result is `, result);
@@ -553,9 +701,61 @@ console.log(`YYYYY YARP 2`, deployment);
                 // console.log(`Updating...`, self.deployment);
                 self.updateDelay = null
                 const url = `${protocol}://${host}:${port}/deployment`
-                let result = await axios.put(url, self.deployment)
+                let result = await axios.put(url, self.deployment, this.axiosConfig)
                 // console.log(`result is `, result);
             }, 500)
+        },
+
+        deleteUnusedValue: async function (variableName) {
+            console.log(`deleteUnusedValue(${variableName})`);
+
+            for (let i = 0; i < this.unusedValues.length; i++) {
+                let uv = this.unusedValues[i]
+                if (uv.variableName === variableName) {
+                    // this.unusedValues.splice(i, 1)
+                    console.log(`Found in position ${i}`);
+                    uv.deleted = true
+                    
+                    return
+                }
+            }
+
+        },
+
+        saveVariableValues: async function () {
+            console.log(`saveNewVariable()`, this.variableRecursive);
+
+            let request = {
+                environmentOwner: this.environmentOwner,
+                environment: this.environmentName, 
+                applicationName: this.applicationName,
+                variableValues: {
+                    // We'll put the values here
+                }
+            }
+            // Add the known variables
+            this.variableRecursive.forEach(v => {
+                // if (v.value)
+                request.variableValues[v.variableName] = v.value
+            })
+            this.unusedValues.forEach(uv => {
+                if (!uv.deleted && uv.value) {
+                    request.variableValues[uv.variableName] = uv.value
+                }
+            })
+
+            console.log(`values to save=`, request);
+            await axios.post(`${protocol}://${host}:${port}/variableValues`, request, this.axiosConfig)
+            this.editingValues = false            
+        },
+
+        trimUrl: function (url) {
+            const maxlen = 70
+            if (url.length > maxlen) {
+                // return `${url.substring(0, maxlen)} ...`
+                return `...${url.substring(url.length - maxlen)}`
+            }
+            return url
         }
 
     }//- methods
