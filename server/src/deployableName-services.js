@@ -4,6 +4,28 @@ import auth from './auth'
 
 export default {
 	register (server) {
+        // Update edited DEPLOYABLE details
+        server.put('/deployable', async (req, res, next) => {
+            console.log(`PUT /deployable`)
+        
+            let con = await db.checkConnection()
+
+            const product_owner = req.params.product_owner;
+            const description = req.params.description;
+            const is_project = req.params.is_project;
+            const name = req.params.name;
+            const sql = `UPDATE deployable SET product_owner =?, description =?, is_project =? WHERE name =?`
+            const params = [ product_owner, description, is_project, name ]
+            
+            con.query( sql, params, (err, result) => {
+                if (err) throw err;
+            
+                // Send reply
+                res.send({ status: 'ok' })
+                return next();
+            }) 
+        });
+
         // Dynamically select the DEPLOYABLE for /_deployableNAME from MySQL db
         server.get('/deployable', async (req, res, next) => {
             console.log(`GET /deployable`);
@@ -118,7 +140,7 @@ export default {
             });
         });
         
-        // Edit the DEPLOYABLE values for /_deployableNAME on MySQL db        
+        /*// Edit the DEPLOYABLE values for /_deployableNAME on MySQL db        
         server.post('/deployable', async (req, res, next) => {
             console.log(`POST /deployable`)
         
@@ -138,7 +160,7 @@ export default {
                 res.send({ status: 'ok' });
                 return next();
             })
-        }); // End of section
+        }); // End of section*/
         
         // Variables
         server.get('/variableValues', async (req, res, next) => {

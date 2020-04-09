@@ -1,6 +1,4 @@
 import db from './database-mysql';
-import auth from './auth';
-import restify from 'restify';
 
 export default {
 	register (server) {
