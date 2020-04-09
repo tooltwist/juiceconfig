@@ -140,15 +140,15 @@ section.section
 
     b-tab-item(label="Deployments")
       // Deployments
-      h1(class="is-title is-size-4", style="text-align:left;") Deployments
-        div(class="buttons", style="float:right;")
+      h1.is-title.is-size-4(style="text-align:left;") Deployments
+        div.buttons(style="float:right;")
           div(v-if="currentUser[0].access == 'full' || 'write' || 'super'")
-            button(@click.prevent="newDeployment(deployments)", class="button is-primary", type="is-light")  + Add new deployment
+            button.button.is-primary(@click.prevent="newDeployment(deployments)", type="is-light")  + Add new deployment
       br
       div(v-if="this.deployments.length === 0") 
         br
-        article(class="message is-success is-small")
-          div(class="message-body") There are no deployments for this environment yet. Would you like to add one?
+        article.message.is-success.is-small
+          div.message-body There are no deployments for this environment yet. Would you like to add one?
       div(v-else)
         b-table(:data="deployments", focusable)
           template(slot-scope="props")
@@ -160,21 +160,21 @@ section.section
               | {{ props.row.notes }}
             b-table-column(field="", label="")
               div(v-if="currentUser[0].access == 'full' || 'write' || 'super'")
-                b-button(class="button is-small is-primary is-outlined", tag="nuxt-link", :to="`../config/${props.row.environment}/${props.row.deployable}`") Configure
+                b-button.button.is-small.is-primary.is-outlined(tag="nuxt-link", :to="`../config/${props.row.environment}/${props.row.deployable}`") Configure
             //- | {{props.row.environment}}
     
     div(v-if="environmentName !== 'localhost'")
       b-tab-item(label="Users")
         // Users
-        h1(class="is-title is-size-4", style="text-align:left;") Users
-          div(class="buttons", style="float:right;")
+        h1.is-title.is-size-4(style="text-align:left;") Users
+          div.buttons(style="float:right;")
             div(v-if="currentUser[0].access == 'full' || 'write' || 'super'")
-              button(@click.prevent="newUser", class="button is-primary", type="is-light")  + Add New User
+              button.button.is-primary(@click.prevent="newUser", type="is-light")  + Add New User
         br
         div(v-if="this.users.length === 0")
           br
-          article(class="message is-success is-small")
-            div(class="message-body") There are no users for this environment yet. Would you like to add a new user?
+          article.message.is-success.is-small
+            div.message-body There are no users for this environment yet. Would you like to add a new user?
         b-table(:data="users", focusable)
           template(slot-scope="props")
             b-table-column(field="environment", label="Environment")
@@ -196,124 +196,124 @@ section.section
   // Edit environment information  MODAL
   div(v-show="editEnvInfo == 'edit'")
     transition(name="modal")
-      div(class="modal-mask")
-        div(class="modal-wrapper")
-          div(class="modal-card")
-            header(class="modal-card-head")
-              p(class="modal-card-title") Edit Environment 
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Edit Environment 
                 b {{ environmentName }}
-            section(class="modal-card-body")
+            section.modal-card-body
               slot(name="body")
                 form
                 div.form-group
                     div.formStyle Description:
-                      div(class="control")
-                        input(v-model="form.edit_envdescription", class="input", type="text", value="description", placeholder="Description")  
+                      div.control
+                        input.input(v-model="form.edit_envdescription", type="text", value="description", placeholder="Description")  
                     div.formStyle Notes:
-                      div(class="control")
-                        input(v-model="form.edit_envnotes", class="input", type="text", value="notes", placeholder="Notes")  
-            footer(class="modal-card-foot")        
-              div(class="control")
+                      divcontrol
+                        input.input(v-model="form.edit_envnotes", type="text", value="notes", placeholder="Notes")  
+            footer.modal-card-foot      
+              div.control
                 b-button(@click.stop="saveEditedEnv", type="is-primary is-light", size="is-small")  Save    
                 b-button(@click="editEnvInfo='null'", type="is-danger is-outlined", size="is-small") Cancel
 
   // New Deployment Modal starts below:
   div(v-show="newDeploymentModal")
     transition(name="modal")
-      div(class="modal-mask")
-        div(class="modal-wrapper")
-          div(class="modal-card")
-            header(class="modal-card-head")
-              p(class="modal-card-title") Add New Deployment for 
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Add New Deployment for 
                 b {{ environmentName }}
-            section(class="modal-card-body")
+            section.modal-card-body
               div(v-if="errormode === 'inputError'")
-                article(class="message is-danger is-small")
-                  div(class="message-header")
+                article.message.is-danger.is-small
+                  div.message-header
                     p Form Error
-                  div(class="message-body") Please ensure that all fields have values before saving.
-              div(class="modal-body", :data="deployments")
+                  div.message-body Please ensure that all fields have values before saving.
+              div.modal-body(:data="deployments")
                 slot(name="body")
                     form
                       div.form-group
                         div.formStyle Deployable:
-                          div(class="control")
+                          div.control
                             div(v-if="deploymentError === null")
                               b-select(placeholder="Deployable", v-model="form.new_deployable") Deployable:
                                 option(v-for="deployable in deployables") {{ deployable.name }}
                             div(v-else="deploymentError === `Deployment already exists`")
-                              b-select(class="is-danger", placeholder="Environment", v-model="form.new_deployable") Deployable:
+                              b-select.is-danger(placeholder="Environment", v-model="form.new_deployable") Deployable:
                                 option(v-for="deployable in deployables") {{ deployable.name }}
-                              p(class="help is-danger") {{ environmentName }} is already deployed with this deployable.
+                              p.help.is-danger {{ environmentName }} is already deployed with this deployable.
                         div.formStyle Notes:
-                          div(class="control")
-                            input(name="new_notes", v-model="form.new_notes", class="input", type="text", placeholder="Notes")
-            footer(class="modal-card-foot")  
-              div(class="control")
+                          div.control
+                            input.input(name="new_notes", v-model="form.new_notes", type="text", placeholder="Notes")
+            footer.modal-card-foot
+              div.control
                 b-button(@click.stop="saveNewDeployment",  type="is-primary is-light", size="is-small")  Save    
                 b-button(@click="newDeploymentModal=false", type="is-danger is-outlined", size="is-small") Cancel
 
   // New User Modal starts below:
   div(v-show="newUserModal")
     transition(name="modal")
-      div(class="modal-mask")
-        div(class="modal-wrapper")
-          div(class="modal-card")
-            header(class="modal-card-head")
-              p(class="modal-card-title") Add New User for Environment 
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Add New User for Environment 
                 b {{ environmentName }}
-            section(class="modal-card-body")
+            section.modal-card-body
               div(v-if="errormode === 'inputError'")
-                article(class="message is-danger is-small")
-                  div(class="message-header")
+                article.message.is-danger.is-small
+                  div.message-header
                     p Form Error
-                  div(class="message-body") Please ensure that all fields have values before saving.
-              div(class="modal-body")
+                  div.message-body Please ensure that all fields have values before saving.
+              div.modal-body
                 slot(name="body")
                   form
                     div.form-group
                       div.formStyle Select User: 
-                        div(class="control")
+                        div.control
                         div(v-if="newUserError === null")
                           b-select(placeholder="User", v-model="form.new_environmentuser") User:
                             option(v-for="user in allUsers", :value="user.id") {{ user.first_name }} {{ user.last_name }} 
                         div(v-if="newUserError === `User already exists`") 
                           b-select(placeholder="User", v-model="form.new_environmentuser") User:
                             option(v-for="user in allUsers", :value="user.id") {{ user.first_name }} {{ user.last_name }} 
-                          p(class="help is-danger") {{ environmentName }} already has this user added.
+                          p.help.is-danger {{ environmentName }} already has this user added.
                       div.formStyle Access:
-                        div(class="control")
+                        div.control
                           b-select(placeholder="Access", v-model="form.new_user_access") Type:
                             option(value="limited") Limited
                             option(value="write") Write
                             option(value="conditional") Conditional (recommended for clients only)
-            footer(class="modal-card-foot")  
-              div(class="control")
+            footer.modal-card-foot
+              div.control
                 b-button(@click.stop="saveNewUser",  type="is-primary is-light", size="is-small")  Save
                 b-button(@click="newUserModal=false", type="is-danger is-outlined", size="is-small") Cancel
 
   // Edit User Modal starts below:
   div(v-show="showUserEditModal")
     transition(name="modal")
-      div(class="modal-mask")
-        div(class="modal-wrapper")
-          div(class="modal-card")
-            header(class="modal-card-head")
-              p(class="modal-card-title") Edit User 
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Edit User 
                 b {{ users.first_name }} {{ users.last_name }}
-            section(class="modal-card-body")
-              div(class="modal-body")
+            section.modal-card-body
+              div.modal-body
                 slot(name="body")
                   form
                     div.form-group
                       div.formStyle
-                        b-field(class="control") Change accessibility:
+                        b-field.control Change accessibility:
                           b-select(placeholder="Accessibility", v-model="form.edit_useraccess", value="accessibility") 
                             option(value="limited") Limited
                             option(value="write") Write
                             option(value="conditional") Conditional (clients-only)
-            footer(class="modal-card-foot")  
-              div(class="control")
+            footer.modal-card-foot 
+              div.control
                 b-button(@click.stop="saveEditedUser", type="is-primary is-light", size="is-small")  Save    
                 b-button(@click="showUserEditModal=false", type="is-danger is-outlined", size="is-small") Cancel
 </template>

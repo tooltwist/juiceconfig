@@ -17,7 +17,7 @@
           
           .adBarStyle.column.is-4
             br
-            p(class="is-small") Get started quickly with our easy-to-follow tutorial:
+            p.is-small Get started quickly with our easy-to-follow tutorial:
             br
             div
               youtube(:video-id="videoId", host="https://www.youtube.com", SameSite="None", Secure)

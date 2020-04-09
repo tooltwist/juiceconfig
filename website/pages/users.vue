@@ -1,8 +1,8 @@
 <template lang="pug">
   section.section
     h1.title Users
-      div(class="buttons", style="float:right;")
-        button(@click.prevent="newUser(users)", class="button is-primary", type="is-light")  + Add New User
+      div.buttons(style="float:right;")
+        button.button.is-primary(@click.prevent="newUser(users)", type="is-light")  + Add New User
     b-table(:data="users", focusable)
       template(slot-scope="props")
         b-table-column(field="username", label="Username")
@@ -21,44 +21,44 @@
     // Modal for new user
     div(v-show="newUserModal")
       transition(name="modal")
-        div(class="modal-mask")
-          div(class="modal-wrapper")
-            div(class="modal-card")
-              header(class="modal-card-head")
-                p(class="modal-card-title") Add a New User
-              section(class="modal-card-body")
+        div.modal-mask
+          div.modal-wrapper
+            div.modal-card
+              header.modal-card-head
+                p.modal-card-title Add a New User
+              section.modal-card-body
                 div(v-if="errormode === 'inputError'")
-                  article(class="message is-danger is-small")
-                    div(class="message-header")
+                  article.message.is-danger.is-small
+                    div.message-header
                       p Form Error
-                    div(class="message-body") Please ensure that all fields have values before saving.
-                div(class="modal-body", :data="users")
+                    div.message-body Please ensure that all fields have values before saving.
+                div.modal-body(:data="users")
                   slot(name="body")
                       form
                         div.form-group
                           div.formStyle First Name:
-                            div(class="control")
-                              input(name="user_firstname", v-model="form.user_firstname", class="input", type="text", placeholder="First Name")
+                            div.control
+                              input.input(name="user_firstname", v-model="form.user_firstname", type="text", placeholder="First Name")
                           div.formStyle Last Name:
-                            div(class="control")
-                              input(name="user_lastname", v-model="form.user_lastname", class="input", type="text", placeholder="Last Name")
+                            div.control
+                              input.input(name="user_lastname", v-model="form.user_lastname", type="text", placeholder="Last Name")
                           div.formStyle Role:
-                            div(class="control")
-                              input(name="user_role", v-model="form.user_role", class="input", type="text", placeholder="Users Role")
+                            div.control
+                              input.input(name="user_role", v-model="form.user_role", type="text", placeholder="Users Role")
                           div.formStyle Accessibility type:
                             b-select(placeholder="Type", v-model="form.user_accesstype") Type:
                               option(value="limited") Limited
                               option(value="write") Write
                               option(value="conditional") Conditional (recommended for clients only)
                           div.formStyle Email address (for account verification):
-                            div(class="control")
+                            div.control
                               div(v-if="userError === null")
-                                input(name="user_email", v-model="form.user_email", class="input", type="email", placeholder="example@tooltwist.com")
+                                input.input(name="user_email", v-model="form.user_email", type="email", placeholder="example@tooltwist.com")
                               div(v-else="userError === `User already exists`")   
-                                input(class="input is-danger", v-model="form.user_email", type="email", placeholder="example@tooltwist.com")
-                                p(class="help is-danger") A user with this email already exists. 
-              footer(class="modal-card-foot")
-                div(class="control")
+                                input.input.is-danger(v-model="form.user_email", type="email", placeholder="example@tooltwist.com")
+                                p.help.is-danger A user with this email already exists. 
+              footer.modal-card-foot
+                div.control
                   b-button(@click.stop="saveNewUser",  type="is-primary is-light", size="is-small")  Save    
                   b-button(@click="newUserModal=false", type="is-danger is-outlined", size="is-small") Cancel
 </template>

@@ -1,7 +1,7 @@
 <template lang="pug">
   section.section
     h1.title Applications
-      div(class="buttons has-text-weight-normal", style="float:right;")
+      div.buttons.has-text-weight-normal(style="float:right;")
         //b-button(class="is-primary", tag="nuxt-link", to="/newEnvironment",  type="is-light")  + New Deployment
         b-button.is-primary(@click="initNewDeploymentDialog")  + New Deployment
 
@@ -52,7 +52,7 @@
            b-button(class="button is-small is-primary is-outlined", tag="nuxt-link", :to="`../config/${props.row.environment}/${props.row.deployable}`") Configure
         b-table-column(field="", label="")
           //- div(v-if="currentUser[0].access == 'full' || 'write' || 'super'")
-          b-button(class="button is-small is-primary is-outlined", tag="nuxt-link", :to="`../deployment/${props.row.environment_owner}:${props.row.environment}/${props.row.application_name}`") Configure
+          b-button.button.is-small.is-primary.is-outlined(tag="nuxt-link", :to="`../deployment/${props.row.environment_owner}:${props.row.environment}/${props.row.application_name}`") Configure
 
 
       //- // Edit User Modal starts below:

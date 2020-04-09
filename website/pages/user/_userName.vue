@@ -30,8 +30,8 @@ section.section
         b-tab-item(label="Projects")
             div(v-if="this.projects.length === 0")
                 br
-                article(class="message is-success is-small")
-                    div(class="message-body") {{ user.first_name}} {{user.last_name}} is not involved in any projects yet. Add this user to a project via the relevant deployables' 'Users' tab.
+                article.message.is-success.is-small
+                    div.message-body {{ user.first_name}} {{user.last_name}} is not involved in any projects yet. Add this user to a project via the relevant deployables' 'Users' tab.
             b-table(:data="projects", focusable)
                 template(slot-scope="props")
                     b-table-column(field="project", label="User's Projects")
@@ -42,8 +42,8 @@ section.section
         b-tab-item(label="Environments")
             div(v-if="this.environments.length === 0")
                 br
-                article(class="message is-success is-small")
-                    div(class="message-body") {{ user.first_name}} {{user.last_name}} does not have access to any environments yet. Add this user to an environment via the relevant environments' 'Users' tab.
+                article.message.is-success.is-small
+                    div.message-body {{ user.first_name}} {{user.last_name}} does not have access to any environments yet. Add this user to an environment via the relevant environments' 'Users' tab.
             b-table(:data="environments", focusable)
                 template(slot-scope="props")
                     b-table-column(field="project", label="User's Environments")
@@ -54,30 +54,30 @@ section.section
     // Edit users account details MODAL
     div(v-show="editUserAccount == 'edit'")
         transition(name="modal")
-            div(class="modal-mask")
-                div(class="modal-wrapper")
-                    div(class="modal-card")
-                        header(class="modal-card-head")
-                            p(class="modal-card-title") Edit User
+            div.modal-mask
+                div.modal-wrapper
+                    div.modal-card
+                        header.modal-card-head
+                            p.modal-card-title Edit User
                                 b {{ user.first_name }} {{ user.last_name }} ({{ user.id }})
-                        section(class="modal-card-body")    
-                            div(class="modal-body")
+                        section.modal-card-body
+                            div.modal-body
                                 slot(name="body")
                                     form
                                         div.form-group
                                             div.formStyle Email:
-                                                div(class="control")
-                                                    input(v-model="form.new_accountemail", class="input", type="text", value="email", placeholder="Email")  
+                                                div.control
+                                                    input.input(v-model="form.new_accountemail", type="text", value="email", placeholder="Email")  
                                             div.formStyle Account Role:
-                                                div(class="control")
-                                                    input(v-model="form.new_accountrole", class="input", type="text", value="role", placeholder="Role")  
-                                            b-field.formStyle(class="control") Edit accessibility:
+                                                div.control
+                                                    input.input(v-model="form.new_accountrole", type="text", value="role", placeholder="Role")  
+                                            b-field.formStyle.control Edit accessibility:
                                                 b-select(placeholder="Accessibility", v-model="form.new_accountaccess", value="access") 
                                                     option(value="limited") limited
                                                     option(value="write") write
                                                     option(value="conditional") conditional (clients-only)
-                        footer(class="modal-card-foot")    
-                            div(class="control")
+                        footer.modal-card-foot  
+                            div.control
                                 b-button(@click.stop="saveEditedUser", type="is-primary is-light", size="is-small")  Save    
                                 b-button(@click="editUserAccount='null'", type="is-danger is-outlined", size="is-small") Cancel
 </template> 

@@ -1,10 +1,10 @@
 <template lang="pug">
 section.section
   h1.title Deployables
-    div(class="buttons has-text-weight-normal", style="float:right;")  
-      button.button(class="is-primary is-outlined", v-if="justProjects", @click="justProjects=false") Show all Deployables
-      button.button(class="is-primary is-outlined", v-else, @click="justProjects=true") Show Projects   
-      b-button(class="is-primary", tag="nuxt-link", to="/newDeployable",  type="is-light")  + Add New Deployable
+    div.buttons.has-text-weight-normal(style="float:right;")  
+      button.button.is-primary.is-outlined(v-if="justProjects", @click="justProjects=false") Show all Deployables
+      button.button.is-primary.is-outlined(v-else, @click="justProjects=true") Show Projects   
+      b-button.is-primary(tag="nuxt-link", to="/newDeployable",  type="is-light")  + Add New Deployable
   b-table(:data="listOfDeployables", focusable) 
     template(slot-scope="props")
       b-table-column(field="name", label="Name")

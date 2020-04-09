@@ -6,11 +6,11 @@ section.section
             .message-header
                 p Error while loading initial data. Cannot continue.
     div(v-else-if="savedMode")
-        article(class="message is-success")
-            div(class="message-header")
+        article.message.is-success
+            div.message-header
                 p Success!
                 //button(class="delete", aria-label="delete")
-            div(class="message-body") 
+            div.message-body
                 | New deployable has been successfully saved. Would you like to return to the 
                 a(href="/deployables") deployables page
                 |, or 
@@ -34,7 +34,7 @@ section.section
                     p.help.is-danger(v-if="deployableExists") This deployable name already exists.
             .field
                 label.label Description:
-                    input(v-model="form.new_description", class="input", type="text", placeholder="Description")
+                    input.input(v-model="form.new_description", type="text", placeholder="Description")
             .field
                 label.label Is this a project?
                     b-select(v-model="form.is_project", placeholder="Is this a project?") Is this a project?

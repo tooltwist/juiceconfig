@@ -1,17 +1,17 @@
 <template lang="pug">
 div 
-  nav.headerStyle(class="navbar" role="navigation" aria-label="main navigation")
-    div(class="navbar-brand")
+  nav.headerStyle.navbar(role="navigation" aria-label="main navigation")
+    div.navbar-brand
     img.juiceHeaderLogo(src="../assets/header-logo.png")
-    a(class="navbar-item", href="/")
+    a.navbar-item(href="/")
     //a(class="navbar-item", href="/")
         .juiceLogo Juice.
 
-    div(class="navbar-end")
+    div.navbar-end
       b-navbar-item(href="https://juiceconfig.io", target="_blank") Docs
       div.seperatorStyle(v-if="loggedIn", separator="true", custom="true") | 
       b-dropdown(v-if="loggedIn", position="is-bottom-left", aria-role="menu")
-        a(class="navbar-item", slot="trigger", role="button")
+        a.navbar-item(slot="trigger", role="button")
           b-icon(icon="account")
           span Account
           b-icon(icon="menu-down")
@@ -48,8 +48,8 @@ div
           nuxt
       div(v-else)
         nuxt
-  footer(class="footer")
-    div(class="content has-text-centered")
+  footer.footer
+    div.content.has-text-centered
       p <strong>Juice Config</strong> by <a href="https://tooltwist.com">Tooltwist</a>. The source code is licensed <a href="http://opensource.org/licenses/mit-license.php"> MIT</a>. The website content is licensed <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
 </template> 
 

@@ -7,11 +7,11 @@ section.section
                 p Could not load initial data
     div(v-else-if="saveMode")
         // If we have just saved successfully, display a message.
-        article(class="message is-success")
-            div(class="message-header")
+        article.message.is-success
+            div.message-header
                 p Success!
                 //button(class="delete", aria-label="delete")
-            div(class="message-body") 
+            div.message-body
                 | New environment has been successfully saved. Would you like to return to the 
                 a(href="/environments") environments page
                 |, or 
@@ -58,7 +58,7 @@ section.section
                     label.label Notes
                     //- div.formStyle(class="control") Notes:
                     textarea.textarea(name="new_notes", v-model="form.new_notes", type="text", placeholder="Notes")
-                div(class="control")
+                div.control
                     b-button.buttonStyle(@click.prevent="newEnvironment", type="is-primary is-light", :disabled="!readyToSave")  Save
                     b-button.buttonStyle(tag="nuxt-link", to="/environments", type="is-danger is-outlined") Cancel
 </template>
