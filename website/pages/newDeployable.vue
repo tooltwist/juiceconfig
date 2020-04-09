@@ -58,7 +58,6 @@ export default {
     data () {
         return {
             initialisationError: false,
-            axiosConfig: null,
             
             form: {
                 new_owner: '',
@@ -80,24 +79,16 @@ export default {
      */
     async asyncData ({ params, error, app }) {
 
-        let jwt = app.$nuxtLoginservice.jwt
         let me = app.$nuxtLoginservice.user.username
-        // alert(`I am ${me}`)
-        // let jwt = this.$loginservice.jwt
-        let axiosConfig = {
-            headers: {
-                authorization: `Bearer ${jwt}`,
-            }
-        }
-        
+
         try {
             const url = standardStuff.apiURL('/deployables')
+            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
             console.log(`Calling ${url}`);
-            let result = await axios.get(url, axiosConfig)
+            let result = await axios.get(url, config)
             console.log(`result=`, result);
             
             return {
-                axiosConfig,
                 deployables: result.data.deployables,
                 form: {
                     new_owner: me
@@ -107,7 +98,6 @@ export default {
             console.log(`Error while fetching deployables: `, e)
             // error({ statusCode: 400, message: 'Error while fetching deployables' })
             return {
-                axiosConfig,
                 initialisationError: true
             }
         }
@@ -196,7 +186,8 @@ export default {
                     }
                     console.log(`record = `, record);
                     let url = standardStuff.apiURL('/newDeployable')
-                    await axios.post(url, record, this.axiosConfig)
+                    const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+                    await axios.post(url, record, config)
                     // Prevent input error from showing
                     // this.mode = false;
                 } catch (err) {

@@ -402,11 +402,13 @@ export default {
         // If no error, send post request to server
         try {
           let url = standardStuff.apiURL('/newDeployment')
-          await axios.post(url, {
+          let record = {
             environment: this.environmentName,
             notes: this.form.new_notes,
             deployable: this.form.new_deployable,
-          })
+          }
+          let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+          await axios.post(url, record, config)
           this.newDeploymentModal = false
           console.log(`New deployment successfully sent to database`);
         } catch (e) {
@@ -429,11 +431,13 @@ export default {
     async saveEditedEnv() {
       try {
         let url = standardStuff.apiURL('/editedEnv')
-        await axios.post(url, {
+        let record = {
           description: this.form.edit_envdescription,
           notes: this.form.edit_envnotes,
           name: this.environmentName,
-        })
+        }
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+        await axios.post(url, record, config)
         this.editEnvInfo = null
         console.log(`Updated environment successfully sent to database`)
       } catch (e) {
@@ -451,11 +455,13 @@ export default {
     // RELOAD THE DATABASE TABLE AFTER SAVING EDITED ENVIRONMENT
     async reloadEnvironment() {
       const url = standardStuff.apiURL('/environment')
-      let res = await axios.get(url, { 
+      const params = { 
         params: {
           environmentName: this.environmentName
         }
-      })
+      }
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+      let res = await axios.get(url, params, config)
       this.environment = res.data.record
       console.log(`Environment has been reloaded on the browser.`)
       return {
@@ -466,11 +472,13 @@ export default {
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW DEPLOYMENT
     async reloadDeployments() {
       const url2 = standardStuff.apiURL('/deployments')
-      let res2 = await axios.get(url2, { 
+      const params = { 
         params: {
           environmentName: this.environmentName
         }
-      })
+      }
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+      let res2 = await axios.get(url2, params, config)
       console.log(`Deployments have been reloaded on the browser`);
       this.deployments = res2.data.deployments
       return {
@@ -504,11 +512,13 @@ export default {
         // If no error, send post request to server
         try {
           let url = standardStuff.apiURL('/newEnvironmentUser')
-          await axios.post(url, {
+          let record = {
             id: this.form.new_environmentuser,
             access: this.form.new_user_access,
             environment: this.environmentName
-          })
+          }
+          let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+          await axios.post(url, record, config)
           this.newUserModal = false
           console.log(`New environment user successfully sent to database`);
         } catch (e) {
@@ -530,11 +540,13 @@ export default {
     async saveEditedUser() {
       try {
         let url = standardStuff.apiURL('/editEnvUser')
-        await axios.post(url, {
+        let record = {
             id: this.users.user_id,
             access: this.form.edit_useraccess,
             environment: this.environmentName,
-        })
+        }
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+        await axios.post(url, record, config)
         console.log('Edited user successfully saved: ' + this.environmentName + ' ' + this.users.user_id + ' ' + this.form.edit_useraccess)
 
         // Display new users details
@@ -548,11 +560,13 @@ export default {
 
     async reloadUsers() {
       const url3 = standardStuff.apiURL('/environments_users')
-      let res3 = await axios.get(url3, {
+      const params = {
           params: { 
             environmentName: this.environmentName
           }
-      })
+      }
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+      let res3 = await axios.get(url3, params, config)
       console.log(`Environments have been reloaded on the browser:`, res3.data);
       this.users = res3.data.users
       return {
@@ -600,9 +614,10 @@ export default {
             // console.log(`Updating...`, self.deployment);
             self.updateDelay = null
             const url = standardStuff.apiURL('/environment')
+            const config = standardStuff.axiosConfig(this.$loginservice.jwt)
             console.log(`UPDATING ENVIRONMENT`, self.environment);
 
-           let result = await axios.put(url, self.environment)
+           let result = await axios.put(url, self.environment, config)
             // console.log(`result is `, result);
         }, 500)
     }
@@ -618,42 +633,29 @@ export default {
     let {owner:environmentOwner, name:environmentName} = standardStuff.methods.std_fromQualifiedName(params.environmentName, username)
 console.log(`environment=> ${environmentOwner}, ${environmentName}`);
 
-    let jwt = app.$nuxtLoginservice.jwt
-    let config = {
-      headers: {
-        authorization: `Bearer ${jwt}`,
-      }
-    }
-
     try {
       // Select the environment for this page
       const url = standardStuff.apiURL('/environment')
-      console.log(`Calling ${url}`);
-      let res = await axios.get(url, { 
+      const params = { 
         params: {
           environmentName: environmentName
         }
-      })
+      }
+      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+      console.log(`Calling ${url}`);
+      let res = await axios.get(url, params, config)
       console.log(`API returned environment`, res.data);
       const environment = res.data.record
 
       // Select the deployments for this environment
       const url2 = standardStuff.apiURL('/deployments')
-      let res2 = await axios.get(url2, { 
-        params: {
-          environmentName: environmentName
-        }
-      })
+      let res2 = await axios.get(url2, params, config)
       console.log(`API2 returned`, res2.data);
       const deployments = res2.data.deployments
 
       // Select the users for the environment
       const url3 = standardStuff.apiURL('/environments_users')
-      let res3 = await axios.get(url3, {
-        params: { 
-          environmentName: environmentName
-        }
-      })
+      let res3 = await axios.get(url3, params, config)
       console.log(`API3 returned`, res3.data);
       const users = res3.data.users
 
@@ -665,7 +667,7 @@ console.log(`environment=> ${environmentOwner}, ${environmentName}`);
 
       // Import all users for creating new user (on the selected project)
       const url5 = standardStuff.apiURL('/users')
-      let res5 = await axios.get(url5)
+      let res5 = await axios.get(url5, config)
       console.log(`API5 returned`, res5.data);
       const allUsers = res5.data.users
       console.log(allUsers)

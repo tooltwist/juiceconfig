@@ -116,12 +116,14 @@ export default {
         async saveEditedUser() {
             try {
                 const url = standardStuff.apiURL('/editUserAccount')
-                await axios.post(url, {
+                let record = {
                     id: this.user.id,
                     email: this.form.new_accountemail,
                     role: this.form.new_accountrole,
                     access: this.form.new_accountaccess
-                })
+                }
+                let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+                await axios.post(url, record, config)
                 console.log(`Edited user successfully`)
                 this.editUserAccount = 'null', 
                 this.reloadUsers();
@@ -134,11 +136,13 @@ export default {
         // RELOAD THE DATABASE TABLE AFTER SAVING NEW PROJECT USER
         async reloadUsers() {
         const url = standardStuff.apiURL('/userName')
-        let res = await axios.get(url, {
+        const params = {
             params: { 
                 userID: this.userID
             }
-        })
+        }
+        const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+        let res = await axios.get(url, params, config)
         console.log(`API returned`, res.data);
         this.user = res.data.record
         return {
@@ -153,30 +157,24 @@ export default {
         try {
             // Select the user for this page
             const url = standardStuff.apiURL('/userName')
-            let res = await axios.get(url, {
+            const params = {
                 params: {
                     userID: userID
                 }
-            })
+            }
+            const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+            let res = await axios.get(url, params, config)
             const user = res.data.record
             console.log(`User   :`, user)
 
             // Select users projects for this page
             const url2 = standardStuff.apiURL('/usersProjects')
-            let res2 = await axios.get(url2, {
-                params: {
-                    userID: userID
-                }
-            })
+            let res2 = await axios.get(url2, params, config)
             const projects = res2.data.records
 
             // Select users environments for this page
             const url3 = standardStuff.apiURL('/usersEnvironments')
-            let res3 = await axios.get(url3, {
-                params: {
-                    userID: userID
-                }
-            })
+            let res3 = await axios.get(url3, params, config)
             const environments = res3.data.records
 
             return {

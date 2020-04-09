@@ -245,8 +245,6 @@ const BOOL_END = `)BOZOLZ`
 export default {
     data () {
         return {
-            axiosConfig: null,
-
             environmentOwner: '',
             environmentName: '',
             applicationName: '',
@@ -279,19 +277,10 @@ export default {
         
 
         try {
-
-        let jwt = app.$nuxtLoginservice.jwt
-        let axiosConfig = {
-            headers: {
-                authorization: `Bearer ${jwt}`,
-            }
-        }   
-        
         
         // Select this deployment for this page
         let url = standardStuff.apiURL('/deployments')
-        console.log(`Calling ${url}`);
-        let res = await axios.get(url, { 
+        let params = { 
             params: {
                 environmentOwner,
                 environmentName,
@@ -299,7 +288,10 @@ export default {
                 // deployableOwner: '',
                 // deployableName: deployableName
             }
-        }, axiosConfig)
+        }
+        const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+        console.log(`Calling ${url}`);
+        let res = await axios.get(url, params, config)
         console.log(`API returned deployments`, res.data.deployments);
         if (res.data.deployments.length > 1) {
             return error({status: 500, message: 'Returned too many deployments'})
@@ -311,12 +303,13 @@ console.log(`YYYYY YARP 1`, deployment);
 
         // Select the environment for this page
         url = standardStuff.apiURL('/environmentIndex')
-        console.log(`Calling ${url}`);
-        res = await axios.get(url, { 
+        params = { 
             params: {
                 environmentName: environmentName
             }
-        }, axiosConfig)
+        }
+        console.log(`Calling ${url}`);
+        res = await axios.get(url, params, config)
         console.log(`API returned environment`, res.data);
         if (res.data.record.length > 1) {
             return error({status: 500, message: 'Returned too many environments'})
@@ -327,7 +320,7 @@ console.log(`YYYYY YARP 1`, deployment);
 
         // Import deployables to be shown in dropdown
         const url2 = standardStuff.apiURL('/deployables')
-        let res2 = await axios.get(url2, axiosConfig)
+        let res2 = await axios.get(url2, config)
         const deployables = res2.data.deployables
 
         // Find our specific deployable
@@ -364,12 +357,13 @@ console.log(`YYYYY YARP 1`, deployment);
 
         // Variables for dependencies and deployable (recursive array data)
         const url6 = standardStuff.apiURL('/variablesConfig')
-        let res6 = await axios.get(url6, {
+        const params6 = {
             params: {
                 deployable_owner: deployment.deployable_owner,
                 deployable: deployment.deployable
             }
-        }, axiosConfig)
+        }
+        let res6 = await axios.get(url6, params6, config)
         console.log(`API6 variablesConfig=`, res6.data)
         const variableRecursive = res6.data
 
@@ -379,13 +373,14 @@ console.log(`YYYYY YARP 1`, deployment);
 console.log(`YARP XUT 1`);
 
         const url7 = standardStuff.apiURL('/variableValues')
-        let result7 = await axios.get(url7, {
+        const params7 = {
             params: {
                 environmentOwner: environmentOwner,
                 environment: environmentName,
                 applicationName: applicationName
             }
-        }, axiosConfig)
+        }
+        let result7 = await axios.get(url7, params7, config)
 console.log(`YARP XUT 1`);
         console.log(`API7 variableValues=`, result7.data)
         const variableValues = result7.data.variableValues
@@ -424,7 +419,6 @@ console.log(`YYYYY YARP 2`, deployment);
 
 
         return {
-            axiosConfig,
             environmentOwner,
             environmentName,
             applicationName,
@@ -684,7 +678,8 @@ console.log(`YYYYY YARP 2`, deployment);
             console.log(`updateDeployment() `, this.deployment);
 
             const url = `${protocol}://${host}:${port}/deployment`
-            let result = await axios.put(url, this.deployment, this.axiosConfig)
+            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+            let result = await axios.put(url, this.deployment, config)
             // console.log(`API4 returned`, res4.data)
             // const dependencies = res4.data.dependencies
             console.log(`result is `, result);
@@ -700,7 +695,8 @@ console.log(`YYYYY YARP 2`, deployment);
                 // console.log(`Updating...`, self.deployment);
                 self.updateDelay = null
                 const url = `${protocol}://${host}:${port}/deployment`
-                let result = await axios.put(url, self.deployment, this.axiosConfig)
+                const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+                let result = await axios.put(url, self.deployment, config)
                 // console.log(`result is `, result);
             }, 500)
         },
@@ -744,7 +740,9 @@ console.log(`YYYYY YARP 2`, deployment);
             })
 
             console.log(`values to save=`, request);
-            await axios.post(`${protocol}://${host}:${port}/variableValues`, request, this.axiosConfig)
+            const url = standardStuff.apiURL('/variableValues')
+            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+            await axios.post(url, request, this.axiosConfig)
             this.editingValues = false            
         },
 

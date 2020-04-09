@@ -18,11 +18,28 @@ function apiURL(path) {
   return url
 }
 
+/*
+ *  Return a configuration for axios.
+ *  If called from asyncData:
+ *    let jwt = app.$nuxtLoginservice.jwt
+ * From a component:
+ *    let jwt = this.$loginservice.jwt
+ */
+function axiosConfig(jwt) {
+  let config = {
+    headers: {
+      authorization: `Bearer ${jwt}`,
+    }
+  }
+  return config
+}
+
 
 export default {
   // api_url_prefix,
   // endpoint,
   apiURL,
+  axiosConfig,
 
   methods: {
 

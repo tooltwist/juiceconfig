@@ -162,17 +162,11 @@ export default {
    */
   async asyncData ({ app, params, error }) {
     try {
-      let jwt = app.$nuxtLoginservice.jwt
-      let config = {
-        headers: {
-          authorization: `Bearer ${jwt}`,
-        }
-      }
-
       // Get the environments
-      const deployments = await loadDeployments(jwt)
+      const deployments = await loadDeployments(app.$nuxtLoginservice.jwt)
 
       let url = standardStuff.apiURL('/environments')
+      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
       let reply = await axios.get(url, config)
       const environments = reply.data.environments
 
@@ -332,27 +326,22 @@ export default {
       let notes = this.notes
 
       // Prepare the object
-      let obj = {
-        environment_owner: envOwner,
-        environment: envName,
-        deployable_owner: owner,
-        deployable: name,
-        application_name: applicationName,
-        notes: notes,
-      }
-      console.log(`obj is`, obj);
       
       try {
         
-        let jwt = this.$loginservice.jwt
-        let config = {
-          headers: {
-            authorization: `Bearer ${jwt}`,
-          }
-        }
         let url = standardStuff.apiURL('/newDeployment')
+        let record = {
+          environment_owner: envOwner,
+          environment: envName,
+          deployable_owner: owner,
+          deployable: name,
+          application_name: applicationName,
+          notes: notes,
+        }
+        console.log(`obj is`, obj);
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
         console.log(`url is ${url}`);
-        let reply = await axios.post(url, obj, config)
+        let reply = await axios.post(url, record, config)
         console.log(`reply is `, reply);
 
         let reloadedDeployments = await loadDeployments(jwt)

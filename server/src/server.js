@@ -107,9 +107,6 @@ server.get('/*', restify.plugins.serveStatic({
 }));
 
 
-
-// >>>>>>> b358488128689c398a8de1ef6e727f3a03c99cfc
-
 /*
 *       Display a nice banner.
 *       See https://www.npmjs.com/package/figlet

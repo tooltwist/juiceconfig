@@ -48,16 +48,10 @@ export default {
    */
   async asyncData ({ app, params, error }) {
     try {
-      let jwt = app.$nuxtLoginservice.jwt
-
-      let config = {
-        headers: {
-          authorization: `Bearer ${jwt}`,
-        }
-      }
 
       // Get the environments
       const url = standardStuff.apiURL('/environments')
+      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
       console.log(`Calling ${url}`);
       let reply = await axios.get(url, config)
       console.log(`Response is: `, reply)

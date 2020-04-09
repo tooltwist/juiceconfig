@@ -146,20 +146,16 @@ export default {
                 try {
                     e.preventDefault();
 
-                    // let jwt = app.$nuxtLoginservice.jwt
-                    let jwt = this.$loginservice.jwt
-                    let config = {
-                        headers: {
-                        authorization: `Bearer ${jwt}`,
-                        }
-                    }
+
                     const url = standardStuff.apiURL('/newEnvironment')
-                    await axios.post(url, {
+                    const record = {
                         name: this.form.new_environment,
                         description: this.form.new_description,
                         notes: this.form.new_notes,
                         is_universal: this.form.is_universal
-                    }, config)
+                    }
+                    const config = standardStuff.axiosConfig(app.$loginservice.jwt)
+                    await axios.post(url, record, config)
                     // Prevent input error from showing
                     // this.mode = false;
                     console.log('New environment successfully sent to the database.');
@@ -187,14 +183,15 @@ export default {
      *  Call our API using Axios, to get the project data.
      *  See https://nuxtjs.org/guide/async-data#handling-errors
      */
-    async asyncData ({ params, error }) {
+    async asyncData ({ app, params, error }) {
         console.log(`asyncData()`);
         
         try {        
             // Get the environments
             const url = standardStuff.apiURL('/showEnvironments')
+            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
             console.log(`Calling ${url}`);
-            let reply = await axios.get(url)
+            let reply = await axios.get(url, config)
             console.log(`Response is: `, reply)
 
             return {

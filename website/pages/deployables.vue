@@ -62,15 +62,8 @@ export default {
   async asyncData ({ app, params, error }) {
     try {
       console.log(`------------------- asyncData`)
-      let jwt = app.$nuxtLoginservice.jwt
-
-      let config = {
-        headers: {
-          authorization: `Bearer ${jwt}`,
-        }
-      }
       const url = standardStuff.apiURL('/deployables')
-      console.log(`Calling ${url}`);
+      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
       let res = await axios.get(url, config);
       const projects = res.data.deployables;
       console.log(`data::: `, res.data.deployables)
@@ -79,7 +72,7 @@ export default {
         projects: projects,
       }
     } catch (e) {
-      console.log(`Error while fetching projects:`, e)
+      console.log(`Error while fetching deployables:`, e)
     }
   },
 

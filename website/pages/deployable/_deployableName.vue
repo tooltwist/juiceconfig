@@ -583,9 +583,10 @@ export default {
       self.updateDelay = setTimeout(async function () {
         self.updateDelay = null
         const url = standardStuff.apiURL('/deployable')
+        const config = standardStuff.axiosConfig(this.$loginservice.jwt)
         console.log(`UPDATING DEPLOYABLE`, self.deployable);
 
-        let result = await axios.put(url, self.deployable)
+        let result = await axios.put(url, self.deployable, config)
       }, 500)
     }, // -saveDetails
 
@@ -593,13 +594,15 @@ export default {
     async saveDeployable() {
       try {
         let url = standardStuff.apiURL('/deployable')
-        await axios.post(url, {
+        let record = {
           product_owner: this.form.new_owner,
           type: this.form.new_type,
           description: this.form.new_description,
           is_project: this.form.new_is_project,
           name: this.deployableName
-        })
+        }
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+        await axios.post(url, record, config)
         //console.log('Edited deployable successfully saved: ', this.form.new_is_project)
 
         // Display new deployable details
@@ -639,14 +642,16 @@ export default {
         // If no error, send post request to server
         try {
           let url = standardStuff.apiURL('/newVariable')
-          await axios.post(url, {
+          let record = {
             name: this.form.variable_name,
             description: this.form.variable_description,
             type: this.form.variable_type,
             mandatory: this.form.variable_mandatory,
             deployable: this.deployableName,
             external: this.form.variable_is_external,
-          })
+          }
+          let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+          await axios.post(url, record, config)
           this.newVariableModal = false
           console.log(`New variable successfully sent to database`);
         } catch (e) {
@@ -691,11 +696,13 @@ export default {
         // If no error, send post request to server
         try {
           let url = standardStuff.apiURL('/newProjectUser')
-          await axios.post(url, {
+          let record = {
             id: this.form.new_projectuser,
             access: this.form.new_user_access,
             project: this.deployableName
-          })
+          }
+          let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+          await axios.post(url, record, config)
           this.newUserModal = false
           console.log(`New project user successfully sent to database`);
         } catch (e) {
@@ -717,11 +724,13 @@ export default {
     async saveEditedUser() {
       try {
         let url = standardStuff.apiURL('/editUser')
-        await axios.post(url, {
+        let record = {
             id: this.users.user_id,
             access: this.form.edit_useraccess,
             project: this.deployableName,
-        })
+        }
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+        await axios.post(url, record, config)
         console.log('Edited user successfully saved: ' + this.deployableName + ' ' + this.users.user_id + ' ' + this.form.edit_useraccess)
 
         // Display new users details
@@ -758,11 +767,13 @@ export default {
         // If no error, send post request to server
         try {
           let url = standardStuff.apiURL('/newDeployment')
-          await axios.post(url, {
+          let record = {
             environment: this.form.new_environment,
             notes: this.form.new_notes,
             deployable: this.deployableName,
-          })
+          }
+          let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+          await axios.post(url, record, config)
           this.newDeploymentModal = false
           console.log(`New deployment successfully sent to database`);
         } catch (e) {
@@ -822,12 +833,14 @@ export default {
         // If no error, send post request to server
         try {
           let url = standardStuff.apiURL('/newDependency')
-          await axios.post(url, {
+          let record = {
             child: this.form.new_child,
             prefix: this.form.new_prefix,
             version: this.form.new_version,
             deployable: this.deployableName
-          })
+          }
+          let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+          await axios.post(url, record, config)
           this.newDependencyModal = false
           console.log(`New dependency successfully sent to database`);
         } catch (e) {
@@ -850,14 +863,16 @@ export default {
     async saveVariable() {
       try {
         let url = standardStuff.apiURL('/variable')
-        await axios.post(url, {
+        let record = {
           description: this.form.new_variable_description,
           type: this.form.new_variable_type,
           mandatory: this.form.new_variable_mandatory,
           external: this.form.new_variable_is_external,
           deployable: this.deployableName,
           name: this.variable_name,
-        })
+        }
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+        await axios.post(url, record, config)
         this.showModal = false
         console.log(`Updated variable successfully sent to database`)
       } catch (e) {
@@ -874,12 +889,14 @@ export default {
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW OR EDITED VARIABLES
     async reloadVariables() {
-      let url = standardStuff.apiURL('/variables')
-      let res = await axios.get(url, { 
+      const  url = standardStuff.apiURL('/variables')
+      const params = { 
         params: {
           deployableName: this.deployableName
         }
-      })
+      }
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+      let res = await axios.get(url, params, config)
       this.variables = res.data.variables
       console.log(`Variables have been reloaded on the browser.`)
       return {
@@ -889,12 +906,14 @@ export default {
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW PROJECT USER
     async reloadUsers() {
-      let url = standardStuff.apiURL('/project_users')
-      let result = await axios.get(url, {
+      const url = standardStuff.apiURL('/project_users')
+      const params = {
           params: { 
             deployableName: this.deployableName
           }
-      })
+      }
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+      let result = await axios.get(url, params, config)
       console.log(`API5 returned`, result.data);
       this.users = result.data.users
       return {
@@ -904,12 +923,14 @@ export default {
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW DEPLOYMENT
     async reloadDeployments() {
-      let url = standardStuff.apiURL('/envDeployments')
-      let res3 = await axios.get(url, { 
+      const url = standardStuff.apiURL('/envDeployments')
+      const params = { 
         params: {
           deployableName: this.deployableName
         }
-      })
+      }
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+      let res3 = await axios.get(url, params, config)
       console.log(`Deployments have been reloaded on the browser`);
       this.deployments = res3.data.deployments
       return {
@@ -919,12 +940,14 @@ export default {
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW DEPENDENCY
     async reloadDependencies() {
-      let url = standardStuff.apiURL('/dependencies1')
-      let res4 = await axios.get(url, {
+      const url = standardStuff.apiURL('/dependencies1')
+      const params = {
           params: { 
             deployableName: this.deployableName
           }
-      })
+      }
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+      let res4 = await axios.get(url, params, config)
       console.log(`Dependencies have been reloaded on the browser`);
       this.dependencies = res4.data.dependencies
       return {
@@ -1001,62 +1024,41 @@ export default {
     let {owner:deployableOwner, name:deployableName} = standardStuff.methods.std_fromQualifiedName(params.deployableName, username)
     console.log(`deployable=> ${deployableOwner}, ${deployableName}`);
 
-    let jwt = app.$nuxtLoginservice.jwt
-    let config = {
-      headers: {
-        authorization: `Bearer ${jwt}`,
-      }
-    }
-
     try {
       // Select the deployable for this page
       const url = standardStuff.apiURL('/deployable')
+      const params = {
+          params: { 
+            deployableName: deployableName
+          }
+      }
+      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
       console.log(`Calling ${url}`);
-      let res = await axios.get(url, { 
-        params: {
-          deployableName: deployableName
-        }
-      })
+      let res = await axios.get(url, params, config)
       console.log(`API returned`, res.data);
       const deployable = res.data.record
 
       // Select the variables for this deployable
       const url2 = standardStuff.apiURL('/variables')
-      let res2 = await axios.get(url2, { 
-        params: {
-          deployableName: deployableName
-        }
-      })
+      let res2 = await axios.get(url2, params, config)
       console.log(`API2 returned`, res2.data);
       const variables = res2.data.variables
 
       // Select the deployments for this deployable
       const url3 = standardStuff.apiURL('/envDeployments')
-      let res3 = await axios.get(url3, { 
-        params: {
-          deployableName: deployableName
-        }
-      })
+      let res3 = await axios.get(url3, params, config)
       console.log(`API3 returned`, res3.data);
       const deployments = res3.data.deployments
 
       // Select dependencies for this deployable
       const url4 = standardStuff.apiURL('/dependencies1')
-      let res4 = await axios.get(url4, {
-          params: { 
-            deployableName: deployableName
-          }
-      })
+      let res4 = await axios.get(url4, params, config)
       console.log(`API4 returned dependencies:`, res4.data);
       const dependencies = res4.data.dependencies
 
       // Select users for this deployable
       const url5 = standardStuff.apiURL('/project_users')
-      let res5 = await axios.get(url5, {
-          params: { 
-            deployableName: deployableName
-          }
-      })
+      let res5 = await axios.get(url5, params, config)
       console.log(`API5 returned`, res5.data);
       const users = res5.data.users
 
@@ -1070,7 +1072,7 @@ export default {
 
       // Import all users for creating new user (on the selected project)
       const url7 = standardStuff.apiURL('/users')
-      let res7 = await axios.get(url7)
+      let res7 = await axios.get(url7, config)
       console.log(`API7 returned`, res7.data);
       const allUsers = res7.data.users
       console.log(allUsers)

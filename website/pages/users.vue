@@ -135,14 +135,16 @@ export default {
 
         // If no error, send post request to server
         try {
-          const url = standardStuff.apiURL('/newUser')
-          await axios.post(url, {
+          let record = {
             first_name: this.form.user_firstname,
             last_name: this.form.user_lastname,
             role: this.form.user_role,
             access: this.form.user_accesstype,
             email: this.form.user_email,
-          })
+          }
+          const url = standardStuff.apiURL('/newUser')
+          const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+          await axios.post(url, record, config)
           this.newUserModal = false
           console.log(`New user successfully sent to database`);
         } catch (e) {
@@ -164,7 +166,8 @@ export default {
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW USER
     async reloadUsers() {
       const url = standardStuff.apiURL('/users')
-      let res = await axios.get(url)
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+      let res = await axios.get(url, config)
       this.users = res.data.users
       console.log(`Users have been reloaded on the browser.`)
       return {
@@ -181,8 +184,9 @@ export default {
   async asyncData ({ params, error }) {
     try {
       const url = standardStuff.apiURL('/users')
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
       console.log(`Calling ${url}`);
-      let res = await axios.get(url)
+      let res = await axios.get(url, config)
       const users = res.data.users
         return {
           users: users
