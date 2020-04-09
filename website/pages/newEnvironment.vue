@@ -154,7 +154,7 @@ export default {
                         notes: this.form.new_notes,
                         is_universal: this.form.is_universal
                     }
-                    const config = standardStuff.axiosConfig(app.$loginservice.jwt)
+                    const config = standardStuff.axiosConfig(this.$loginservice.jwt)
                     await axios.post(url, record, config)
                     // Prevent input error from showing
                     // this.mode = false;

@@ -70,7 +70,7 @@ export default {
         }
     },
 
-    async asyncData ({ app, error }) {
+    async asyncData ({ app, params, error }) {
         let userName = app.$nuxtLoginservice.user
         try {
             // Select the deployable for this page

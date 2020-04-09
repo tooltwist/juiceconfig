@@ -151,7 +151,7 @@ export default {
         },  // -reloadUsers
     },
 
-    async asyncData ({ params, error }) {
+    async asyncData ({ app, params, error }) {
         let userID = params.userName
 
         try {
@@ -162,7 +162,7 @@ export default {
                     userID: userID
                 }
             }
-            const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
             let res = await axios.get(url, params, config)
             const user = res.data.record
             console.log(`User   :`, user)

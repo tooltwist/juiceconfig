@@ -583,11 +583,11 @@ export default {
       self.updateDelay = setTimeout(async function () {
         self.updateDelay = null
         const url = standardStuff.apiURL('/deployable')
-        const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+        const config = standardStuff.axiosConfig(self.$loginservice.jwt)
         console.log(`UPDATING DEPLOYABLE`, self.deployable);
 
         let result = await axios.put(url, self.deployable, config)
-      }, 500)
+      }, 1000)
     }, // -saveDetails
 
     // EDIT THE DETAILS OF THE SELECTED DEPLOYABLE

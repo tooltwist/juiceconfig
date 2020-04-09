@@ -181,10 +181,10 @@ export default {
    *  Call our API using Axios, to get the project data.
    *  See https://nuxtjs.org/guide/async-data#handling-errors
    */
-  async asyncData ({ params, error }) {
+  async asyncData ({ app, params, error }) {
     try {
       const url = standardStuff.apiURL('/users')
-      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
       console.log(`Calling ${url}`);
       let res = await axios.get(url, config)
       const users = res.data.users

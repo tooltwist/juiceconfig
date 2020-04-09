@@ -34,7 +34,7 @@ section.section
             .field-body
                 .field
                     .control
-                        input.input(v-if="editingDetails", v-model.trim="environment.description", placeholder="URL to ECS Service", @input="saveDetails")
+                        input.input(v-if="editingDetails", v-model.trim="environment.description", placeholder="Description", @input="saveDetails")
                         a.my-not-input-a(v-else-if="validUrl(environment.description)", :href="deployment.description", target="_blank") &nbsp;{{deployment.description}}
                         p.my-not-input-p(v-else) &nbsp;{{environment.description}}
         .field.is-horizontal
@@ -54,7 +54,7 @@ section.section
             .field-body
                 .field
                     .control
-                        input.input(v-if="editingDetails", v-model.trim="environment.aws_region", placeholder="URL to ECS Service", @input="saveDetails")
+                        input.input(v-if="editingDetails", v-model.trim="environment.aws_region", placeholder="eg. ap-southeast-1", @input="saveDetails")
                         a.my-not-input-a(v-else-if="validUrl(environment.aws_region)", :href="environment.aws_region", target="_blank") &nbsp;{{environment.aws_region}}
                         p.my-not-input-p(v-else) &nbsp;{{environment.aws_region}}
         .field.is-horizontal(v-if="environment.type==='aws'")
@@ -63,7 +63,7 @@ section.section
             .field-body
                 .field
                     .control
-                        input.input(v-if="editingDetails", v-model.trim="environment.aws_cf_stack", placeholder="URL to ECS Service", @input="saveDetails")
+                        input.input(v-if="editingDetails", v-model.trim="environment.aws_cf_stack", placeholder="URL to Cloudformation stack", @input="saveDetails")
                         a.my-not-input-a(v-else-if="validUrl(environment.aws_cf_stack)", :href="environment.aws_cf_stack", target="_blank") &nbsp;{{environment.aws_cf_stack}}
                         p.my-not-input-p(v-else) &nbsp;{{environment.aws_cf_stack}}
         .field.is-horizontal(v-if="environment.type==='aws'")
@@ -81,7 +81,7 @@ section.section
             .field-body
                 .field
                     .control
-                        input.input(v-if="editingDetails", v-model.trim="environment.aws_vpc_url", placeholder="URL to ECS Service", @input="saveDetails")
+                        input.input(v-if="editingDetails", v-model.trim="environment.aws_vpc_url", placeholder="URL to VPC dashboard", @input="saveDetails")
                         a.my-not-input-a(v-else-if="validUrl(environment.aws_vpc_url)", :href="environment.aws_vpc_url", target="_blank") &nbsp;{{environment.aws_vpc_url}}
                         p.my-not-input-p(v-else) &nbsp;{{environment.aws_vpc_url}}
       .control
@@ -614,12 +614,12 @@ export default {
             // console.log(`Updating...`, self.deployment);
             self.updateDelay = null
             const url = standardStuff.apiURL('/environment')
-            const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+            const config = standardStuff.axiosConfig(self.$loginservice.jwt)
             console.log(`UPDATING ENVIRONMENT`, self.environment);
 
            let result = await axios.put(url, self.environment, config)
             // console.log(`result is `, result);
-        }, 500)
+        }, 1000)
     }
   },//- methods
 

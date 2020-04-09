@@ -162,11 +162,11 @@ export default {
    */
   async asyncData ({ app, params, error }) {
     try {
-      // Get the environments
-      const deployments = await loadDeployments(app.$nuxtLoginservice.jwt)
+      // Get the deployments
+      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+      const deployments = await loadDeployments(config)
 
       let url = standardStuff.apiURL('/environments')
-      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
       let reply = await axios.get(url, config)
       const environments = reply.data.environments
 
@@ -362,14 +362,9 @@ export default {
 }
 
 
-async function loadDeployments (jwt) {
-  let config = {
-    headers: {
-      authorization: `Bearer ${jwt}`,
-    }
-  }
+async function loadDeployments (axiosConfig) {
   let url = standardStuff.apiURL('/deployments')
-  let reply = await axios.get(url, config)
+  let reply = await axios.get(url, axiosConfig)
   const deployments = reply.data.deployments
   return deployments
 }

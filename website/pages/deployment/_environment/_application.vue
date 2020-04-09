@@ -698,7 +698,7 @@ console.log(`YYYYY YARP 2`, deployment);
                 const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
                 let result = await axios.put(url, self.deployment, config)
                 // console.log(`result is `, result);
-            }, 500)
+            }, 1000)
         },
 
         deleteUnusedValue: async function (variableName) {
