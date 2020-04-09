@@ -677,7 +677,7 @@ console.log(`YYYYY YARP 2`, deployment);
         updateDeployment: async function () {
             console.log(`updateDeployment() `, this.deployment);
 
-            const url = `${protocol}://${host}:${port}/deployment`
+            const url = standardStuff.apiURL('/deployment')
             const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
             let result = await axios.put(url, this.deployment, config)
             // console.log(`API4 returned`, res4.data)
@@ -694,7 +694,7 @@ console.log(`YYYYY YARP 2`, deployment);
             self.updateDelay = setTimeout(async function () {
                 // console.log(`Updating...`, self.deployment);
                 self.updateDelay = null
-                const url = `${protocol}://${host}:${port}/deployment`
+                const url = standardStuff.apiURL('/deployment')
                 const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
                 let result = await axios.put(url, self.deployment, config)
                 // console.log(`result is `, result);

@@ -338,13 +338,13 @@ export default {
           application_name: applicationName,
           notes: notes,
         }
-        console.log(`obj is`, obj);
+        console.log(`record is`, record);
         let config = standardStuff.axiosConfig(this.$loginservice.jwt)
         console.log(`url is ${url}`);
         let reply = await axios.post(url, record, config)
         console.log(`reply is `, reply);
 
-        let reloadedDeployments = await loadDeployments(jwt)
+        let reloadedDeployments = await loadDeployments(config)
         // this.deployables = loadDeployables(jwt)
         console.log(`reloaded deployments: `, reloadedDeployments);
         this.deployments = reloadedDeployments
