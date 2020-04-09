@@ -8,7 +8,7 @@
                         tr  
                             td(style="justify:right;") 
                                 label Full name: 
-                            td(style="justify:left;") {{fullname}} {{user.id}}
+                            td(style="justify:left;") {{fullname}} (ID: {{user.id}})
                         tr  
                             td(style="justify:right;") 
                                 label Email:
@@ -22,14 +22,27 @@
                                 label Access:
                             td(style="justify:left;") {{user.access}}
                 b-tab-item(label="Deployables")
-                    article(class="message is-gray is-small")
-                        div(class="message-body")
-                            p These are the deployables created by your account.
+                    b-table(:data="deployables", focusable)
+                        template(slot-scope="props")
+                            b-table-column(field="project", label="Your Projects")
+                                | {{props.row.owner}}:{{ props.row.name }}
+                            b-table-column(field="product owner", label="Product Owner")
+                                | {{ props.row.product_owner }}
+                            b-table-column(field="description", label="Description")
+                                | {{ props.row.description }}
+                            b-table-column(field="access", label="Access")
+                                | {{ props.row.access }}
                 b-tab-item(label="Environments")
-                    article(class="message is-gray is-small")
-                        div(class="message-body")
-                            p These are the environments created by your account.
-
+                    b-table(:data="environments", focusable)
+                        template(slot-scope="props")
+                            b-table-column(field="project", label="Your Projects")
+                                | {{props.row.owner}}:{{ props.row.name }}
+                            b-table-column(field="type", label="Type")
+                                | {{ props.row.type }}
+                            b-table-column(field="description", label="Description")
+                                | {{ props.row.description }}
+                            b-table-column(field="notes", label="Notes")
+                                | {{ props.row.notes }}
 </template>
 
 <script>
@@ -42,6 +55,8 @@ export default {
     data () {
         return {
             user: [ ],
+            deployables: [ ],
+            environments: [ ],
         }
     },
 
@@ -80,8 +95,30 @@ export default {
             console.log(`API returned`, res.data);
             const user = res.data.record
 
+            // Select deployables for this page
+            const url2 = `${protocol}://${host}:${port}/usersDeployables`
+            let res2 = await axios.get(url2, {
+                params: { 
+                    userID: user.id
+                }
+            })
+            console.log(`API2 returned`, res2.data);
+            const deployables = res2.data.deployables
+
+            // Select environments for this page
+            const url3 = `${protocol}://${host}:${port}/accountEnvironments`
+            let res3 = await axios.get(url3, {
+                params: { 
+                    userID: user.id
+                }
+            })
+            console.log(`API3 returned`, res3.data);
+            const environments = res3.data.environments
+
             return {
                 user: user,
+                deployables: deployables,
+                environments: environments,
             }
         } catch (e) {
             console.log(`Could not fetch user details:`, e)

@@ -6,39 +6,84 @@ div
 
     b-tabs(v-model="activeTab", :animated="false")
       b-tab-item(label="Status")
-        // Project information
-        form
-          div.form-group
-            div(v-if="mode === 'display'")
-              table(style="width:100%")
-                tr 
-                  td(style="justify:right;") 
-                    label Name:
-                  td(style="justify:left;")
-                    | {{ deployable.name }}
-                tr
-                  td(style="justify:right;")
-                    label(for='type') Type:
-                  td(style="justify:left;")
-                    | {{deployable.type}}
-                tr
-                  td(style="justify:right;")
-                    label(for='product_owner') Product Owner:
-                  td(style="justify:left;")
-                    | {{deployable.product_owner}}
-                tr
-                  td(style="justify:right;")
-                    label(for='description') Description: 
-                  td(style="justify:left;")
-                    | {{deployable.description}}
-                tr
-                  td(style="justify:right;")
-                    label(for='is_project') Is this a project? 
-                  td(style="justify:left;")
-                    | {{ yesnoFilter }}
-              br
-              div(v-if="isEditable")
-                b-button.stop(@click="setEditMode", type="is-primary is-outlined is-light", size="is-small")  Edit
+          // Project information
+          form.formStyle
+            .field.is-horizontal
+              .field-label.is-normal
+                label.label(style="width:200px;") Name
+              .field-body
+                .field  
+                  .control
+                    p.my-not-input-p() &nbsp;{{deployable.name}}
+            .field.is-horizontal
+              .field-label.is-normal  
+                label.label(style="width:200px;") Type:
+              .field-body
+                .field
+                  .control
+                    select.select(v-model="deployable.type", :disabled="!editingDetails")
+                      option(value="project") Project
+                      option(value="non project") Non project
+            .field.is-horizontal
+              .field-label.is-normal 
+                label.label(style="width:200px;") Product Owner:
+              .field-body 
+                .field  
+                  .control  
+                    input.input(v-if="editingDetails", v-model.trim="deployable.product_owner", @input="saveDetails")
+                    a.my-not-input-a(v-else-if="validUrl(deployable.product_owner)", :href="deployable.product_owner", target="_blank") &nbsp;{{deployable.product_owner}}
+                    p.my-not-input-p(v-else) &nbsp;{{deployable.product_owner}}
+            .field.is-horizontal
+              .field-label.is-normal
+                label.label(style="width:200px;") Description:
+              .field-body
+                .field
+                  .control
+                    textarea.textarea(v-model.trim="deployable.description", placeholder="Description", :disabled="!editingDetails", @input="saveDetails")
+            .field.is-horizontal
+              .field-label.is-normal  
+                label.label(style="width:200px;") Is this a project?
+              .field-body
+                .field
+                  .control
+                    select.select(v-model="deployable.type", :disabled="!editingDetails")
+                      option(value="project") Project
+                      option(value="non project") Non project
+          .control
+          button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
+
+          
+          //- div.form-group
+          //-   div(v-if="mode === 'display'")
+          //-     table(style="width:100%")
+          //-       tr 
+          //-         td(style="justify:right;") 
+          //-           label Name:
+          //-         td(style="justify:left;")
+          //-           | {{ deployable.name }}
+          //-       tr
+          //-         td(style="justify:right;")
+          //-           label(for='type') Type:
+          //-         td(style="justify:left;")
+          //-           | {{deployable.type}}
+          //-       tr
+          //-         td(style="justify:right;")
+          //-           label(for='product_owner') Product Owner:
+          //-         td(style="justify:left;")
+          //-           | {{deployable.product_owner}}
+          //-       tr
+          //-         td(style="justify:right;")
+          //-           label(for='description') Description: 
+          //-         td(style="justify:left;")
+          //-           | {{deployable.description}}
+          //-       tr
+          //-         td(style="justify:right;")
+          //-           label(for='is_project') Is this a project? 
+          //-         td(style="justify:left;")
+          //-           | {{ yesnoFilter }}
+          //-     br
+          //-     div(v-if="isEditable")
+          //-       b-button.stop(@click="setEditMode", type="is-primary is-outlined is-light", size="is-small")  Edit
 
       b-tab-item(label="Variables")
         // Variables
@@ -427,7 +472,6 @@ export default {
         new_description: '',
         new_is_project: '',
   
-
         // Editing an existing variable
         new_variable_description: '',
         new_variable_type: '',
@@ -458,6 +502,8 @@ export default {
         edit_useraccess: '',
         editmodal_userid: '',
       },
+      editingDetails: false,
+
       // Editing deployables existing values
       product_owner: '',
       description: '',
@@ -529,6 +575,21 @@ export default {
 
   methods: {
     ...standardStuff.methods,
+
+    // SAVE EDITED DEPLOYABLE DETAILS 
+    saveDetails: async function () {
+      let self = this
+      if (self.updateDelay) {
+        clearTimeout(self.updateDelay)
+      }
+      self.updateDelay = setTimeout(async function () {
+        self.updateDelay = null
+        const url = `${protocol}://${host}:${port}/deployable`
+        console.log(`UPDATING DEPLOYABLE`, self.deployable);
+
+        let result = await axios.put(url, self.deployable)
+      }, 500)
+    }, // -saveDetails
 
     // EDIT THE DETAILS OF THE SELECTED DEPLOYABLE
     async saveDeployable() {
@@ -933,7 +994,7 @@ export default {
   async asyncData ({ app, params, error }) {
     let username = app.$nuxtLoginservice.user.username
     let {owner:deployableOwner, name:deployableName} = standardStuff.methods.std_fromQualifiedName(params.deployableName, username)
-console.log(`deployable=> ${deployableOwner}, ${deployableName}`);
+    console.log(`deployable=> ${deployableOwner}, ${deployableName}`);
 
     let jwt = app.$nuxtLoginservice.jwt
     let config = {

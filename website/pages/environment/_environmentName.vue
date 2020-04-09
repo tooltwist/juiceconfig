@@ -3,7 +3,6 @@
 section.section
   h1.title Environment&nbsp;
     span(v-html="std_environmentDisplay(environment)")
-
   
   b-tabs(v-model="activeTab", :animated="false")
     b-tab-item(label="Information")
@@ -17,7 +16,7 @@ section.section
                         p.my-not-input-p() &nbsp;{{environment.name}}
         .field.is-horizontal
             .field-label.is-normal
-                label.label(style="width:200px;") Type: 
+              label.label(style="width:200px;") Type: 
             .field-body
                 .field
                     .control
@@ -599,13 +598,12 @@ export default {
             // console.log(`Updating...`, self.deployment);
             self.updateDelay = null
             const url = `${protocol}://${host}:${port}/environment`
-console.log(`UPDATING ENVIRONMENT`, self.environment);
+            console.log(`UPDATING ENVIRONMENT`, self.environment);
 
            let result = await axios.put(url, self.environment)
             // console.log(`result is `, result);
         }, 500)
     }
-
   },//- methods
 
   /*
@@ -650,9 +648,9 @@ console.log(`environment=> ${environmentOwner}, ${environmentName}`);
       // Select the users for the environment
       const url3 = `${protocol}://${host}:${port}/environments_users`
       let res3 = await axios.get(url3, {
-          params: { 
-            environmentName: environmentName
-          }
+        params: { 
+          environmentName: environmentName
+        }
       })
       console.log(`API3 returned`, res3.data);
       const users = res3.data.users
@@ -713,5 +711,4 @@ a.my-not-input-a {
     position: relative;
     top: 6px;
 }
-
 </style>
