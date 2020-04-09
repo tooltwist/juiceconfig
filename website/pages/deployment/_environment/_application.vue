@@ -521,6 +521,7 @@ console.log(`YYYYY YARP 2`, deployment);
             // script += 'SecretString="{\"db.host\":\"${DB_HOST}\",\"db.port\":\"${DB_PORT}\",\"db.database\":\"${DB_NAME}\",\"db.user\":\"${DB_USERNAME}\",\"db.password\":null}"\n'
             script += `SecretString=$(cat<<ENDDD\n${json}\nENDDD\n`
             // script += '#echo Secret is ${SecretString}\n'
+            script += 'export AWS_PROFILE=${AWS_PROFILE}\\\n'
             script += 'aws secretsmanager put-secret-value \\\n'
             script += '    --region ${REGION}\\\n'
             script += '    --secret-id ${SECRET_NAME}\\\n'
