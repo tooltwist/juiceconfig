@@ -26,8 +26,6 @@ section.section
 
 <script>
 import axios from 'axios'
-import webconfig from '~/protected-config/website-config'
-const { protocol, host, port } = webconfig
 import standardStuff from '../lib/standard-stuff'
 
 export default {
@@ -66,12 +64,12 @@ export default {
       console.log(`------------------- asyncData`)
       let jwt = app.$nuxtLoginservice.jwt
 
-      const url = `${protocol}://${host}:${port}/deployables`
       let config = {
         headers: {
           authorization: `Bearer ${jwt}`,
         }
       }
+      const url = standardStuff.apiURL('/deployables')
       console.log(`Calling ${url}`);
       let res = await axios.get(url, config);
       const projects = res.data.deployables;

@@ -65,8 +65,7 @@ section.section
 
 <script>
 import axios from 'axios'
-import webconfig from '~/protected-config/website-config'
-const { protocol, host, port } = webconfig
+import standardStuff from '../lib/standard-stuff'
 
 export default {
     name: 'New_Environment',
@@ -154,7 +153,8 @@ export default {
                         authorization: `Bearer ${jwt}`,
                         }
                     }
-                    await axios.post(`${protocol}://${host}:${port}/newEnvironment`, {
+                    const url = standardStuff.apiURL('/newEnvironment')
+                    await axios.post(url, {
                         name: this.form.new_environment,
                         description: this.form.new_description,
                         notes: this.form.new_notes,
@@ -192,7 +192,7 @@ export default {
         
         try {        
             // Get the environments
-            const url = `${protocol}://${host}:${port}/showEnvironments`
+            const url = standardStuff.apiURL('/showEnvironments')
             console.log(`Calling ${url}`);
             let reply = await axios.get(url)
             console.log(`Response is: `, reply)

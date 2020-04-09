@@ -51,8 +51,7 @@ section.section
 
 <script>
 import axios from 'axios'
-import webconfig from '~/protected-config/website-config'
-const { protocol, host, port } = webconfig
+import standardStuff from '../lib/standard-stuff'
 
 export default {
     name: 'New_Deployable',
@@ -92,8 +91,7 @@ export default {
         }
         
         try {
-            // const url = `${protocol}://${host}:${port}/showDeployables`
-            const url = `${protocol}://${host}:${port}/deployables`
+            const url = standardStuff.apiURL('/deployables')
             console.log(`Calling ${url}`);
             let result = await axios.get(url, axiosConfig)
             console.log(`result=`, result);
@@ -197,8 +195,8 @@ export default {
                         is_project: this.form.is_project,
                     }
                     console.log(`record = `, record);
-                    
-                    await axios.post(`${protocol}://${host}:${port}/newDeployable`, record, this.axiosConfig)
+                    let url = standardStuff.apiURL('/newDeployable')
+                    await axios.post(url, record, this.axiosConfig)
                     // Prevent input error from showing
                     // this.mode = false;
                 } catch (err) {

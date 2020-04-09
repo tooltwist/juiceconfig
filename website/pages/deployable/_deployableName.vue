@@ -450,8 +450,6 @@ div
 
 <script>
 import axios from 'axios'
-import webconfig from '~/protected-config/website-config'
-const { protocol, host, port } = webconfig
 import standardStuff from '../../lib/standard-stuff'
 
 export default {
@@ -584,7 +582,7 @@ export default {
       }
       self.updateDelay = setTimeout(async function () {
         self.updateDelay = null
-        const url = `${protocol}://${host}:${port}/deployable`
+        const url = standardStuff.apiURL('/deployable')
         console.log(`UPDATING DEPLOYABLE`, self.deployable);
 
         let result = await axios.put(url, self.deployable)
@@ -594,7 +592,8 @@ export default {
     // EDIT THE DETAILS OF THE SELECTED DEPLOYABLE
     async saveDeployable() {
       try {
-        await axios.post(`${protocol}://${host}:${port}/deployable`, {
+        let url = standardStuff.apiURL('/deployable')
+        await axios.post(url, {
           product_owner: this.form.new_owner,
           type: this.form.new_type,
           description: this.form.new_description,
@@ -639,7 +638,8 @@ export default {
 
         // If no error, send post request to server
         try {
-          await axios.post(`${protocol}://${host}:${port}/newVariable`, {
+          let url = standardStuff.apiURL('/newVariable')
+          await axios.post(url, {
             name: this.form.variable_name,
             description: this.form.variable_description,
             type: this.form.variable_type,
@@ -690,7 +690,8 @@ export default {
 
         // If no error, send post request to server
         try {
-          await axios.post(`${protocol}://${host}:${port}/newProjectUser`, {
+          let url = standardStuff.apiURL('/newProjectUser')
+          await axios.post(url, {
             id: this.form.new_projectuser,
             access: this.form.new_user_access,
             project: this.deployableName
@@ -715,7 +716,8 @@ export default {
 
     async saveEditedUser() {
       try {
-        await axios.post(`${protocol}://${host}:${port}/editUser`, {
+        let url = standardStuff.apiURL('/editUser')
+        await axios.post(url, {
             id: this.users.user_id,
             access: this.form.edit_useraccess,
             project: this.deployableName,
@@ -755,7 +757,8 @@ export default {
 
         // If no error, send post request to server
         try {
-          await axios.post(`${protocol}://${host}:${port}/newDeployment`, {
+          let url = standardStuff.apiURL('/newDeployment')
+          await axios.post(url, {
             environment: this.form.new_environment,
             notes: this.form.new_notes,
             deployable: this.deployableName,
@@ -818,7 +821,8 @@ export default {
 
         // If no error, send post request to server
         try {
-          await axios.post(`${protocol}://${host}:${port}/newDependency`, {
+          let url = standardStuff.apiURL('/newDependency')
+          await axios.post(url, {
             child: this.form.new_child,
             prefix: this.form.new_prefix,
             version: this.form.new_version,
@@ -845,7 +849,8 @@ export default {
     // SAVE AN EDITED VARIABLE WITH NEW VALUES - IN MODAL
     async saveVariable() {
       try {
-        await axios.post(`${protocol}://${host}:${port}/variable`, {
+        let url = standardStuff.apiURL('/variable')
+        await axios.post(url, {
           description: this.form.new_variable_description,
           type: this.form.new_variable_type,
           mandatory: this.form.new_variable_mandatory,
@@ -869,13 +874,13 @@ export default {
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW OR EDITED VARIABLES
     async reloadVariables() {
-      const url2 = `${protocol}://${host}:${port}/variables`
-      let res2 = await axios.get(url2, { 
+      let url = standardStuff.apiURL('/variables')
+      let res = await axios.get(url, { 
         params: {
           deployableName: this.deployableName
         }
       })
-      this.variables = res2.data.variables
+      this.variables = res.data.variables
       console.log(`Variables have been reloaded on the browser.`)
       return {
         variables: this.variables
@@ -884,14 +889,14 @@ export default {
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW PROJECT USER
     async reloadUsers() {
-      const url5 = `${protocol}://${host}:${port}/project_users`
-      let res5 = await axios.get(url5, {
+      let url = standardStuff.apiURL('/project_users')
+      let result = await axios.get(url, {
           params: { 
             deployableName: this.deployableName
           }
       })
-      console.log(`API5 returned`, res5.data);
-      this.users = res5.data.users
+      console.log(`API5 returned`, result.data);
+      this.users = result.data.users
       return {
         users: this.users
       };
@@ -899,8 +904,8 @@ export default {
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW DEPLOYMENT
     async reloadDeployments() {
-      const url3 = `${protocol}://${host}:${port}/envDeployments`
-      let res3 = await axios.get(url3, { 
+      let url = standardStuff.apiURL('/envDeployments')
+      let res3 = await axios.get(url, { 
         params: {
           deployableName: this.deployableName
         }
@@ -914,8 +919,8 @@ export default {
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW DEPENDENCY
     async reloadDependencies() {
-      const url4 = `${protocol}://${host}:${port}/dependencies1`
-      let res4 = await axios.get(url4, {
+      let url = standardStuff.apiURL('/dependencies1')
+      let res4 = await axios.get(url, {
           params: { 
             deployableName: this.deployableName
           }
@@ -1005,7 +1010,7 @@ export default {
 
     try {
       // Select the deployable for this page
-      const url = `${protocol}://${host}:${port}/deployable`
+      const url = standardStuff.apiURL('/deployable')
       console.log(`Calling ${url}`);
       let res = await axios.get(url, { 
         params: {
@@ -1016,7 +1021,7 @@ export default {
       const deployable = res.data.record
 
       // Select the variables for this deployable
-      const url2 = `${protocol}://${host}:${port}/variables`
+      const url2 = standardStuff.apiURL('/variables')
       let res2 = await axios.get(url2, { 
         params: {
           deployableName: deployableName
@@ -1026,7 +1031,7 @@ export default {
       const variables = res2.data.variables
 
       // Select the deployments for this deployable
-      const url3 = `${protocol}://${host}:${port}/envDeployments`
+      const url3 = standardStuff.apiURL('/envDeployments')
       let res3 = await axios.get(url3, { 
         params: {
           deployableName: deployableName
@@ -1036,7 +1041,7 @@ export default {
       const deployments = res3.data.deployments
 
       // Select dependencies for this deployable
-      const url4 = `${protocol}://${host}:${port}/dependencies1`
+      const url4 = standardStuff.apiURL('/dependencies1')
       let res4 = await axios.get(url4, {
           params: { 
             deployableName: deployableName
@@ -1046,7 +1051,7 @@ export default {
       const dependencies = res4.data.dependencies
 
       // Select users for this deployable
-      const url5 = `${protocol}://${host}:${port}/project_users`
+      const url5 = standardStuff.apiURL('/project_users')
       let res5 = await axios.get(url5, {
           params: { 
             deployableName: deployableName
@@ -1056,7 +1061,7 @@ export default {
       const users = res5.data.users
 
       // Import environments to use when creating new Deployment
-      const url6 = `${protocol}://${host}:${port}/environments`
+      const url6 = standardStuff.apiURL('/environments')
       console.log(`Calling ${url6}`);
       console.log(`config = `, config)
       let res6 = await axios.get(url6, config)
@@ -1064,19 +1069,18 @@ export default {
       const environments = res6.data.environments
 
       // Import all users for creating new user (on the selected project)
-      const url7 = `${protocol}://${host}:${port}/users`
+      const url7 = standardStuff.apiURL('/users')
       let res7 = await axios.get(url7)
       console.log(`API7 returned`, res7.data);
       const allUsers = res7.data.users
       console.log(allUsers)
 
       // This users accessibility/profile details
-      const url8 = `${protocol}://${host}:${port}/currentUser`
+      const url8 = standardStuff.apiURL('/currentUser')
       let res8 = await axios.get(url8, config)
       console.log(`API8 returned`, res8.data);
       const currentUser = res8.data.user
       console.log('currentUser: ', currentUser)
-
 
       return {
         deployableName: deployableName,

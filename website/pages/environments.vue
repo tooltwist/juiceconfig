@@ -31,8 +31,6 @@
 
 <script>
 import axios from 'axios'
-import webconfig from '~/protected-config/website-config'
-const { protocol, host, port } = webconfig
 import standardStuff from '../lib/standard-stuff'
 
 export default {
@@ -59,8 +57,7 @@ export default {
       }
 
       // Get the environments
-      const url = `${protocol}://${host}:${port}/environments`
-
+      const url = standardStuff.apiURL('/environments')
       console.log(`Calling ${url}`);
       let reply = await axios.get(url, config)
       console.log(`Response is: `, reply)

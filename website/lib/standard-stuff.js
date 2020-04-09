@@ -1,4 +1,28 @@
+import webconfig from '~/protected-config/website-config'
+
+// function api_url_prefix() {
+//   const { protocol, host, port, prefix } = webconfig
+//   const urlPrefix = `${protocol}://${host}:${port}/${prefix}`
+//   return urlPrefix
+// }
+
+// function endpoint() {
+//   const { protocol, host, port } = webconfig
+//   const endpoint = `${protocol}://${host}:${port}`
+//   return endpoint
+// }
+
+function apiURL(path) {
+  const { protocol, host, port, prefix } = webconfig
+  const url = `${protocol}://${host}:${port}/${prefix}${path}`
+  return url
+}
+
+
 export default {
+  // api_url_prefix,
+  // endpoint,
+  apiURL,
 
   methods: {
 

@@ -129,8 +129,6 @@
 
 <script>
 import axios from 'axios'
-import webconfig from '~/protected-config/website-config'
-const { protocol, host, port } = webconfig
 import standardStuff from '../lib/standard-stuff'
 
 export default {
@@ -172,12 +170,9 @@ export default {
       }
 
       // Get the environments
-      // let url = `${protocol}://${host}:${port}/deployments`
-      // let reply = await axios.get(url, config)
-      // const deployments = reply.data.deployments
       const deployments = await loadDeployments(jwt)
 
-      let url = `${protocol}://${host}:${port}/environments`
+      let url = standardStuff.apiURL('/environments')
       let reply = await axios.get(url, config)
       const environments = reply.data.environments
 
@@ -185,7 +180,7 @@ export default {
       // let deployables = await loadDeployables(jwt)
       // console.log(`AFTER loading deployables`, deployables);
 
-      url = `${protocol}://${host}:${port}/deployables`
+      url = standardStuff.apiURL('/deployables')
       reply = await axios.get(url, config)
       const deployables = reply.data.deployables
 
@@ -355,9 +350,9 @@ export default {
             authorization: `Bearer ${jwt}`,
           }
         }
-        let url = `${protocol}://${host}:${port}/newDeployment`
+        let url = standardStuff.apiURL('/newDeployment')
         console.log(`url is ${url}`);
-        let reply = await axios.post(`${protocol}://${host}:${port}/newDeployment`, obj, config)
+        let reply = await axios.post(url, obj, config)
         console.log(`reply is `, reply);
 
         let reloadedDeployments = await loadDeployments(jwt)
@@ -384,7 +379,7 @@ async function loadDeployments (jwt) {
       authorization: `Bearer ${jwt}`,
     }
   }
-  let url = `${protocol}://${host}:${port}/deployments`
+  let url = standardStuff.apiURL('/deployments')
   let reply = await axios.get(url, config)
   const deployments = reply.data.deployments
   return deployments

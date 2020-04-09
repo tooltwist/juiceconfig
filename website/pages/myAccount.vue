@@ -47,9 +47,7 @@
 
 <script>
 import axios from 'axios'
-import webconfig from '~/protected-config/website-config'
-const { protocol, host, port } = webconfig
-//import standardStuff from '/opt/Development/Projects/juice/juiceconfig/website/lib/standard-stuff.js'
+import standardStuff from '../lib/standard-stuff'
 
 export default {
     data () {
@@ -85,7 +83,7 @@ export default {
 
         try {
             // Select the deployable for this page
-            const url = `${protocol}://${host}:${port}/myaccount`
+            const url = standardStuff.apiURL('/myaccount')
             console.log(`Calling ${url}`);
             let res = await axios.get(url, { 
                 params: {
@@ -96,7 +94,7 @@ export default {
             const user = res.data.record
 
             // Select deployables for this page
-            const url2 = `${protocol}://${host}:${port}/usersDeployables`
+            const url2 = standardStuff.apiURL('/usersDeployables')
             let res2 = await axios.get(url2, {
                 params: { 
                     userID: user.id
@@ -106,7 +104,7 @@ export default {
             const deployables = res2.data.deployables
 
             // Select environments for this page
-            const url3 = `${protocol}://${host}:${port}/accountEnvironments`
+            const url3 = standardStuff.apiURL('/accountEnvironments')
             let res3 = await axios.get(url3, {
                 params: { 
                     userID: user.id

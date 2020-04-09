@@ -320,8 +320,6 @@ section.section
 
 <script>
 import axios from 'axios'
-import webconfig from '~/protected-config/website-config'
-const { protocol, host, port } = webconfig
 import standardStuff from '../../lib/standard-stuff'
 
 
@@ -403,7 +401,8 @@ export default {
 
         // If no error, send post request to server
         try {
-          await axios.post(`${protocol}://${host}:${port}/newDeployment`, {
+          let url = standardStuff.apiURL('/newDeployment')
+          await axios.post(url, {
             environment: this.environmentName,
             notes: this.form.new_notes,
             deployable: this.form.new_deployable,
@@ -429,7 +428,8 @@ export default {
     // SAVED EDITED ENVIRONMENT TO THE DATABASE - FROM MODAL
     async saveEditedEnv() {
       try {
-        await axios.post(`${protocol}://${host}:${port}/editedEnv`, {
+        let url = standardStuff.apiURL('/editedEnv')
+        await axios.post(url, {
           description: this.form.edit_envdescription,
           notes: this.form.edit_envnotes,
           name: this.environmentName,
@@ -450,7 +450,7 @@ export default {
 
     // RELOAD THE DATABASE TABLE AFTER SAVING EDITED ENVIRONMENT
     async reloadEnvironment() {
-      const url = `${protocol}://${host}:${port}/environment`
+      const url = standardStuff.apiURL('/environment')
       let res = await axios.get(url, { 
         params: {
           environmentName: this.environmentName
@@ -465,7 +465,7 @@ export default {
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW DEPLOYMENT
     async reloadDeployments() {
-      const url2 = `${protocol}://${host}:${port}/deployments`
+      const url2 = standardStuff.apiURL('/deployments')
       let res2 = await axios.get(url2, { 
         params: {
           environmentName: this.environmentName
@@ -503,7 +503,8 @@ export default {
 
         // If no error, send post request to server
         try {
-          await axios.post(`${protocol}://${host}:${port}/newEnvironmentUser`, {
+          let url = standardStuff.apiURL('/newEnvironmentUser')
+          await axios.post(url, {
             id: this.form.new_environmentuser,
             access: this.form.new_user_access,
             environment: this.environmentName
@@ -528,7 +529,8 @@ export default {
 
     async saveEditedUser() {
       try {
-        await axios.post(`${protocol}://${host}:${port}/editEnvUser`, {
+        let url = standardStuff.apiURL('/editEnvUser')
+        await axios.post(url, {
             id: this.users.user_id,
             access: this.form.edit_useraccess,
             environment: this.environmentName,
@@ -545,7 +547,7 @@ export default {
     }, // - saveEditedUser
 
     async reloadUsers() {
-      const url3 = `${protocol}://${host}:${port}/environments_users`
+      const url3 = standardStuff.apiURL('/environments_users')
       let res3 = await axios.get(url3, {
           params: { 
             environmentName: this.environmentName
@@ -597,7 +599,7 @@ export default {
         self.updateDelay = setTimeout(async function () {
             // console.log(`Updating...`, self.deployment);
             self.updateDelay = null
-            const url = `${protocol}://${host}:${port}/environment`
+            const url = standardStuff.apiURL('/environment')
             console.log(`UPDATING ENVIRONMENT`, self.environment);
 
            let result = await axios.put(url, self.environment)
@@ -625,7 +627,7 @@ console.log(`environment=> ${environmentOwner}, ${environmentName}`);
 
     try {
       // Select the environment for this page
-      const url = `${protocol}://${host}:${port}/environment`
+      const url = standardStuff.apiURL('/environment')
       console.log(`Calling ${url}`);
       let res = await axios.get(url, { 
         params: {
@@ -636,7 +638,7 @@ console.log(`environment=> ${environmentOwner}, ${environmentName}`);
       const environment = res.data.record
 
       // Select the deployments for this environment
-      const url2 = `${protocol}://${host}:${port}/deployments`
+      const url2 = standardStuff.apiURL('/deployments')
       let res2 = await axios.get(url2, { 
         params: {
           environmentName: environmentName
@@ -646,7 +648,7 @@ console.log(`environment=> ${environmentOwner}, ${environmentName}`);
       const deployments = res2.data.deployments
 
       // Select the users for the environment
-      const url3 = `${protocol}://${host}:${port}/environments_users`
+      const url3 = standardStuff.apiURL('/environments_users')
       let res3 = await axios.get(url3, {
         params: { 
           environmentName: environmentName
@@ -656,20 +658,20 @@ console.log(`environment=> ${environmentOwner}, ${environmentName}`);
       const users = res3.data.users
 
       // Import deployables to be used in deployments form
-      const url4 = `${protocol}://${host}:${port}/deployables`
+      const url4 = standardStuff.apiURL('/deployables')
       let res4 = await axios.get(url4, config)
 
       const deployables = res4.data.deployables
 
       // Import all users for creating new user (on the selected project)
-      const url5 = `${protocol}://${host}:${port}/users`
+      const url5 = standardStuff.apiURL('/users')
       let res5 = await axios.get(url5)
       console.log(`API5 returned`, res5.data);
       const allUsers = res5.data.users
       console.log(allUsers)
 
       // This users accessibility/profile details
-      const url8 = `${protocol}://${host}:${port}/currentUser`
+      const url8 = standardStuff.apiURL('/currentUser')
       let res8 = await axios.get(url8, config)
       console.log(`API8 returned`, res8.data);
       const currentUser = res8.data.user

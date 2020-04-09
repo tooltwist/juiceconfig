@@ -234,9 +234,7 @@ section.section
 
 <script>
 import axios from 'axios'
-import webconfig from '~/protected-config/website-config'
 import standardStuff from '../../../lib/standard-stuff'
-const { protocol, host, port } = webconfig
 
 const NUM_START = `ZNUZM(`
 const NUM_END = `)NUZMZ`
@@ -291,7 +289,7 @@ export default {
         
         
         // Select this deployment for this page
-        let url = `${protocol}://${host}:${port}/deployments`
+        let url = standardStuff.apiURL('/deployments')
         console.log(`Calling ${url}`);
         let res = await axios.get(url, { 
             params: {
@@ -312,7 +310,7 @@ console.log(`YYYYY YARP 1`, deployment);
 
 
         // Select the environment for this page
-        url = `${protocol}://${host}:${port}/environmentIndex`
+        url = standardStuff.apiURL('/environmentIndex')
         console.log(`Calling ${url}`);
         res = await axios.get(url, { 
             params: {
@@ -328,7 +326,7 @@ console.log(`YYYYY YARP 1`, deployment);
         
 
         // Import deployables to be shown in dropdown
-        const url2 = `${protocol}://${host}:${port}/deployables`
+        const url2 = standardStuff.apiURL('/deployables')
         let res2 = await axios.get(url2, axiosConfig)
         const deployables = res2.data.deployables
 
@@ -365,7 +363,7 @@ console.log(`YYYYY YARP 1`, deployment);
         // const variablesDepend = res5.data.variables
 
         // Variables for dependencies and deployable (recursive array data)
-        const url6 = `${protocol}://${host}:${port}/variablesConfig`
+        const url6 = standardStuff.apiURL('/variablesConfig')
         let res6 = await axios.get(url6, {
             params: {
                 deployable_owner: deployment.deployable_owner,
@@ -380,7 +378,7 @@ console.log(`YYYYY YARP 1`, deployment);
         // Select variable values for this deployment
 console.log(`YARP XUT 1`);
 
-        const url7 = `${protocol}://${host}:${port}/variableValues`
+        const url7 = standardStuff.apiURL('/variableValues')
         let result7 = await axios.get(url7, {
             params: {
                 environmentOwner: environmentOwner,
