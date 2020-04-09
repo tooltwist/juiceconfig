@@ -44,15 +44,15 @@ const cors = corsMiddleware({
 server.pre(cors.preflight);
 server.use(cors.actual);
 
-function respond(req, res, next) {
-  res.send('hello ' + req.params.name);
-  next();
-}
-server.get('/hello/:name', respond);
-server.head('/hello/:name', respond);
+// function respond(req, res, next) {
+//   res.send('hello ' + req.params.name);
+//   next();
+// }
+// server.get('/api/hello/:name', respond);
+// server.head('/hello/:name', respond);
 
 // Healthcheck, so the load balancer can check the API is operational
-server.get('/healthcheck', async (req, res, next) => {
+server.get('/api/healthcheck', async (req, res, next) => {
   console.log(`GET /healthcheck`);
 
   res.send({
@@ -85,7 +85,7 @@ userServices.register(server)
 
 
 // Authentication: Select the user details/accessibility for the current user (logged in)
-server.get('/currentUser', auth, async (req, res, next) => {
+server.get('/api/currentUser', auth, async (req, res, next) => {
   console.log(`GET /currentUser`);
 
   let userIdentity = req.payload.userIdentity
@@ -99,6 +99,14 @@ server.get('/currentUser', auth, async (req, res, next) => {
     next()
   });
 }); // End of section
+
+server.get('/*', restify.plugins.serveStatic({
+  // directory: './public'
+  directory: '../website/dist',
+  default: 'index.html'
+}));
+
+
 
 // >>>>>>> b358488128689c398a8de1ef6e727f3a03c99cfc
 

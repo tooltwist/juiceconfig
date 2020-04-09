@@ -5,7 +5,7 @@ import auth from './auth'
 export default {
 	register (server) {
         // Dynamically select the USER for /_userName from MySQL database
-        server.get('/userName', async (req, res, next) => {
+        server.get('/api/userName', async (req, res, next) => {
             console.log(`GET /userName`);
         
             let userID = req.query.userID
@@ -22,7 +22,7 @@ export default {
         }); // End of section
         
         // Dynamically select the PROJECTS for /_userName from MySQL database
-        server.get('/usersProjects', async (req, res, next) => {
+        server.get('/api/usersProjects', async (req, res, next) => {
             console.log(`GET /usersProjects`);
         
             let userID = req.query.userID
@@ -39,7 +39,7 @@ export default {
         }); // End of section
         
         // Dynamically select the ENVIRONMENTS for /_userName from MySQL database
-        server.get('/usersEnvironments', async (req, res, next) => {
+        server.get('/api/usersEnvironments', async (req, res, next) => {
             console.log(`GET /usersEnvironments`);
         
             let userID = req.query.userID
@@ -56,7 +56,7 @@ export default {
         });
         
         // Edit values for /_userName on MySQL database
-        server.post('/editUserAccount', async (req, res, next) => {
+        server.post('/api/editUserAccount', async (req, res, next) => {
             console.log(`POST /editUserAccount`)
         
             let con = await db.checkConnection()
@@ -78,7 +78,7 @@ export default {
         }); // - end of call
             
         // Select ENVIRONMENTS for /_userName on MySQL database
-        server.get('/environments', auth, async (req, res, next) => {
+        server.get('/api/environments', auth, async (req, res, next) => {
             console.log(`GET /environments`);
         
             let userIdentity = req.payload.userIdentity
