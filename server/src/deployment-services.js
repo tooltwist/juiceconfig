@@ -2,17 +2,9 @@ import db from './database-mysql';
 import auth from './auth'
 
 
-
-
 export default {
 	register (server) {
-    console.log(`REGISTERING DEPLOYMENT SERVICES!!!! YAY!!!`);
-    
-
-    /*
-    *  /_environmentNAME: Select DEPLOYMENTS for /_environmentNAME on MySQL database
-    *  
-    */
+    // Select DEPLOYMENTS for /_environmentNAME on MySQL database
     server.get('/deployments', async (req, res, next) => {
       console.log(`GET /deployments`);
 
@@ -105,9 +97,6 @@ export default {
         obj.notes = req.params.notes
       }
       console.log(`will save this:`, obj);
-      
-
-      //ZZZZ Check we are allowed to do this.
 
 
 
@@ -171,6 +160,5 @@ export default {
       }) 
     })//- PUT /deployment
   }//- register
-
 };
   
