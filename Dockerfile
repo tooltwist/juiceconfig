@@ -38,6 +38,9 @@ WORKDIR /server
 ADD server /server
 RUN yarn install
 
+# Create a fake config file for development
+RUN mkdir -p /website/protected-config
+RUN echo "{}" > /website/protected-config/website-config.js
 
 # Now generate the website
 WORKDIR /website
