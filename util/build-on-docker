@@ -8,5 +8,8 @@ IMAGE_TAG=tooltwist/juiceconfig
 cd ${dir}/..
 pwd
 
+ls -l server/pack*
+ls -l website/pack*
+
 echo "$" docker build -t ${IMAGE_TAG} .
          docker build -t ${IMAGE_TAG} .

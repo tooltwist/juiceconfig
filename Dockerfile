@@ -12,9 +12,18 @@ RUN echo 1
 # Install pm2 so we can run our application
 RUN yarn global add pm2
 
-# Install npm modules first
+# Get the package definitions for server and website
 COPY server/package.json /server/package.json
+COPY website/package.json /website/package.json
+
+# Install npm modules first, for the server
 WORKDIR /server
+RUN rm -rf node_modules
+#RUN npm --color false install
+RUN yarn install
+
+# Install npm modules first, for the website
+WORKDIR /website
 RUN rm -rf node_modules
 #RUN npm --color false install
 RUN yarn install
@@ -24,11 +33,21 @@ RUN yarn install
 #RUN rm -rf node_modules
 #RUN npm --color false install
 
-# Now install the source
+# Now install the source for the server
+WORKDIR /server
 ADD server /server
 RUN yarn install
-#ADD website /website
-#RUN mkdir -p /src/public /website/dist
+
+# Create a fake config file for development
+RUN mkdir -p /website/protected-config
+RUN echo "{}" > /website/protected-config/website-config.js
+
+# Now generate the website
+WORKDIR /website
+ADD website /website
+RUN yarn generate
+
+# Tidy up
 
 # Install the secure configuration files
 #ADD secure-config /secure-config

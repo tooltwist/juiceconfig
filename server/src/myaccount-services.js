@@ -4,7 +4,7 @@ import auth from './auth'
 export default {
 	register (server) {
         // Select USER details from MySQL database
-        server.get('/myaccount', async (req, res, next) => {
+        server.get('/api/myaccount', async (req, res, next) => {
             console.log(`GET /myaccount`);
         
             let username = req.query.userName;
@@ -21,7 +21,7 @@ export default {
         }); // End of section
         
         // Select deployables for /myaccount on MySQL database
-        server.get('/usersDeployables', async (req, res, next) => {
+        server.get('/api/usersDeployables', async (req, res, next) => {
             console.log(`GET /usersDeployables`);
             
             let userID = req.query.userID
@@ -37,7 +37,7 @@ export default {
         }) // End of section
         
         // Select environments for /myaccount on MySQL database
-        server.get('/accountEnvironments', async (req, res, next) => {
+        server.get('/api/accountEnvironments', async (req, res, next) => {
             console.log(`GET /accountEnvironments`);
             
             let userID = req.query.userID

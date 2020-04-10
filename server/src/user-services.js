@@ -5,7 +5,7 @@ import restify from 'restify';
 export default {
 	register (server) {
         // Select all USERS for /users on MySQL database
-        server.get('/users', async (req, res, next) => {
+        server.get('/api/users', async (req, res, next) => {
            console.log(`GET /users`);
          
            let con = await db.checkConnection()
@@ -19,7 +19,7 @@ export default {
         }); // End of section
          
         // Adding a new user to the DB       
-        server.post('/newUser', async (req, res, next) => {
+        server.post('/api/newUser', async (req, res, next) => {
             console.log(`POST /newUser`)
        
             let con = await db.checkConnection()
@@ -37,7 +37,7 @@ export default {
          }); // End of section
        
         // Adding a new project user to the DB
-        server.post('/newProjectUser', async (req, res, next) => {
+        server.post('/api/newProjectUser', async (req, res, next) => {
            console.log(`POST /newProjectUser`)
        
             let con = await db.checkConnection()

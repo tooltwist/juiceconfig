@@ -5,7 +5,7 @@ import restify from 'restify';
 export default {
 	register (server) {
         // Select ALL ENVIRONMENTS from MySQL database
-        server.get('/showEnvironments', async (req, res, next) => {
+        server.get('/api/showEnvironments', async (req, res, next) => {
             console.log(`GET /showEnvironments`);
         
             let con = await db.checkConnection()
@@ -19,7 +19,7 @@ export default {
         }); // End of section
 
         // Adding a new environment to the DB
-        server.post('/newEnvironment', auth, async (req, res, next) => {
+        server.post('/api/newEnvironment', auth, async (req, res, next) => {
             console.log(`POST /newEnvironment`)
 
             let con = await db.checkConnection()

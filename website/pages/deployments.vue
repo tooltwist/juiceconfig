@@ -129,8 +129,6 @@
 
 <script>
 import axios from 'axios'
-import webconfig from '~/protected-config/website-config'
-const { protocol, host, port } = webconfig
 import standardStuff from '../lib/standard-stuff'
 
 export default {
@@ -164,20 +162,11 @@ export default {
    */
   async asyncData ({ app, params, error }) {
     try {
-      let jwt = app.$nuxtLoginservice.jwt
-      let config = {
-        headers: {
-          authorization: `Bearer ${jwt}`,
-        }
-      }
+      // Get the deployments
+      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+      const deployments = await loadDeployments(config)
 
-      // Get the environments
-      // let url = `${protocol}://${host}:${port}/deployments`
-      // let reply = await axios.get(url, config)
-      // const deployments = reply.data.deployments
-      const deployments = await loadDeployments(jwt)
-
-      let url = `${protocol}://${host}:${port}/environments`
+      let url = standardStuff.apiURL('/environments')
       let reply = await axios.get(url, config)
       const environments = reply.data.environments
 
@@ -185,7 +174,7 @@ export default {
       // let deployables = await loadDeployables(jwt)
       // console.log(`AFTER loading deployables`, deployables);
 
-      url = `${protocol}://${host}:${port}/deployables`
+      url = standardStuff.apiURL('/deployables')
       reply = await axios.get(url, config)
       const deployables = reply.data.deployables
 
@@ -337,30 +326,25 @@ export default {
       let notes = this.notes
 
       // Prepare the object
-      let obj = {
-        environment_owner: envOwner,
-        environment: envName,
-        deployable_owner: owner,
-        deployable: name,
-        application_name: applicationName,
-        notes: notes,
-      }
-      console.log(`obj is`, obj);
       
       try {
         
-        let jwt = this.$loginservice.jwt
-        let config = {
-          headers: {
-            authorization: `Bearer ${jwt}`,
-          }
+        let url = standardStuff.apiURL('/newDeployment')
+        let record = {
+          environment_owner: envOwner,
+          environment: envName,
+          deployable_owner: owner,
+          deployable: name,
+          application_name: applicationName,
+          notes: notes,
         }
-        let url = `${protocol}://${host}:${port}/newDeployment`
+        console.log(`record is`, record);
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
         console.log(`url is ${url}`);
-        let reply = await axios.post(`${protocol}://${host}:${port}/newDeployment`, obj, config)
+        let reply = await axios.post(url, record, config)
         console.log(`reply is `, reply);
 
-        let reloadedDeployments = await loadDeployments(jwt)
+        let reloadedDeployments = await loadDeployments(config)
         // this.deployables = loadDeployables(jwt)
         console.log(`reloaded deployments: `, reloadedDeployments);
         this.deployments = reloadedDeployments
@@ -378,14 +362,9 @@ export default {
 }
 
 
-async function loadDeployments (jwt) {
-  let config = {
-    headers: {
-      authorization: `Bearer ${jwt}`,
-    }
-  }
-  let url = `${protocol}://${host}:${port}/deployments`
-  let reply = await axios.get(url, config)
+async function loadDeployments (axiosConfig) {
+  let url = standardStuff.apiURL('/deployments')
+  let reply = await axios.get(url, axiosConfig)
   const deployments = reply.data.deployments
   return deployments
 }

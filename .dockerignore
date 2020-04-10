@@ -3,5 +3,9 @@ config-templates
 juice-client-nodejs
 #server
 server/node_modules
+server/test
 util
-website
+website/node_modules
+website/dist
+website/coverage
+website/test

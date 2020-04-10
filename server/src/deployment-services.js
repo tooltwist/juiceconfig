@@ -5,7 +5,7 @@ import auth from './auth'
 export default {
 	register (server) {
     // Select DEPLOYMENTS for /_environmentNAME on MySQL database
-    server.get('/deployments', async (req, res, next) => {
+    server.get('/api/deployments', async (req, res, next) => {
       console.log(`GET /deployments`);
 
       let environmentOwner = req.query.environmentOwner
@@ -64,9 +64,9 @@ export default {
       });
     })//- GET /deployment
 
-  // server.put('/deployment', auth, async (req, res, next) => {
+  // server.put('/api/deployment', auth, async (req, res, next) => {
 
-    server.post('/newDeployment', auth, async (req, res, next) => {
+    server.post('/api/newDeployment', auth, async (req, res, next) => {
       console.log(`POST /newDeployment`)
 
       // Get the values passed in.
@@ -115,7 +115,7 @@ export default {
       }) 
     })//- POST /deployment
 
-    server.put('/deployment', async (req, res, next) => {
+    server.put('/api/deployment', async (req, res, next) => {
       console.log(`PUT /deployment`)
 
       let con = await db.checkConnection()

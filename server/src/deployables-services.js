@@ -5,7 +5,7 @@ import restify from 'restify';
 export default {
 	register (server) {
         // Selects the all deployables that are PROJECTS from MySQL db
-        server.get('/deployables', auth, async (req, res, next) => {
+        server.get('/api/deployables', auth, async (req, res, next) => {
             console.log(`GET /deployables`);
         
             let userIdentity = req.payload.userIdentity
@@ -24,7 +24,7 @@ export default {
         }); // End of section
         
         // Selects all DEPLOYABLES from MySQL db
-        server.get('/showDeployables', async (req, res, next) => {
+        server.get('/api/showDeployables', async (req, res, next) => {
             console.log(`GET /showDeployables`);
         
             let con = await db.checkConnection()
@@ -38,7 +38,7 @@ export default {
         }); // End of section
 
         // Adding a new deployable to the DB        
-        server.post('/newDeployable', auth, async (req, res, next) => {
+        server.post('/api/newDeployable', auth, async (req, res, next) => {
             console.log(`POST /newDeployable`)
 
             let me = req.identity.username

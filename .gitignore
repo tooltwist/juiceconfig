@@ -5,3 +5,4 @@
 
 /website/protected-config/website-config.js
 /website/protected-config/loginservice-config.js
+*.safe

@@ -65,8 +65,7 @@
 
 <script>
 import axios from 'axios'
-import webconfig from '~/protected-config/website-config'
-const { protocol, host, port } = webconfig
+import standardStuff from '../lib/standard-stuff'
 
 export default {
   name: 'Users',
@@ -136,13 +135,16 @@ export default {
 
         // If no error, send post request to server
         try {
-          await axios.post(`${protocol}://${host}:${port}/newUser`, {
+          let record = {
             first_name: this.form.user_firstname,
             last_name: this.form.user_lastname,
             role: this.form.user_role,
             access: this.form.user_accesstype,
             email: this.form.user_email,
-          })
+          }
+          const url = standardStuff.apiURL('/newUser')
+          const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+          await axios.post(url, record, config)
           this.newUserModal = false
           console.log(`New user successfully sent to database`);
         } catch (e) {
@@ -163,8 +165,9 @@ export default {
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW USER
     async reloadUsers() {
-      const url = `${protocol}://${host}:${port}/users`
-      let res = await axios.get(url)
+      const url = standardStuff.apiURL('/users')
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+      let res = await axios.get(url, config)
       this.users = res.data.users
       console.log(`Users have been reloaded on the browser.`)
       return {
@@ -178,11 +181,12 @@ export default {
    *  Call our API using Axios, to get the project data.
    *  See https://nuxtjs.org/guide/async-data#handling-errors
    */
-  async asyncData ({ params, error }) {
+  async asyncData ({ app, params, error }) {
     try {
-      const url = `${protocol}://${host}:${port}/users`
+      const url = standardStuff.apiURL('/users')
+      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
       console.log(`Calling ${url}`);
-      let res = await axios.get(url)
+      let res = await axios.get(url, config)
       const users = res.data.users
         return {
           users: users

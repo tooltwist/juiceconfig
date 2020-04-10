@@ -3,7 +3,7 @@ import db from './database-mysql';
 export default {
 	register (server) {
         // Select ENVIRONMENT values for /_environmentNAME on MySQL database
-        server.get('/environment', async (req, res, next) => {
+        server.get('/api/environment', async (req, res, next) => {
             console.log(`GET /environment`);
         
             let environmentName = req.query.environmentName;
@@ -20,7 +20,7 @@ export default {
         });
 
         // Select USERS for /_environmentNAME on MySQL database
-        server.get('/environments_users', async (req, res, next) => {
+        server.get('/api/environments_users', async (req, res, next) => {
             console.log(`GET /environments_users`);
             
             let environmentName = req.query.environmentName
@@ -36,7 +36,7 @@ export default {
         })
         
         // Edit ENVIRONMENT values for /_environmentNAME on MySQL database
-        server.post('/editedEnv', async (req, res, next) => {
+        server.post('/api/editedEnv', async (req, res, next) => {
             console.log(`POST /editedEnv`)
         
             let con = await db.checkConnection()
@@ -56,7 +56,7 @@ export default {
         }); // End of section
   
         // Add a NEW USER for /_environmentNAME on MySQL database
-        server.post('/newEnvironmentUser', async (req, res, next) => {
+        server.post('/api/newEnvironmentUser', async (req, res, next) => {
             console.log(`POST /newEnvironmentUser`)
         
             let con = await db.checkConnection()
@@ -74,7 +74,7 @@ export default {
         }); // End of section
         
         // Edit a USER for /_environmentNAME on MySQL database  
-        server.post('/editEnvUser', async (req, res, next) => {
+        server.post('/api/editEnvUser', async (req, res, next) => {
             console.log(`POST /editEnvUser`)
         
             let con = await db.checkConnection()
@@ -98,7 +98,7 @@ export default {
         *  ... for /_environmentNAME + /_deployableNAMEon MySQL database
         *  ~~ This updates db deployments ~~
         */
-        server.put('/environment', async (req, res, next) => {
+        server.put('/api/environment', async (req, res, next) => {
             console.log(`PUT /environment`)
         
             let con = await db.checkConnection()

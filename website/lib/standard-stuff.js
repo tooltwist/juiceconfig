@@ -1,4 +1,74 @@
+// function api_url_prefix() {
+//   const { protocol, host, port, prefix } = webconfig
+//   const urlPrefix = `${protocol}://${host}:${port}/${prefix}`
+//   return urlPrefix
+// }
+
+// function endpoint() {
+//   const { protocol, host, port } = webconfig
+//   const endpoint = `${protocol}://${host}:${port}`
+//   return endpoint
+// }
+
+let urlPrefix = null
+
+function apiURL(path) {
+
+  if (urlPrefix) {
+    const url = `${urlPrefix}${path}`
+    console.log(`API endpoint is ${url}`)
+    return url
+  }
+
+  // Need to find where to call the API
+  //  If we have a config file, use it. Otherwise assume the webserver also provides the API.
+  const mode = process.env.NODE_ENV // Hard baked in during generate
+  console.log(`Mode is ${mode}`);
+  if (mode !== 'production') {
+    // Development mode - use a config file.
+    const webconfig = require('~/protected-config/website-config.js')
+    const { protocol, host, port, prefix } = webconfig.default
+    console.log(`webconfig = `, webconfig);
+    
+    urlPrefix = `${protocol}://${host}:${port}/${prefix}`
+    console.log(`Development mode API endpoint is ${urlPrefix}`)
+    const url = `${urlPrefix}${path}`
+    return url
+  }
+
+  // Production mode - assume the web server is the API server.
+  const protocol = window.location.protocol
+  const host = window.location.hostname
+  const port = window.location.port
+  const prefix = 'api'
+  urlPrefix = `${protocol}//${host}:${port}/${prefix}`
+  console.log(`API endpoint is ${urlPrefix}`)
+  const url = `${urlPrefix}${path}`
+  return url
+}
+
+/*
+ *  Return a configuration for axios.
+ *  If called from asyncData:
+ *    let jwt = app.$nuxtLoginservice.jwt
+ * From a component:
+ *    let jwt = this.$loginservice.jwt
+ */
+function axiosConfig(jwt) {
+  let config = {
+    headers: {
+      authorization: `Bearer ${jwt}`,
+    }
+  }
+  return config
+}
+
+
 export default {
+  // api_url_prefix,
+  // endpoint,
+  apiURL,
+  axiosConfig,
 
   methods: {
 

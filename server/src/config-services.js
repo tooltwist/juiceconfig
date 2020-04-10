@@ -63,7 +63,7 @@ export default {
             }
         };
         
-        server.get('/variablesConfig', (req, res, next) => {
+        server.get('/api/variablesConfig', (req, res, next) => {
             let deployable = req.query.deployable
             console.log(`deployable is ${deployable}`)
         
@@ -82,7 +82,7 @@ export default {
         }) // End of section
         
         // Show details of ENVIRONMENT on /config from MySQL db
-        server.get('/environmentIndex', async (req, res, next) => {
+        server.get('/api/environmentIndex', async (req, res, next) => {
             console.log(`GET /environmentIndex`);
         
             let environmentName = req.query.environmentName;

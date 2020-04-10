@@ -47,9 +47,7 @@
 
 <script>
 import axios from 'axios'
-import webconfig from '~/protected-config/website-config'
-const { protocol, host, port } = webconfig
-//import standardStuff from '/opt/Development/Projects/juice/juiceconfig/website/lib/standard-stuff.js'
+import standardStuff from '../lib/standard-stuff'
 
 export default {
     data () {
@@ -72,46 +70,41 @@ export default {
         }
     },
 
-    async asyncData ({ app, error }) {
-        let jwt = app.$nuxtLoginservice.jwt
+    async asyncData ({ app, params, error }) {
         let userName = app.$nuxtLoginservice.user
-        console.log('userName = ', userName.username)
-
-        let config = {
-            headers: {
-                authorization: `Bearer ${jwt}`,
-            }
-        }
-
         try {
             // Select the deployable for this page
-            const url = `${protocol}://${host}:${port}/myaccount`
-            console.log(`Calling ${url}`);
-            let res = await axios.get(url, { 
+            const url = standardStuff.apiURL('/myaccount')
+            const params = { 
                 params: {
                     userName: userName.username
                 }
-            })
+            }
+            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+            console.log(`Calling ${url}`);
+            let res = await axios.get(url, params, config)
             console.log(`API returned`, res.data);
             const user = res.data.record
 
             // Select deployables for this page
-            const url2 = `${protocol}://${host}:${port}/usersDeployables`
-            let res2 = await axios.get(url2, {
+            const url2 = standardStuff.apiURL('/usersDeployables')
+            const params2 = {
                 params: { 
                     userID: user.id
                 }
-            })
+            }
+            let res2 = await axios.get(url2, params2, config)
             console.log(`API2 returned`, res2.data);
             const deployables = res2.data.deployables
 
             // Select environments for this page
-            const url3 = `${protocol}://${host}:${port}/accountEnvironments`
-            let res3 = await axios.get(url3, {
+            const url3 = standardStuff.apiURL('/accountEnvironments')
+            const params3 = {
                 params: { 
                     userID: user.id
                 }
-            })
+            }
+            let res3 = await axios.get(url3, params3, config)
             console.log(`API3 returned`, res3.data);
             const environments = res3.data.environments
 

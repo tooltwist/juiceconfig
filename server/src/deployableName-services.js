@@ -5,7 +5,7 @@ import auth from './auth'
 export default {
 	register (server) {
         // Update edited DEPLOYABLE details
-        server.put('/deployable', async (req, res, next) => {
+        server.put('/api/deployable', async (req, res, next) => {
             console.log(`PUT /deployable`)
         
             let con = await db.checkConnection()
@@ -27,7 +27,7 @@ export default {
         });
 
         // Dynamically select the DEPLOYABLE for /_deployableNAME from MySQL db
-        server.get('/deployable', async (req, res, next) => {
+        server.get('/api/deployable', async (req, res, next) => {
             console.log(`GET /deployable`);
         
             let deployableName = req.query.deployableName
@@ -45,7 +45,7 @@ export default {
         });
         
         //Dynamically select the ENVIRONMENT for /_deployableNAME from MySQL db
-        server.get('/envDeployments', async (req, res, next) => {
+        server.get('/api/envDeployments', async (req, res, next) => {
             console.log(`GET /envDeployments`);
         
             let deployableName = req.query.deployableName
@@ -62,7 +62,7 @@ export default {
         });
         
         // Dynamically select the USERS for /_deployableNAME from MySQL db
-        server.get('/project_users', async (req, res, next) => {
+        server.get('/api/project_users', async (req, res, next) => {
             console.log(`GET /project_users`);
         
             let deployableName = req.query.deployableName
@@ -78,7 +78,7 @@ export default {
         })
         
         // Dynamically select ALL DEPENDENCIES from MySQL db
-        server.get('/dependencies', async (req, res, next) => {
+        server.get('/api/dependencies', async (req, res, next) => {
             console.log(`GET /dependencies`);
         
             let con = await db.checkConnection()
@@ -92,7 +92,7 @@ export default {
         });
         
         // Dynamically select DEPENDENCIES for /_deployableNAME from MySQL db
-        server.get('/dependencies1', async (req, res, next) => {
+        server.get('/api/dependencies1', async (req, res, next) => {
             console.log(`GET /dependencies1`);
         
             let deployableName = req.query.deployableName
@@ -108,7 +108,7 @@ export default {
         });
         
         // Dynamically select ALL VARIABLES from MySQL db
-        server.get('/variablesAll', async (req, res, next) => {
+        server.get('/api/variablesAll', async (req, res, next) => {
             console.log(`GET /variablesAll`);
         
             let con = await db.checkConnection()
@@ -123,7 +123,7 @@ export default {
         });
         
         // Dynamically select VARIABLES for /_deployableNAME from MySQL db
-        server.get('/variables', async (req, res, next) => {
+        server.get('/api/variables', async (req, res, next) => {
             console.log(`GET /variables`);
         
             let deployableName = req.query.deployableName
@@ -141,7 +141,7 @@ export default {
         });
         
         /*// Edit the DEPLOYABLE values for /_deployableNAME on MySQL db        
-        server.post('/deployable', async (req, res, next) => {
+        server.post('/api/deployable', async (req, res, next) => {
             console.log(`POST /deployable`)
         
             let con = await db.checkConnection()
@@ -163,7 +163,7 @@ export default {
         }); // End of section*/
         
         // Variables
-        server.get('/variableValues', async (req, res, next) => {
+        server.get('/api/variableValues', async (req, res, next) => {
             console.log(`GET /variableValues`);
         
             let environmentOwner = req.query.environmentOwner
@@ -182,7 +182,7 @@ export default {
             });
         });
         
-        server.post('/variableValues', auth, async (req, res, next) => {
+        server.post('/api/variableValues', auth, async (req, res, next) => {
             console.log(`POST /variableValues`);
             console.log(`rec.params=`, req.params);
         
@@ -329,7 +329,7 @@ export default {
         } // End of section
         
         // Add a new VARIABLE for /_deployableNAME on MySQL db
-        server.post('/newVariable', async (req, res, next) => {
+        server.post('/api/newVariable', async (req, res, next) => {
             console.log(`POST /newVariable`)
         
             let con = await db.checkConnection()
@@ -348,7 +348,7 @@ export default {
         }); // End of section
         
         // Edit a VARIABLE for /_deployableNAME on MySQL db        
-        server.post('/variable', async (req, res, next) => {
+        server.post('/api/variable', async (req, res, next) => {
             console.log(`POST /variable`)
         
             let con = await db.checkConnection()
@@ -372,7 +372,7 @@ export default {
         }); // End of section
         
         // Add a new DEPENDENCY for /_deployableNAME on MySQL db        
-        server.post('/newDependency', async (req, res, next) => {
+        server.post('/api/newDependency', async (req, res, next) => {
             console.log(`POST /newDependency`)
         
             let con = await db.checkConnection()
@@ -391,7 +391,7 @@ export default {
         }); // End of section
         
         // Edit a USER in /_deployableNAME on MySQL db
-        server.post('/editUser', async (req, res, next) => {
+        server.post('/api/editUser', async (req, res, next) => {
             console.log(`POST /editUser`)
         
             let con = await db.checkConnection()
