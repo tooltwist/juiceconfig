@@ -1,0 +1,38 @@
+
+
+export default {
+  debug: true,
+
+  protocol: '$JUICE{services.auth.protocol}',
+  host: '$JUICE{services.auth.host}',
+  port: '$JUICE{services.auth.port}',
+  version: '$JUICE{services.auth.version}',
+  apikey: '$JUICE{services.auth.apikey}',
+
+  // urlPrefix: Config.loginservice.urlPrefix,
+  hints: {
+    sitename: 'Juice',
+    register: {
+      password: true,
+      firstname: true,
+      middlename: false,
+      lastname: true,
+      resumeURL: '$JUICE{app.protocol}://$JUICE{app.host}:$JUICE{app.port}/',
+      termsMessage: 'Agree to our terms?',
+      termsRoute: '/terms-and-conditions',
+    },
+    forgot: {
+      resumeURL: '$JUICE{app.protocol}://$JUICE{app.host}:$JUICE{app.port}/'
+    },
+    usernames: true,
+    login: {
+      registerMessage: 'Don\'t have an account yet?',
+      email: true,
+      facebook: false,
+      github: false,
+      google: false,
+      linkedin: false,
+      twitter: false,
+    }
+  }
+}

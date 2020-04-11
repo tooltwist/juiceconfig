@@ -45,6 +45,7 @@ RUN echo "{}" > /website/protected-config/website-config.js
 # Now generate the website
 WORKDIR /website
 ADD website /website
+RUN cp protected-config/loginservice-config.js-docker protected-config/loginservice-config.js
 RUN yarn generate
 
 # Tidy up
@@ -76,5 +77,6 @@ RUN yarn generate
 #RUN echo $CODEBUILD_RESOLVED_SOURCE_VERSION > /src/public/version.html
 
 # Run the app with pm2 to ensure server restart on exceptions.
+WORKDIR /server
 EXPOSE  4000
 CMD ["/bin/bash", "/server/start_inside_docker_container.sh"]

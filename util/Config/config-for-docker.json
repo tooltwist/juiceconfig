@@ -1,9 +1,13 @@
 {
   "version": "1.0",
+  "juice-is-secure": true,
+  "juice-single-user": false,
   "app": {
     "name": "juice",
     "env": "development",
     "version": "1.0",
+    "protocol": "http",
+    "host": "localhost",
     "port": "4000",
     "basePath": "/api"
   },
@@ -22,10 +26,14 @@
   },
   "services": {
     "auth": {
-      "url": "http://localhost:9090",
-      "apikey": "API100ZNCYYE7FK4IIE1IWTOEBFUC",
-      "secret": "tts11qmdssx90y21dihxaerrknzsgs2ihjuxtwnysxhu9hguufd4kb",
-      "returnURL": "http://localhost:3000/create-password"
+      "protocol": "https",
+      "host": "v4.loginservice.io",
+      "port": "443",
+      "version": "v2",
+      "url": "https://v4.loginservice.io",
+      "apikey": "API10YL6DW79VUNRMDVM5NMMFXAEX",
+      "secret": "tts12mzern17wkov78te97z4x96n699son2drksmq1h1g2sm7qlbsd",
+      "returnURL": "http://localhost:4000"
     }
   }
 }
