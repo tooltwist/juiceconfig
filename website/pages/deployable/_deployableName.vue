@@ -87,15 +87,15 @@ div
 
       b-tab-item(label="Variables")
         // Variables
-        h1(class="is-title is-size-4", style="text-align:left;") Variables
-          div(class="buttons", style="float:right;")
+        h1.is-title.is-size-4(style="text-align:left;") Variables
+          div.buttons(style="float:right;")
             div(v-if="isEditable")
-              button(@click.prevent="newVariable(variables)", class="button is-primary", type="is-light")  + Add New Variable
+              button.button.is-primary(@click.prevent="newVariable(variables)", type="is-light")  + Add New Variable
         br
         div(v-if="this.variables.length === 0")
           br
-          article(class="message is-success is-small")
-            div(class="message-body") 
+          article.message.is-success.is-small
+            div.message-body 
               | There are no variables for this deployable yet. Would you like to add a 
               a(href="" @click.prevent="newVariable(variables)") new variable?
         div(v-else)
@@ -121,15 +121,15 @@ div
 
       b-tab-item(label="Deployments")
         // Deployments
-        h1(class="is-title is-size-4", style="text-align:left;") Deployments
-          div(class="buttons", style="float:right;")
+        h1.is-title.is-size-4(style="text-align:left;") Deployments
+          div.buttons(style="float:right;")
             div(v-if="isEditable")
-              button(@click.prevent="newDeployment(deployments)", class="button is-primary",  type="is-light")  + Add New Deployment
+              button.button.is-primary(@click.prevent="newDeployment(deployments)",  type="is-light")  + Add New Deployment
         br
         div(v-if="this.deployments.length === 0")
           br
-          article(class="message is-success is-small")
-            div(class="message-body") There are no deployments for this deployable yet. Would you like to add a new deployment?
+          article.message.is-success.is-small
+            div.message-body There are no deployments for this deployable yet. Would you like to add a new deployment?
         div(v-else)
           b-table(:data="deployments", focusable)
             template(slot-scope="props")
@@ -141,19 +141,19 @@ div
               b-table-column(field="notes", label="Notes")
                 | {{ props.row.notes }}
               b-table-column(field="", label="")
-                b-button(class="button is-small is-primary is-outlined", tag="nuxt-link", :to="`../deployment/${props.row.environment_owner}:${props.row.environment}/${props.row.application_name}`") Configure
+                b-button.button.is-small.is-primary.is-outlined(tag="nuxt-link", :to="`../deployment/${props.row.environment_owner}:${props.row.environment}/${props.row.application_name}`") Configure
 
       b-tab-item(label="Dependencies")
         // Dependencies
-        h1(class="is-title is-size-4", style="text-align:left;") Dependencies
-          div(class="buttons", style="float:right;")
+        h1.is-title.is-size-4(style="text-align:left;") Dependencies
+          div.buttons(style="float:right;")
             div(v-if="isEditable")
-              button(@click.prevent="newDependency(dependencies)", class="button is-primary", type="is-light")  + Add New Dependency
+              button.button.is-primary(@click.prevent="newDependency(dependencies)", type="is-light")  + Add New Dependency
         br
         div(v-if="this.dependencies.length === 0")
           br
-          article(class="message is-success is-small")
-            div(class="message-body") There are no dependencies for this deployable yet. Would you like to add a new dependency?
+          article.message.is-success.is-small
+            div.message-body There are no dependencies for this deployable yet. Would you like to add a new dependency?
         b-table(:data="dependencies", focusable)
           template(slot-scope="props")
             b-table-column(field="parent", label="Parent")
@@ -168,15 +168,15 @@ div
       div(v-if="deployable.is_project === 1")
         b-tab-item(label="Users")
           // Users
-          h1(class="is-title is-size-4") Users
-            div(class="buttons", style="float:right;")
+          h1.is-title.is-size-4 Users
+            div.buttons(style="float:right;")
               div(v-if="isEditable")
-                button(@click.prevent="newUser", class="button is-primary", type="is-light")  + Add New User
+                button.button.is-primary(@click.prevent="newUser", type="is-light")  + Add New User
           br
           div(v-if="this.users.length === 0")
             br
-            article(class="message is-success is-small")
-              div(class="message-body") There are no users for this deployable yet. Would you like to add a new user?
+            article.message.is-success.is-small
+              div.message-body There are no users for this deployable yet. Would you like to add a new user?
           b-table(:data="users", focusable)
             template(slot-scope="props")
               b-table-column(field="project", label="Project")
@@ -198,53 +198,53 @@ div
   // Edit Deployable details MODAL
   div(v-show="editDeployableStatus == 'edit'")
     transition(name="modal")
-      div(class="modal-mask")
-        div(class="modal-wrapper")
-          div(class="modal-card")
-            header(class="modal-card-head")
-              p(class="modal-card-title") Edit Deployable 
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Edit Deployable 
                 b {{ deployableName }}
-            section(class="modal-card-body")
+            section.modal-card-body
               slot(name="body")
                 form
                   div.form-group
                     div.formStyle Edit product owner:
-                      div(class="control")
-                        input(name="product_owner", v-model="form.new_owner", class="input", type="text", value="product_owner", placeholder="Product Owners Name")
+                      div.control
+                        input.input(name="product_owner", v-model="form.new_owner", type="text", value="product_owner", placeholder="Product Owners Name")
                     div.formStyle Edit description:
-                      div(class="control")
-                        input(name="description", v-model="form.new_description", class="input", type="text", value="description", placeholder="Description")
+                      div.control
+                        input.input(name="description", v-model="form.new_description", type="text", value="description", placeholder="Description")
                     div.formStyle Edit type:
-                      div(class="control")
-                        input(name="type", v-model="form.new_type", class="input", type="text", value="type", placeholder="Type")
+                      div.control
+                        input.input(name="type", v-model="form.new_type", type="text", value="type", placeholder="Type")
                     div.formStyle Edit is this a project?
-                      div(class="control")
+                      div.control
                         b-select(placeholder="Is this a project?", v-model="form.new_is_project", value="is_project") Is this deployable a project?:
                           option(value="1") Yes
                           option(value="0") No
-            footer(class="modal-card-foot")    
-              div(class="control")
+            footer.modal-card-foot  
+              div.control
                 b-button(@click.stop="saveDeployable", type="is-primary is-light", size="is-small")  Save    
                 b-button(@click="editDeployableStatus='null'", type="is-danger is-outlined", size="is-small") Cancel
   
   // Edit Variable Modal starts below:
   div(v-show="showModal")
     transition(name="modal")
-      div(class="modal-mask")
-        div(class="modal-wrapper")
-          div(class="modal-card")
-            header(class="modal-card-head")
-              p(class="modal-card-title") Edit Variable 
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Edit Variable 
                 b {{ variable_name }}
-            section(class="modal-card-body")
+            section.modal-card-body
               slot(name="body")
                 form
                   div.form-group
                     div.formStyle Edit description:
-                      div(class="control")
-                        input(v-model="form.new_variable_description", class="input", type="text", value="description", placeholder="Description")  
+                      div.control
+                        input.input(v-model="form.new_variable_description", type="text", value="description", placeholder="Description")  
                     div.formPlacement
-                      b-field.formStyle(class="control") Edit Type:
+                      b-field.formStyle.control Edit Type:
                         b-select(placeholder="Type", v-model="form.new_variable_type", value="type") 
                           option(value="string") String
                           option(value="numeric") Numeric 
@@ -256,40 +256,40 @@ div
                         b-select(placeholder="Is this variable external?", v-model="form.new_variable_is_external", value="is_external") Is this variable external?:
                           option(value="1") Yes
                           option(value="0") No
-            footer(class="modal-card-foot")  
-              div(class="control")
+            footer.modal-card-foot
+              div.control
                 b-button(@click.stop="saveVariable", type="is-primary is-light", size="is-small")  Save    
                 b-button(@click="showModal=false", type="is-danger is-outlined", size="is-small") Cancel
           
   // New Variable Modal starts below:
   div(v-show="newVariableModal")
     transition(name="modal")
-      div(class="modal-mask")
-        div(class="modal-wrapper")
-          div(class="modal-card")
-            header(class="modal-card-head")
-              p(class="modal-card-title") Add New Variable for 
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Add New Variable for 
                 b {{ deployableName }}
-            section(class="modal-card-body")
+            section.modal-card-body
               div(v-if="errormode === 'inputError'")
-                article(class="message is-danger is-small")
-                  div(class="message-header")
+                article.message.is-danger.is-small
+                  div.message-header
                     p Form Error
-                  div(class="message-body") Please ensure that all fields have values before saving.
-              div(class="modal-body", :data="variables")
+                  div.message-body Please ensure that all fields have values before saving.
+              div.modal-body(:data="variables")
                 slot(name="body")
                     form
                       div.form-group
                         div.formStyle Variable name:
-                          div(class="control")
+                          div.control
                             div(v-if="variableError === null")
-                              input(name="variable_name", v-model="form.variable_name", class="input", type="text", placeholder="Variable name")
+                              input.input(name="variable_name", v-model="form.variable_name", type="text", placeholder="Variable name")
                             div(v-else="variableError === `Variable already exists`")   
-                              input(class="input is-danger", v-model="form.variable_name", type="text", placeholder="Variable Name")
-                              p(class="help is-danger") This variable name already exists. Try again.
+                              input.input.is-danger(v-model="form.variable_name", type="text", placeholder="Variable Name")
+                              p.help.is-danger This variable name already exists. Try again.
                         div.formStyle Description:
-                          div(class="control")
-                            input(name="new_description", v-model="form.variable_description", class="input", type="text", placeholder="Description")
+                          div.control
+                            input.input(name="new_description", v-model="form.variable_description", type="text", placeholder="Description")
                         div.formPlacement
                           div.formStyle Type:
                             b-select(placeholder="Type", v-model="form.variable_type") Type:
@@ -303,147 +303,147 @@ div
                             b-select(placeholder="Is this variable external?", v-model="form.variable_is_external", value="is_external") Is this variable external?:
                               option(value="1") Yes
                               option(value="0") No
-            footer(class="modal-card-foot")
-              div(class="control")
+            footer.modal-card-foot
+              div.control
                 b-button(@click.stop="saveNewVariable",  type="is-primary is-light", size="is-small")  Save    
                 b-button(@click="newVariableModal=false", type="is-danger is-outlined", size="is-small") Cancel
   
   // New Deployment Modal starts below:
   div(v-show="newDeploymentModal")
     transition(name="modal")
-      div(class="modal-mask")
-        div(class="modal-wrapper")
-          div(class="modal-card")
-            header(class="modal-card-head")
-              p(class="modal-card-title") Add New Deployment for 
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Add New Deployment for 
                 b {{ deployableName }}
-            section(class="modal-card-body")
+            section.modal-card-body
               div(v-if="errormode === 'inputError'")
-                article(class="message is-danger is-small")
-                  div(class="message-header")
+                article.message.is-danger.is-small
+                  div.message-header
                     p Form Error
-                  div(class="message-body") Please ensure that all fields have values before saving.
-              div(class="modal-body", :data="deployments")
+                  div.message-body Please ensure that all fields have values before saving.
+              div.modal-body(:data="deployments")
                 slot(name="body")
                     form
                       div.form-group
                         div.formStyle Environment:
-                          div(class="control")
+                          div.control
                             div(v-if="deploymentError === null")
                               b-select(placeholder="Environment", v-model="form.new_environment") Environment:
                                 option(v-for="environment in environments") {{ environment.name }}
                             div(v-else="deploymentError === `Deployment already exists`")
-                              b-select(class="is-danger", placeholder="Environment", v-model="form.new_environment") Environment:
+                              b-select.is-danger(placeholder="Environment", v-model="form.new_environment") Environment:
                                 option(v-for="environment in environments") {{ environment.name }}
-                              p(class="help is-danger") {{ deployableName }} is already deployed on this environment.
+                              p.help.is-danger {{ deployableName }} is already deployed on this environment.
                         div.formStyle Notes:
-                          div(class="control")
-                            input(name="new_notes", v-model="form.new_notes", class="input", type="text", placeholder="Notes")
-            footer(class="modal-card-foot")  
-              div(class="control")
+                          div.control
+                            input.input(name="new_notes", v-model="form.new_notes", type="text", placeholder="Notes")
+            footer.modal-card-foot 
+              div.control
                 b-button(@click.stop="saveNewDeployment",  type="is-primary is-light", size="is-small")  Save    
                 b-button(@click="newDeploymentModal=false", type="is-danger is-outlined", size="is-small") Cancel
 
   // New Dependency Modal starts below:
   div(v-show="newDependencyModal")
     transition(name="modal")
-      div(class="modal-mask")
-        div(class="modal-wrapper")
-          div(class="modal-card")
-            header(class="modal-card-head")
-              p(class="modal-card-title") Add New Dependency for 
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Add New Dependency for 
                 b {{ deployableName }}
-            section(class="modal-card-body")
+            section.modal-card-body
               div(v-if="errormode === 'inputError'")
-                article(class="message is-danger is-small")
-                  div(class="message-header")
+                article.message.is-danger.is-small
+                  div.message-header
                     p Form Error
-                  div(class="message-body") Please ensure that all fields have values before saving.
-              div(class="modal-body", :data="dependencies")
+                  div.message-body Please ensure that all fields have values before saving.
+              div.modal-body(:data="dependencies")
                 slot(name="body")
                     form
                       div.form-group
                         div.formStyle Child: 
-                          div(class="control")
+                          div.control
                             div(v-if="dependencyError === null")
-                              input(name="new_child", v-model="form.new_child", class="input", type="text", placeholder="Dependent Child")
+                              input.input(name="new_child", v-model="form.new_child", type="text", placeholder="Dependent Child")
                             div(v-else="dependencyError === `Dependency already exists`")
-                              input(name="new_child", v-model="form.new_child", class="input", type="text", placeholder="Dependent Child")
-                              p(class="help is-danger") {{ deployableName }} already has a dependency with this child.
+                              input.input(name="new_child", v-model="form.new_child", type="text", placeholder="Dependent Child")
+                              p.help.is-danger {{ deployableName }} already has a dependency with this child.
                         div.formStyle Prefix: 
-                          div(class="control")
+                          div.control
                             div(v-if="dependencyError === null")
-                              input(name="new_prefix", v-model="form.new_prefix", class="input", type="text", placeholder="Prefix")
+                              input.input(name="new_prefix", v-model="form.new_prefix", type="text", placeholder="Prefix")
                             div(v-else="dependencyError === `Prefix already exists`")
-                              input(name="new_prefix", v-model="form.new_prefix", class="input", type="text", placeholder="Prefix")
-                              p(class="help is-danger") {{ deployableName }} already has a dependency with this prefix.
+                              input.input(name="new_prefix", v-model="form.new_prefix", type="text", placeholder="Prefix")
+                              p.help.is-danger {{ deployableName }} already has a dependency with this prefix.
                         div.formStyle Version:
-                          div(class="control")
-                            input(name="new_version", v-model="form.new_version", class="input", type="text", placeholder="Version")
-            footer(class="modal-card-foot")
-              div(class="control")
+                          div.control
+                            input.input(name="new_version", v-model="form.new_version", type="text", placeholder="Version")
+            footer.modal-card-foot
+              div.control
                 b-button(@click.stop="saveNewDependency",  type="is-primary is-light", size="is-small")  Save    
                 b-button(@click="newDependencyModal=false", type="is-danger is-outlined", size="is-small") Cancel
 
   // New User Modal starts below:
   div(v-show="newUserModal")
     transition(name="modal")
-      div(class="modal-mask")
-        div(class="modal-wrapper")
-          div(class="modal-card")
-            header(class="modal-card-head")
-              p(class="modal-card-title") Add New User for Project 
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Add New User for Project 
                 b {{ deployableName }}
-            section(class="modal-card-body")
+            section.modal-card-body
               div(v-if="errormode === 'inputError'")
-                article(class="message is-danger is-small")
-                  div(class="message-header")
+                article.message.is-danger.is-small
+                  div.message-header
                     p Form Error
-                  div(class="message-body") Please ensure that all fields have values before saving.
-              div(class="modal-body")
+                  div.message-body Please ensure that all fields have values before saving.
+              div.modal-body
                 slot(name="body")
                   form
                     div.form-group
                       div.formStyle Select User: 
-                        div(class="control")
+                        div.control
                         div(v-if="newUserError === null")
                           b-select(placeholder="User", v-model="form.new_projectuser") User:
                             option(v-for="user in allUsers", :value="user.id") {{ user.first_name }} {{ user.last_name }}
                         div(v-if="newUserError === `User already exists`") 
                           b-select(placeholder="User", v-model="form.new_projectuser") User:
                             option(v-for="user in allUsers", :value="user.id") {{ user.first_name }} {{ user.last_name }}
-                          p(class="help is-danger") {{ deployableName }} already has this user added.
+                          p.help.is-danger {{ deployableName }} already has this user added.
                       div.formStyle Access:
-                        div(class="control")
+                        div.control
                           b-select(placeholder="Access", v-model="form.new_user_access") Type:
                             option(value="limited") Limited
                             option(value="write") Write
                             option(value="conditional") Conditional (recommended for clients only)
-            footer(class="modal-card-foot")  
-              div(class="control")
+            footer.modal-card-foot 
+              div.control
                 b-button(@click.stop="saveNewUser",  type="is-primary is-light", size="is-small")  Save
                 b-button(@click="newUserModal=false", type="is-danger is-outlined", size="is-small") Cancel
   
   // Edit User Modal starts below:
   div(v-show="showUserEditModal")
     transition(name="modal")
-      div(class="modal-mask")
-        div(class="modal-wrapper")
-          div(class="modal-card")
-            header(class="modal-card-head")
-              p(class="modal-card-title") Edit User
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Edit User
                 b  {{ users.first_name }} {{ users.last_name }}
-            section(class="modal-card-body")
+            section.modal-card-body
               slot(name="body")
                 form
                   div.form-group
-                    b-field.formStyle(class="control") Edit accessibility:
+                    b-field.formStyle.control Edit accessibility:
                       b-select(placeholder="Accessibility", v-model="form.edit_useraccess", value="accessibility") 
                         option(value="limited") Limited
                         option(value="write") Write
                         option(value="conditional") Conditional (clients-only)
-            footer(class="modal-card-foot")  
-              div(class="control")
+            footer.modal-card-foot 
+              div.control
                 b-button(@click.stop="saveEditedUser", type="is-primary is-light", size="is-small")  Save    
                 b-button(@click="showUserEditModal=false", type="is-danger is-outlined", size="is-small") Cancel
 </template>

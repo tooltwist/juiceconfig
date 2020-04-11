@@ -1,6 +1,6 @@
 <template lang="pug">
 section.section
-    h1.title(class="is-paddingless is-marginless") Deployment
+    h1.title.is-paddingless.is-marginless Deployment
     //- p(class="is-size-5 has-text-weight-semibold is-italic")
         | Project 
         span.is-warning {{ applicationName }} 
@@ -126,11 +126,11 @@ section.section
                 br
             div(v-if="variableRecursive.length > 0")
                 form(v-for="(variable, index) in variableRecursive")
-                    div.formStyle(class="field is-horizontal")
-                        div(class="field-label is-normal")
-                            label(class="label", style="width:200px;") {{ variable.variableName }}: 
-                        div(class="field-body")
-                            div(class="field")
+                    div.formStyle.field.is-horizontal
+                        div.field-label.is-normal
+                            label.label(style="width:200px;") {{ variable.variableName }}: 
+                        div.field-body
+                            div.field
                                 p.control()
                                     input.input(v-if="editingValues", style="width:100%;", type="text", v-model="variable.value", placeholder="Configuration Value")
                                     //- p.control(v-else)
@@ -147,7 +147,7 @@ section.section
                     div.formStyle.field.is-horizontal(v-show="!val.deleted")
                         div.field-label.is-normal
                             label.label(style="width:200px;") {{ val.variableName }}: 
-                        div(class="field-body")
+                        div.field-body
                             b-field(v-if="editingValues")
                                 b-input(
                                     v-model="val.value"

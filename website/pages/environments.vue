@@ -1,8 +1,8 @@
 <template lang="pug">
   section.section
     h1.title Environments
-      div(class="buttons has-text-weight-normal", style="float:right;")
-        b-button(class="is-primary", tag="nuxt-link", to="/newEnvironment",  type="is-light")  + Add New Environment
+      div.buttons.has-text-weight-normal(style="float:right;")
+        b-button.is-primary(tag="nuxt-link", to="/newEnvironment",  type="is-light")  + Add New Environment
     b-notification(aria-close-label="Close notification")
       | An &nbsp;
       b environment
