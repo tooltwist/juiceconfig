@@ -27,7 +27,7 @@ function apiURL(path) {
   if (mode !== 'production') {
     // Development mode - use a config file.
     const webconfig = require('~/protected-config/website-config.js')
-    const { protocol, host, port, prefix } = webconfig.default
+    const { protocol, host, port } = webconfig.default
     console.log(`webconfig = `, webconfig);    
     const prefix = 'api'
     urlPrefix = `${protocol}://${host}:${port}/${prefix}`
