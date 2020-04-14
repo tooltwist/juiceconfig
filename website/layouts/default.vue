@@ -1,15 +1,19 @@
 <template lang="pug">
-div 
-  nav.headerStyle.navbar(role="navigation" aria-label="main navigation")
-    div.navbar-brand
-    img.juiceHeaderLogo(src="../assets/header-logo.png")
-    a.navbar-item(href="/")
+div
+  nav.headerStyle.navbar.mobileStyle(role="navigation" aria-label="main navigation")
+    div.navbar-brand.juiceHeaderLogo
+      a.navbar-item.linkStyle(href="/")
+        img.juiceHeadStyle(src="../assets/header-logo.png") 
+    v-if(class="mobile")
+      br
+    // New logo will need to be properly sized 
+    
     //a(class="navbar-item", href="/")
         .juiceLogo Juice.
 
     div.navbar-end
       b-navbar-item(href="https://juiceconfig.io", target="_blank") Docs
-      div.seperatorStyle(v-if="loggedIn", separator="true", custom="true") | 
+      div.seperatorStyle.mobile(v-if="loggedIn", separator="true", custom="true") | 
       b-dropdown(v-if="loggedIn", position="is-bottom-left", aria-role="menu")
         a.navbar-item(slot="trigger", role="button")
           b-icon(icon="account")
@@ -24,6 +28,7 @@ div
         b-dropdown-item(value="Logout", @click="doLogout")
           b-icon(icon="logout") 
           | Logout
+
 
   client-only
     .section.main-content.contentStyle
@@ -150,7 +155,20 @@ export default {
   @import "~bulma";
   @import "~buefy/src/scss/buefy";
 
-// Other styles
+
+
+  // Other styles
+  @media (min-width: 0em) and (max-width: 48em) {
+    div.mobile {
+      display: none;
+    }
+    div.mobileStyle {
+      display: flex;
+      justify-content: space-evenly;
+    }
+  }
+
+
   .icon {
     margin-right: 6px;
   }
@@ -172,14 +190,31 @@ export default {
     margin: 5px;
   }
 
-    .juiceHeaderLogo {
+  .juiceHeaderLogo {
     float: left;
-    margin: 15px 20px;
-    max-height: 150px;
-    max-width: 200px;
-    width: 200px;
-    height: 65px;  
+    display: flex;
+    width: 100px;
+    height: 100px;  
+    box-sizing: border-box;
     //object-fit: cover;
+  }
+
+  .linkStyle {
+    //display: flex; 
+    width: 100%;
+    height: 100px;
+    overflow: visible;
+    //position: absolute;
+  }
+
+  .juiceHeadStyle {
+    width: 150px;
+    height: 150px;
+    margin: 0px 20px;
+    //object-fit: cover;
+    box-sizing: border-box;
+    border: 0;
+    position: absolute;
   }
 
   .headerStyle {
@@ -210,10 +245,10 @@ export default {
   }
 
   .sidenav {
-  position: fixed;
-  z-index: 1;
-  top: 80px;
-  left: 10px;
-  overflow-x: hidden;
+    position: fixed;
+    z-index: 1;
+    top: 80px;
+    left: 10px;
+    overflow-x: hidden;
   }
 </style>
