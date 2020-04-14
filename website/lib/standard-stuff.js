@@ -19,6 +19,7 @@ function apiURL(path) {
     console.log(`API endpoint is ${url}`)
     return url
   }
+  const prefix = 'api'
 
   // Need to find where to call the API
   //  If we have a config file, use it. Otherwise assume the webserver also provides the API.
@@ -29,7 +30,6 @@ function apiURL(path) {
     const webconfig = require('~/protected-config/website-config.js')
     const { protocol, host, port, prefix } = webconfig.default
     console.log(`webconfig = `, webconfig);    
-    const prefix = 'api'
     urlPrefix = `${protocol}://${host}:${port}/${prefix}`
     console.log(`Development mode API endpoint is ${urlPrefix}`)
     const url = `${urlPrefix}${path}`
@@ -40,7 +40,6 @@ function apiURL(path) {
   const protocol = window.location.protocol
   const host = window.location.hostname
   const port = window.location.port
-  const prefix = 'api'
   urlPrefix = `${protocol}//${host}:${port}/${prefix}`
   console.log(`API endpoint is ${urlPrefix}`)
   const url = `${urlPrefix}${path}`
