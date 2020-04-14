@@ -28,8 +28,8 @@ function apiURL(path) {
     // Development mode - use a config file.
     const webconfig = require('~/protected-config/website-config.js')
     const { protocol, host, port, prefix } = webconfig.default
-    console.log(`webconfig = `, webconfig);
-    
+    console.log(`webconfig = `, webconfig);    
+    const prefix = 'api'
     urlPrefix = `${protocol}://${host}:${port}/${prefix}`
     console.log(`Development mode API endpoint is ${urlPrefix}`)
     const url = `${urlPrefix}${path}`
