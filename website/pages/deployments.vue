@@ -506,7 +506,7 @@ async function checkHealth(deployment) {
    */
   try {
 
-      console.log(`checkHealth(${deployment.environment}.${deployment.application_name}): ${url}`);
+      console.log(`checkHealth(${deployment.environment}.${deployment.application_name}): ${healthcheckUrl}`);
       let result = await axios.get(healthcheckUrl, {
         timeout: 4000,
         // crossdomain: true
@@ -517,9 +517,11 @@ async function checkHealth(deployment) {
     console.log(`data is`, result.data);
     if (status == 200) {
       deployment._healthcheck.status = 'OK'
+      deployment._healthcheck.text = `status: ${deployment._healthcheck.status}`
       return
     } else if (status == 'error') {
       deployment._healthcheck.status = 'error'
+      deployment._healthcheck.text = `status: ${deployment._healthcheck.status}`
       return
     }
 
@@ -529,6 +531,7 @@ async function checkHealth(deployment) {
       if (error.response.status === 404) {
         // ENOENT - the pinged server says the page does not exist
         deployment._healthcheck.status = 'ENOTFOUND'
+        deployment._healthcheck.text = `ENOENT: healthcheck path was not found on the server (${deployment.healthcheck})`
         return
       }
     // } else if (error.message === 'Network Error') {
@@ -536,22 +539,22 @@ async function checkHealth(deployment) {
     //   return
     } else if (error.code === 'ECONNABORTED') {
       // See https://medium.com/@masnun/handling-timeout-in-axios-479269d83c68
-      deployment._healthcheck.status = 'timeout'
-      return
-    } else {
-      deployment._healthcheck.status = 'timeout'
-      console.log(`error doing healthcheck:`, error);
-      console.log(`error.statusCode`, error.statusCode);
-      console.log(`error.errcode`, error.errcode);
-      console.log(`error.message`, error.message);
-      console.log(`error.response`, error.response);
-      let json=JSON.stringify(error, '', 2);
-      console.log(`json=`, json);
-      let errorObject=JSON.parse(JSON.stringify(error));
-      console.log(`errorObject=`, errorObject);
-      deployment._healthcheck.status = 'error'
+      deployment._healthcheck.status = 'ECONNABORTED'
+      deployment._healthcheck.text = 'ECONNABORTED: timeout?'
       return
     }
+    deployment._healthcheck.status = 'timeout'
+    console.log(`error doing healthcheck:`, error);
+    console.log(`error.statusCode`, error.statusCode);
+    console.log(`error.errcode`, error.errcode);
+    console.log(`error.message`, error.message);
+    console.log(`error.response`, error.response);
+    let json=JSON.stringify(error, '', 2);
+    console.log(`json=`, json);
+    let errorObject=JSON.parse(JSON.stringify(error));
+    console.log(`errorObject=`, errorObject);
+    deployment._healthcheck.status = 'error'
+    deployment._healthcheck.text = `status: ${deployment._healthcheck.status}`
   } //- catch
 }
 
