@@ -47,13 +47,13 @@
         b-table-column(field="healthcheck", label="Healthcheck")
           | {{props.row.healthcheck}}
         b-table-column(field="healthcheck_status", label="Status")
-          //div(v-if="props.row.healthcheck != '' && props.row.website_url !=  ''")
-          div(v-if="healthcheckStatus(props.row.healthcheck, props.row.website_url) === 'error'")
-            b-icon(icon="alert-outline") 
-          div(v-if="healthcheckStatus(props.row.healthcheck, props.row.website_url) === 'healthy'") 
-            b-icon(icon="thumb-up-outline") 
-          div(v-if="healthcheckStatus(props.row.healthcheck, props.row.website_url) === 'network'") 
-            b-icon(icon="cloud-off-outline") 
+          div(v-if="props.row.healthcheck != '' && props.row.website_url !=  ''")
+            div(v-if="healthcheckStatus(props.row.healthcheck, props.row.website_url) === 'error'")
+              b-icon(icon="alert-outline") 
+            div(v-if="healthcheckStatus(props.row.healthcheck, props.row.website_url) === 'healthy'") 
+              b-icon(icon="thumb-up-outline") 
+            div(v-if="healthcheckStatus(props.row.healthcheck, props.row.website_url) === 'network'") 
+              b-icon(icon="cloud-off-outline") 
           
         //- b-table-column(field="description", label="Description")
         //  | {{ props.row.description }}
