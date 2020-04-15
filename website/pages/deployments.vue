@@ -20,7 +20,6 @@
     //- </div>
 
 
-
     b-notification(aria-close-label="Close notification")
       | When a &nbsp;
       b deployable
@@ -43,17 +42,30 @@
         b-table-column(field="deployable", label="Deployable")
           nuxt-link(:to="`/deployable/${std_toQualifiedName(props.row.deployable_owner,props.row.deployable)}`")
             span(v-html="std_toQualifiedDisplay(props.row.deployable_owner,props.row.deployable,true)")
+        b-table-column(field="website_url", label="Website URL")
+          | {{props.row.website_url}}
+        b-table-column(field="healthcheck", label="Healthcheck")
+          | {{props.row.healthcheck}}
+        b-table-column(field="healthcheck_status", label="Status")
+          //div(v-if="props.row.healthcheck != '' && props.row.website_url !=  ''")
+          div(v-if="healthcheckStatus(props.row.healthcheck, props.row.website_url) === 'error'")
+            b-icon(icon="alert-outline") 
+          div(v-if="healthcheckStatus(props.row.healthcheck, props.row.website_url) === 'healthy'") 
+            b-icon(icon="thumb-up-outline") 
+          div(v-if="healthcheckStatus(props.row.healthcheck, props.row.website_url) === 'network'") 
+            b-icon(icon="cloud-off-outline") 
+          
         //- b-table-column(field="description", label="Description")
         //  | {{ props.row.description }}
         //b-table-column(field="notes", label="Notes")
         //  | {{ props.row.notes }}
-        b-table-column(field="", label="")
+        //b-table-column(field="", label="")
           //div(v-if="currentUser[0].access == 'full' || 'write' || 'super'")
            b-button(class="button is-small is-primary is-outlined", tag="nuxt-link", :to="`../config/${props.row.environment}/${props.row.deployable}`") Configure
         b-table-column(field="", label="")
           //- div(v-if="currentUser[0].access == 'full' || 'write' || 'super'")
           b-button.button.is-small.is-primary.is-outlined(tag="nuxt-link", :to="`../deployment/${props.row.environment_owner}:${props.row.environment}/${props.row.application_name}`") Configure
-
+        
 
       //- // Edit User Modal starts below:
       //- | YARP
@@ -297,6 +309,31 @@ export default {
       this.applicationName = ''
       this.showSaveErrorMsg = false
       this.showDialog = true;
+    },
+
+    // Call health check to determine status
+    async healthcheckStatus (healthcheck, website_url) {
+     try {
+        let url = website_url + healthcheck;
+        let status = await axios.get(url, {
+          timeout: 4000
+        });
+
+        if (status == 200) {
+          return 'healthy';
+        } else if (status == 'error') {
+          return 'error';
+        }
+
+      } catch (error) {
+        if (error == 'Error: Network Error') {
+          console.log('Returning a network error to healthcheckStatus.');
+          return 'network';
+        } else {
+          console.log('There was an error whilst performing healthcheckStatus.' + error);
+          return 'error';
+        }
+      }
     },
 
     async createDeployment () {
