@@ -119,6 +119,12 @@ export default {
             if (typeof(req.params.type) != 'undefined') {
                 record.type = req.params.type
             }
+            if (typeof(req.params.aws_account) != 'undefined') {
+                record.aws_account = req.params.aws_account
+            }
+            if (typeof(req.params.aws_profile) != 'undefined') {
+                record.aws_profile = req.params.aws_profile
+            }
             if (typeof(req.params.aws_region) != 'undefined') {
                 record.aws_region = req.params.aws_region
             }

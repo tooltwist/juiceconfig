@@ -25,15 +25,6 @@ section.section
                     span(v-html="std_toQualifiedDisplay(deployment.deployable_owner, deployment.deployable)")
     br
 
-    .field
-        b-checkbox(v-model="isSecureEnvironment")
-        | No secure values. {{isSecureEnvironment}}, {{environment.is_secure_environment}}
-    .notification.is-warning
-        //- button.delete
-        | This is a secure environment, so you will not be able to
-        | specify configuration details here.
-        | You will however be able to download templates and scripts to help create configurations.
-
     //- | {{ deployment }}
     b-tabs(v-model="activeTab", :animated="false")
         b-tab-item(label="Deployment details")
@@ -50,13 +41,28 @@ section.section
                                 //- p.my-not-input-p(v-else) &nbsp;{{deployment.aws_service}}
                 .field.is-horizontal
                     .field-label.is-normal
+                        label.label(style="width:200px;") Service/Website URL: 
+                    .field-body
+                        .field
+                            .control
+                                input.input(v-if="editingDetails", v-model.trim="deployment.website_url", placeholder="https://my-domain.com", @input="saveDetails")
+                                a.my-not-input-a(v-else-if="validUrl(deployment.website_url)", :href="deployment.website_url", target="_blank") &nbsp;{{trimUrl(deployment.website_url)}}
+                                p.my-not-input-p(v-else) &nbsp;{{deployment.website_url}}
+                .field.is-horizontal
+                    .field-label.is-normal
                         label.label(style="width:200px;") Healthcheck: 
                     .field-body
                         .field
                             .control
-                                input.input(v-if="editingDetails", v-model.trim="deployment.healthcheck_url", placeholder="URL to ECS Service", @input="saveDetails")
-                                a.my-not-input-a(v-else-if="validUrl(deployment.healthcheck_url)", :href="deployment.healthcheck_url", target="_blank") &nbsp;{{trimUrl(deployment.healthcheck_url)}}
-                                p.my-not-input-p(v-else) &nbsp;{{deployment.healthcheck_url}}
+                                input.input(v-if="editingDetails", v-model.trim="deployment.healthcheck", placeholder="/api/healthcheck", @input="saveDetails")
+                                a.my-not-input-a(v-else-if="validUrl(deployment.website_url)", :href="deployment.website_url+deployment.healthcheck", target="_blank") &nbsp;{{deployment.healthcheck}}
+                                p.my-not-input-p(v-else) &nbsp;{{deployment.healthcheck}}
+            .control
+                button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
+
+
+        b-tab-item(label="AWS", v-if="environment.type === 'aws'")
+            form.formStyle
                 .field.is-horizontal
                     .field-label.is-normal
                         label.label(style="width:200px;") ECS Service: 
@@ -108,11 +114,18 @@ section.section
 
             .control
                 button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
-                //- | &nbsp;
-                //- button.button.is-small(@click="updateDeployment") update
 
 
         b-tab-item(label="Values")
+
+            //- .field
+                b-checkbox(v-model="isSecureEnvironment")
+                | No secure values. {{isSecureEnvironment}}, {{environment.is_secure_environment}}
+            .notification.is-warning
+                //- button.delete
+                | This is a secure environment, so you will not be able to
+                | specify configuration details here.
+                | You will however be able to download templates and scripts to help create configurations.
             .panel(v-if="variableRecursive.length === 0")
                 h1 No variables are required for this deployable.
                 br
@@ -186,7 +199,7 @@ section.section
             //-                             b-button(@click="submitModal = false", type="is-danger", size="is-small") Cancel
 
 
-        b-tab-item(label="Configuration")
+        b-tab-item(label="Configuration", v-if="environment.type === 'aws'")
             p How will you provide the configuration to this application?
             br
             section
@@ -229,6 +242,35 @@ section.section
                     | {{codeToSetEnvVariable}}
                 button.button.is-small.is-success(@click="downloadSetEnvironment") Download
 
+        b-tab-item(label="Commands", zv-if="environment.type==='aws'")
+            .notification
+                h1.title.is-size-5 Provisioning
+                p.is-size-6
+                    | The following command can help you deploy this project on an ECS cluster, with an ECS service,
+                    | Secrets Manager secret, ECR repository and a Continuous integrstion Code Pipeline.
+                br
+                code.is-size-7
+                    | $ AWS_PROFILE={{std_myProfile(environment)}} aws-explorer -r {{environment.aws_region}} provision
+                br
+                br
+                p.is-size-6
+                    | Select 'Application' and then complete the prompts.
+
+            .notification
+                h1.title.is-size-5 Connecting
+                p.is-size-6
+                    | The following command can assist you to log
+                    | in to your ECS host servers, or to connect to this project's database:
+                br
+                code.is-size-7
+                    | $ AWS_PROFILE={{std_myProfile(environment)}} aws-explorer \
+                    br
+                    | &nbsp;&nbsp;&nbsp;&nbsp; -r {{environment.aws_region}} \
+                    br
+                    | &nbsp;&nbsp;&nbsp;&nbsp; -e {{environment.name}} \
+                    br
+                    | &nbsp;&nbsp;&nbsp;&nbsp; remote
+                    
    
 </template>
 
@@ -674,17 +716,16 @@ console.log(`YYYYY YARP 2`, deployment);
             link.click()
         },
 
-        updateDeployment: async function () {
-            console.log(`updateDeployment() `, this.deployment);
+        // updateDeployment: async function () {
+        //     console.log(`updateDeployment() `, this.deployment);
 
-            const url = standardStuff.apiURL('/deployment')
-            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
-            let result = await axios.put(url, this.deployment, config)
-            // console.log(`API4 returned`, res4.data)
-            // const dependencies = res4.data.dependencies
-            console.log(`result is `, result);
-            
-        },
+        //     const url = standardStuff.apiURL('/deployment')
+        //     const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+        //     let result = await axios.put(url, this.deployment, config)
+        //     // console.log(`API4 returned`, res4.data)
+        //     // const dependencies = res4.data.dependencies
+        //     console.log(`result is `, result);
+        // },
 
         saveDetails: async function () {
             let self = this
@@ -695,7 +736,7 @@ console.log(`YYYYY YARP 2`, deployment);
                 // console.log(`Updating...`, self.deployment);
                 self.updateDelay = null
                 const url = standardStuff.apiURL('/deployment')
-                const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+                const config = standardStuff.axiosConfig(self.$loginservice.jwt)
                 let result = await axios.put(url, self.deployment, config)
                 // console.log(`result is `, result);
             }, 1000)
@@ -741,7 +782,7 @@ console.log(`YYYYY YARP 2`, deployment);
 
             console.log(`values to save=`, request);
             const url = standardStuff.apiURL('/variableValues')
-            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+            const config = standardStuff.axiosConfig(this.$loginservice.jwt)
             await axios.post(url, request, this.axiosConfig)
             this.editingValues = false            
         },

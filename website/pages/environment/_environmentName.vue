@@ -47,16 +47,61 @@ section.section
                         //- input.input(v-if="editingDetails", v-model.trim="environment.notes", placeholder="URL to ECS Service", @input="saveDetails")
                         //- a.my-not-input-a(v-else-if="validUrl(environment.notes)", :href="environment.notes", target="_blank") &nbsp;{{environment.notes}}
                         //- p.my-not-input-p(v-else) &nbsp;{{environment.notes}}
-        hr(v-if="environment.type==='aws'")
-        .field.is-horizontal(v-if="environment.type==='aws'")
+      .control
+          button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
+
+    b-tab-item(label="AWS", v-if="environment.type==='aws'")
+      form.formStyle
+        //- hr(v-if="environment.type==='aws'")
+        .field.is-horizontal()
+            .field-label.is-normal
+                label.label(style="width:200px;") Account no: 
+            .field-body
+                .field
+                    .control
+                        input.input(v-if="editingDetails", v-model.trim="environment.aws_account", placeholder="eg. 270011112222", @input="saveDetails")
+                        p.my-not-input-p(v-else) &nbsp;{{environment.aws_account}}
+        .field.is-horizontal()
+            .field-label.is-normal
+                label.label(style="width:200px;") Profile: 
+            .field-body
+                .field
+                    .control
+                        input.input(v-if="editingDetails", v-model.trim="environment.aws_profile", placeholder="eg. development", @input="saveDetails")
+                        p.my-not-input-p(v-else) &nbsp;{{environment.aws_profile}}
+        .field.is-horizontal()
             .field-label.is-normal
                 label.label(style="width:200px;") Region: 
             .field-body
                 .field
                     .control
-                        input.input(v-if="editingDetails", v-model.trim="environment.aws_region", placeholder="eg. ap-southeast-1", @input="saveDetails")
-                        a.my-not-input-a(v-else-if="validUrl(environment.aws_region)", :href="environment.aws_region", target="_blank") &nbsp;{{environment.aws_region}}
-                        p.my-not-input-p(v-else) &nbsp;{{environment.aws_region}}
+                        select.select(v-model="environment.aws_region", :disabled="!editingDetails")
+                          option(value="us-east-2") US East (Ohio)	
+                          option(value="us-east-1") US East (N. Virginia)	
+                          option(value="us-west-1") US West (N. California)	
+                          option(value="us-west-2") US West (Oregon)	
+                          option(value="ap-east-1") Asia Pacific (Hong Kong)	
+                          option(value="ap-south-1") Asia Pacific (Mumbai)	
+                          option(value="ap-northeast-3") Asia Pacific (Osaka-Local)	
+                          option(value="ap-northeast-2") Asia Pacific (Seoul)	
+                          option(value="ap-southeast-1") Asia Pacific (Singapore)	
+                          option(value="ap-southeast-2") Asia Pacific (Sydney)	
+                          option(value="ap-northeast-1") Asia Pacific (Tokyo)	
+                          option(value="ca-central-1") Canada (Central)	
+                          option(value="cn-north-1") China (Beijing)	
+                          option(value="cn-northwest-1") China (Ningxia)	
+                          option(value="eu-central-1") Europe (Frankfurt)	
+                          option(value="eu-west-1") Europe (Ireland)	
+                          option(value="eu-west-2") Europe (London)	
+                          option(value="eu-west-3") Europe (Paris)	
+                          option(value="eu-north-1") Europe (Stockholm)	
+                          option(value="me-south-1") Middle East (Bahrain)	
+                          option(value="sa-east-1") South America (Sao Paulo)	
+                          option(value="us-gov-east-1") AWS GovCloud (US-East)	
+                          option(value="us-gov-west-1") AWS GovCloud (US-West)	
+
+                        //- a.my-not-input-a(v-else-if="validUrl(environment.aws_region)", :href="environment.aws_region", target="_blank") &nbsp;{{environment.aws_region}}
+                        //- p.my-not-input-p(v-else) &nbsp;{{environment.aws_region}}
         .field.is-horizontal(v-if="environment.type==='aws'")
             .field-label.is-normal
                 label.label(style="width:200px;") Stack: 
@@ -163,6 +208,42 @@ section.section
                 b-button.button.is-small.is-primary.is-outlined(tag="nuxt-link", :to="`../config/${props.row.environment}/${props.row.deployable}`") Configure
             //- | {{props.row.environment}}
     
+
+    b-tab-item(label="Commands", v-if="environment.type==='aws'")
+      .notification
+          h1.title.is-size-5 Provisioning
+          p.is-size-6(v-if="deployments.length === 0")
+            | Nothing appears to be deployed to this environment - has it been provisioned?
+            br
+            | 
+            | If you wish to set it up now, and you would like to use the Tooltwist conventions and
+            | Cloudformation templates, the following command will guide you through the process.
+          p.is-size-6(v-else)
+            | This environment appears to be already set up.
+          br
+          code.is-size-7
+            | $ AWS_PROFILE={{std_myProfile(environment)}} aws-explorer -r {{environment.aws_region}} provision
+          br
+          br
+          p.is-size-6
+              | Select 'Application' and then complete the prompts.
+      .notification
+          h1.title.is-size-5 Connecting
+          p.is-size-6
+            | If this environment was set up using aws-exploere (as above), the following command can assist you to log
+            | in to your ECS host servers, or to connect to the database:
+          br
+          code.is-size-7
+            | $ AWS_PROFILE={{std_myProfile(environment)}} aws-explorer \
+            br
+            | &nbsp;&nbsp;&nbsp;&nbsp; -r {{environment.aws_region}} \
+            br
+            | &nbsp;&nbsp;&nbsp;&nbsp; -e {{environment.name}} \
+            br
+            | &nbsp;&nbsp;&nbsp;&nbsp; remote
+
+
+
     div(v-if="environmentName !== 'localhost'")
       b-tab-item(label="Users")
         // Users
@@ -210,7 +291,7 @@ section.section
                       div.control
                         input.input(v-model="form.edit_envdescription", type="text", value="description", placeholder="Description")  
                     div.formStyle Notes:
-                      divcontrol
+                      div.control
                         input.input(v-model="form.edit_envnotes", type="text", value="notes", placeholder="Notes")  
             footer.modal-card-foot      
               div.control
@@ -620,7 +701,8 @@ export default {
            let result = await axios.put(url, self.environment, config)
             // console.log(`result is `, result);
         }, 1000)
-    }
+    },
+
   },//- methods
 
   /*

@@ -34,36 +34,16 @@
     b-table(:data="deployments", focusable)
       template(slot-scope="props")
         b-table-column(field="environment", label="Environment")
+          b-tooltip(:label="props.row._healthcheck.text", position="is-right", multilined, :type="healthcheckColor(props.row._healthcheck.status)")
+            b-icon(:icon="healthcheckIcon(props.row._healthcheck.status)", size="is-small", :type="healthcheckColor(props.row._healthcheck.status)")
           nuxt-link(:to="`/environment/${std_toQualifiedName(props.row.environment_owner,props.row.environment)}`")
             span(v-html="std_toQualifiedDisplay(props.row.environment_owner,props.row.environment,true)")
-          //- {{stdOwnerPrefix(props.row.environment_owner)}}{{ props.row.environment }}
         b-table-column(field="application_name", label="Name")
           | {{ props.row.application_name }}
         b-table-column(field="deployable", label="Deployable")
           nuxt-link(:to="`/deployable/${std_toQualifiedName(props.row.deployable_owner,props.row.deployable)}`")
             span(v-html="std_toQualifiedDisplay(props.row.deployable_owner,props.row.deployable,true)")
-        b-table-column(field="website_url", label="Website URL")
-          | {{props.row.website_url}}
-        b-table-column(field="healthcheck", label="Healthcheck")
-          | {{props.row.healthcheck}}
-        b-table-column(field="healthcheck_status", label="Status")
-          //div(v-if="props.row.healthcheck != '' && props.row.website_url !=  ''")
-          div(v-if="healthcheckStatus(props.row.healthcheck, props.row.website_url) === 'error'")
-            b-icon(icon="alert-outline") 
-          div(v-if="healthcheckStatus(props.row.healthcheck, props.row.website_url) === 'healthy'") 
-            b-icon(icon="thumb-up-outline") 
-          div(v-if="healthcheckStatus(props.row.healthcheck, props.row.website_url) === 'network'") 
-            b-icon(icon="cloud-off-outline") 
-          
-        //- b-table-column(field="description", label="Description")
-        //  | {{ props.row.description }}
-        //b-table-column(field="notes", label="Notes")
-        //  | {{ props.row.notes }}
-        //b-table-column(field="", label="")
-          //div(v-if="currentUser[0].access == 'full' || 'write' || 'super'")
-           b-button(class="button is-small is-primary is-outlined", tag="nuxt-link", :to="`../config/${props.row.environment}/${props.row.deployable}`") Configure
         b-table-column(field="", label="")
-          //- div(v-if="currentUser[0].access == 'full' || 'write' || 'super'")
           b-button.button.is-small.is-primary.is-outlined(tag="nuxt-link", :to="`../deployment/${props.row.environment_owner}:${props.row.environment}/${props.row.application_name}`") Configure
         
 
@@ -136,7 +116,6 @@
           .modal-card-foot
             button.button.is-success(:disabled="!readyToSave", @click="createDeployment") Save
             button.button(@click="showDialog = false;") Cancel
-
 </template>
 
 <script>
@@ -178,6 +157,7 @@ export default {
       const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
       const deployments = await loadDeployments(config)
 
+      // Get all the environments, for the new dialog
       let url = standardStuff.apiURL('/environments')
       let reply = await axios.get(url, config)
       const environments = reply.data.environments
@@ -186,9 +166,19 @@ export default {
       // let deployables = await loadDeployables(jwt)
       // console.log(`AFTER loading deployables`, deployables);
 
+      // Get all the deployables, for the new dialog
       url = standardStuff.apiURL('/deployables')
       reply = await axios.get(url, config)
       const deployables = reply.data.deployables
+
+      // Set the initial healthcheck status for each deployment
+      deployments.forEach(d => {
+        d._healthcheck = {
+          status: 'scanning',
+          text: 'attempting to contact...',
+        }
+        checkHealth(d)
+      })
 
 
 // console.log(`deployments=`, deployments);
@@ -311,31 +301,6 @@ export default {
       this.showDialog = true;
     },
 
-    // Call health check to determine status
-    async healthcheckStatus (healthcheck, website_url) {
-     try {
-        let url = website_url + healthcheck;
-        let status = await axios.get(url, {
-          timeout: 4000
-        });
-
-        if (status == 200) {
-          return 'healthy';
-        } else if (status == 'error') {
-          return 'error';
-        }
-
-      } catch (error) {
-        if (error == 'Error: Network Error') {
-          console.log('Returning a network error to healthcheckStatus.');
-          return 'network';
-        } else {
-          console.log('There was an error whilst performing healthcheckStatus.' + error);
-          return 'error';
-        }
-      }
-    },
-
     async createDeployment () {
       console.log(`createDeployment()`);
 
@@ -394,10 +359,201 @@ export default {
         alert(`Error creating deployable`)
         this.showSaveErrorMsg = true
       }
-    }//- createDeployment
+    },//- createDeployment
+
+    healthcheckIcon: function(mode) {
+      switch (mode) {
+        case 'scanning':
+          return 'radar'
+        case 'OK':
+          return 'thumb-up-outline'
+        case 'error':
+          return 'alert-outline'
+        case 'network':
+          return 'cloud-off-outline'
+        case 'ENOENT': // healthcare path not found
+          return 'cancel'
+        case 'ENOTFOUND': // url not defined
+          return 'cancel'
+        case 'ECONNABORTED':
+          return 'timer-off-outline'
+        case 'skip':
+        case 'unknown':
+        default:
+          return 'minus'
+      }
+    }, //- healthcheckIcon
+
+
+    healthcheckColor: function(status) {
+      switch (status) {
+        case 'scanning':
+          return 'is-info'
+        case 'OK':
+          return 'is-success'
+        case 'error':
+          return 'is-danger'
+        case 'network':
+          return 'is-danger'
+        case 'ENOENT':
+          return 'is-black'
+        case 'ENOTFOUND': // url not defined
+          return 'is-black'
+        case 'ECONNABORTED':
+          return 'is-danger'
+        case 'skip':
+        case 'unknown':
+        default:
+          return 'is-light'
+      }
+    },//- healthcheckColor
+
   }//- methods
 }
 
+async function checkHealth(deployment) {
+  // Check we have a valid website URL, that is not localhost
+  if (
+    !deployment.website_url
+    || !deployment.website_url.startsWith('http')
+  ) {
+    // development on local server
+    deployment._healthcheck.status = 'skip'
+    deployment._healthcheck.text = 'Not configured'
+    return
+  }
+  if (
+    deployment.website_url.startsWith('http://localhost')
+    || deployment.website_url.startsWith('https://localhost')
+    || deployment.website_url.startsWith('http://127.0.0.1')
+    || deployment.website_url.startsWith('https://127.0.0.1')
+  ) {
+    // development on local server
+    deployment._healthcheck.status = 'skip'
+    deployment._healthcheck.text = 'Runs locally'
+    return
+  }
+  // if (!deployment.healthcheck) {
+  //   // Skip this healthcheck
+  //   deployment._healthcheck.status = 'unknown'
+  //   return
+  // }
+
+  // if (deployment.application_name !== 'inhouse_db') {
+  //   return
+  // }
+  // if (deployment.application_name !== 'juiceconfig' || deployment.environment !== "j-test") {
+  //   return
+  // }
+  
+  
+  // Call health check to determine status
+  console.log(`Checking health of `, deployment);
+
+    const healthcheckUrl = deployment.website_url + deployment.healthcheck
+    let result
+    const USE_PROXY = true
+    if (USE_PROXY) {
+      try {
+
+        let url = standardStuff.apiURL('/proxyHealthcheck')
+        console.log(`checkHealth(${deployment.environment}.${deployment.application_name}): ${url}`);
+        result = await axios.get(url, {
+          params: {
+            url: healthcheckUrl
+          }
+        });
+        console.log(`Proxy returned:`, result);
+        deployment._healthcheck.status = result.data.status
+        // deployment._healthcheck.text = result.data.text
+        switch (deployment._healthcheck.status) {
+          // case 'scanning':
+          //   break
+          case 'OK':
+            deployment._healthcheck.text = result.data.body
+            break
+          // case 'error':
+          //   return 'is-danger'
+          // case 'network':
+          //   return 'is-danger'
+          case 'ENOENT':
+            deployment._healthcheck.text = `ENOENT: healthcheck path was not found on the server (${deployment.healthcheck})`
+            break
+          case 'ENOTFOUND': // url not defined
+            deployment._healthcheck.text = `ENOTFOUND: incorrect server url? (${deployment.website_url})`
+            break
+          case 'ECONNABORTED':
+            deployment._healthcheck.text = 'ECONNABORTED: timeout?'
+            break
+          // case 'skip':
+          // case 'unknown':
+          default:
+            deployment._healthcheck.text = `status: ${deployment._healthcheck.status}`
+            break
+        }
+      } catch (error) {
+        // Unable to ask our server to do the healthcheck for us. I wonder why?
+        deployment._healthcheck.status = 'error'
+        deployment._healthcheck.text = 'Error in juice server.'
+        console.log(`Healthcheck proxy failed:`, error);
+      }
+      return
+    }
+
+  /*
+   *  We'll run the healthchecks directly from the browser. This is faster, but CORS checking by the
+   *  browser will cause some healthchecks to fail (Cross Site Resource Scripting is a hack technique).
+   */
+  try {
+
+      console.log(`checkHealth(${deployment.environment}.${deployment.application_name}): ${url}`);
+      let result = await axios.get(healthcheckUrl, {
+        timeout: 4000,
+        // crossdomain: true
+      });
+
+    let status = result.status
+    console.log(`status is`, status);
+    console.log(`data is`, result.data);
+    if (status == 200) {
+      deployment._healthcheck.status = 'OK'
+      return
+    } else if (status == 'error') {
+      deployment._healthcheck.status = 'error'
+      return
+    }
+
+  } catch (error) {
+    if (error.response) {
+      // standard axios exception
+      if (error.response.status === 404) {
+        // ENOENT - the pinged server says the page does not exist
+        deployment._healthcheck.status = 'ENOTFOUND'
+        return
+      }
+    // } else if (error.message === 'Network Error') {
+    //   deployment._healthcheck.status = 'network'
+    //   return
+    } else if (error.code === 'ECONNABORTED') {
+      // See https://medium.com/@masnun/handling-timeout-in-axios-479269d83c68
+      deployment._healthcheck.status = 'timeout'
+      return
+    } else {
+      deployment._healthcheck.status = 'timeout'
+      console.log(`error doing healthcheck:`, error);
+      console.log(`error.statusCode`, error.statusCode);
+      console.log(`error.errcode`, error.errcode);
+      console.log(`error.message`, error.message);
+      console.log(`error.response`, error.response);
+      let json=JSON.stringify(error, '', 2);
+      console.log(`json=`, json);
+      let errorObject=JSON.parse(JSON.stringify(error));
+      console.log(`errorObject=`, errorObject);
+      deployment._healthcheck.status = 'error'
+      return
+    }
+  } //- catch
+}
 
 async function loadDeployments (axiosConfig) {
   let url = standardStuff.apiURL('/deployments')

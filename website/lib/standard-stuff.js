@@ -159,6 +159,20 @@ export default {
       return url && (url.startsWith('http://') || url.startsWith('https://'))
     },
 
+    // Return a string for example commands, for the AWS_PROFILE environment variable.
+    std_myProfile: function (environment) {
+      if (environment.aws_profile) {
+        return environment.aws_profile
+      }
+      return '<YOUR_PROFILE_HERE>'
+    },
 
+    // Return a string for example commands, for the AWS_PROFILE environment variable.
+    std_myRegion: function (environment) {
+      if (environment.aws_region) {
+        return environment.aws_region
+      }
+      return '<YOUR_PROFILE_HERE>'
+    }
   }
 }
