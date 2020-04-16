@@ -83,13 +83,13 @@ export default {
         
             let userIdentity = req.payload.userIdentity
             let me = req.identity.username
-            console.log(`I am ${me}`);
+            // console.log(`I am ${me}`);
         
             let con = await db.checkConnection()
             const sql = `(SELECT environment.owner, environment.name, environment.description, environment.notes, environment.is_universal FROM environment)`
             const params = [ userIdentity ]
             
-            console.log(`SQL IS ${sql}`)
+            // console.log(`SQL IS ${sql}`)
             con.query(sql, params, function (err, result) {
                 if (err) throw err;
                 res.send({ environments: result })

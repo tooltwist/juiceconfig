@@ -58,7 +58,7 @@ export default {
       console.log(`params=`, params);    
       con.query(sql, params, function (err, result) {
         if (err) throw err;
-        console.log("Result: " + result);
+        console.log("Result: ", result[0]);
         res.send({ deployments: result })
         next()
       });
@@ -121,25 +121,28 @@ export default {
       let con = await db.checkConnection()
       const deploymentValues = {
       }
-      if (req.params.notes) {
+      if (typeof(req.params.notes) !== 'undefined') {
         deploymentValues.notes = req.params.notes
       }
-      if (req.params.healthcheck_url) {
-        deploymentValues.healthcheck_url = req.params.healthcheck_url
+      if (typeof(req.params.healthcheck) !== 'undefined') {
+        deploymentValues.healthcheck = req.params.healthcheck
       }
-      if (req.params.aws_service) {
+      if (typeof(req.params.website_url) !== 'undefined') {
+        deploymentValues.website_url = req.params.website_url
+      }
+      if (typeof(req.params.aws_service) !== 'undefined') {
         deploymentValues.aws_service = req.params.aws_service
       }
-      if (req.params.aws_loadbalancer) {
+      if (typeof(req.params.aws_loadbalancer) !== 'undefined') {
         deploymentValues.aws_loadbalancer = req.params.aws_loadbalancer
       }
-      if (req.params.aws_targetgroup) {
+      if (typeof(req.params.aws_targetgroup) !== 'undefined') {
         deploymentValues.aws_targetgroup = req.params.aws_targetgroup
       }
-      if (req.params.aws_logfile_url) {
+      if (typeof(req.params.aws_logfile_url) !== 'undefined') {
         deploymentValues.aws_logfile_url = req.params.aws_logfile_url
       }
-      if (req.params.aws_secretsmanager_secret) {
+      if (typeof(req.params.aws_secretsmanager_secret) !== 'undefined') {
         deploymentValues.aws_secretsmanager_secret = req.params.aws_secretsmanager_secret
       }
 

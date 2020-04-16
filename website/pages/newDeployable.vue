@@ -186,7 +186,7 @@ export default {
                     }
                     console.log(`record = `, record);
                     let url = standardStuff.apiURL('/newDeployable')
-                    const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+                    const config = standardStuff.axiosConfig(this.$loginservice.jwt)
                     await axios.post(url, record, config)
                     // Prevent input error from showing
                     // this.mode = false;

@@ -4,7 +4,7 @@ div
     div.navbar-brand.juiceHeaderLogo
       a.navbar-item.linkStyle(href="/")
         img.juiceHeadStyle(src="../assets/header-logo.png") 
-    v-if(class="mobile")
+    //- v-if(class="mobile")
       br
     // New logo will need to be properly sized 
     
