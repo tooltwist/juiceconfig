@@ -91,7 +91,7 @@ div
           div.buttons(style="float:right;")
             div(v-if="isEditable")
               button.button.is-primary(@click.prevent="newVariable(variables)", type="is-light")  + Add New Variable
-        br
+        br 
         div(v-if="this.variables.length === 0")
           br
           article.message.is-success.is-small
@@ -125,7 +125,7 @@ div
           div.buttons(style="float:right;")
             div(v-if="isEditable")
               button.button.is-primary(@click.prevent="newDeployment(deployments)",  type="is-light")  + Add New Deployment
-        br
+        br 
         div(v-if="this.deployments.length === 0")
           br
           article.message.is-success.is-small
@@ -194,6 +194,79 @@ div
                 div(v-if="isEditable")
                   a(href="", @click.prevent="editUser(props.row)")
                     b-icon(icon="circle-edit-outline")
+
+      b-tab-item(label="Versions")     
+        p This page will display all the versions for deployable {{deployableName}} in the db deployable_version. It requires values for: 
+          p deployable_owner, deployable_name, version (git hash), build_no, registration_time, registration_source, registered_by.
+        b-table(:data="versions", focusable)
+            template(slot-scope="props")
+              b-table-column(field="version", label="Version")
+                | {{ props.row.version }}
+              b-table-column(field="build_no", label="Build #")
+                |  {{ props.row.build_no }}
+              b-table-column(field="registration_time", label="Registration Time")
+                |  {{ props.row.registration_time }}
+              b-table-column(field="registration_source", label="Registration Source")
+                | {{ props.row.registration_source }}
+              b-table-column(field="registered_by", label="Registered By")
+                | {{ props.row.registered_by}}
+
+      b-tab-item(label="Tokens")       
+        b-button.is-success(@click.prevent="newToken()", style="float:right;") Generate a random token
+        br
+        br
+        b-table(:data="tokens", focusable)
+          template(slot-scope="props")
+            b-table-column(field="id", label="ID")
+              | {{ props.row.id }}
+            b-table-column(field="token_type", label="Token Type")
+              |  {{ props.row.token_type }}
+            b-table-column(field="creation_time", label="Created")
+              |  {{ props.row.creation_time }}
+            b-table-column(field="expiry_time", label="Expires")
+              | {{ props.row.expiry_time }}
+            b-table-column(field="status", label="Status")
+              | {{ props.row.status }}
+            b-table-column(field="environment_name", label="Environment Name")
+              | {{ props.row.environment_name }}
+            b-table-column(field="environment_owner", label="Environment Owner")
+              | {{ props.row.environment_owner }}
+
+  // New Token Modal starts below:
+  div(v-show="newTokenModal")
+    transition(name="modal")
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Create a new token
+            section.modal-card-body
+              slot(name="body")
+                form
+                  div.form-group
+                    div.formStyle Application Name: {{deployableName}}
+                    div.formStyle Token Type:
+                      b-select(placeholder="Token Type", v-model="form.new_token_type", value="new_token_type")
+                        option(value="approve") Approve
+                        option(value="approve_deploy") Approve and Deploy 
+                        option(value="deploy") Deploy
+                        option(value="downgrade") Downgrade 
+                        option(value="registration") Registration
+                    div.formStyle Expiry time:
+                      div.control
+                        input.input(v-model="form.new_token_expiry", type="datetime-local", value="expiry_time", placeholder="Expiry")  
+                    div.formStyle Optional:
+                    div.formStyle Environment name:
+                      div.control
+                        input.input(v-model="form.new_token_environment_name", type="text", value="environment_name", placeholder="Environment Name")  
+                    div.formStyle Environment owner:
+                      div.control
+                        input.input(v-model="form.new_token_environment_owner", type="text", value="environment_owner", placeholder="Environment Owner")  
+            footer.modal-card-foot
+              div.control
+                b-button(@click.stop="saveNewToken", type="is-primary is-light", size="is-small")  Save    
+                b-button(@click="newTokenModal=false", type="is-danger is-outlined", size="is-small") Cancel
+
 
   // Edit Deployable details MODAL
   div(v-show="editDeployableStatus == 'edit'")
@@ -499,6 +572,12 @@ export default {
         // Edit existing user
         edit_useraccess: '',
         editmodal_userid: '',
+
+        // Add a new token
+        new_token_type: '',
+        new_token_environment_name: '',
+        new_token_environment_owner: '',
+        new_token_expiry: '',
       },
       editingDetails: false,
 
@@ -515,6 +594,8 @@ export default {
       environments: [ ],
       users: [ ],
       allUsers: [ ],
+      versions: [ ],
+      tokens: [ ],
       currentUser: [ ],
       deployable: '',
       project: null, 
@@ -532,6 +613,9 @@ export default {
 
       // Modal data for new user
       newUserModal: false,
+
+      // Modal for new token
+      newTokenModal: false,
 
       // Modal data for adding dependency
       newDependencyModal: false,
@@ -721,6 +805,42 @@ export default {
       }
     }, // - saveNewUser
 
+    // ADD A NEW TOKEN FOR DEPLOYABLE - FROM MODAL 
+    async saveNewToken() {
+      console.log(`saveNewToken(): `)
+      //Check that form is filled correctly
+      if (this.form.new_token_type && this.form.new_token_expiry) {
+        // Send post request to server
+        try {
+          let url = standardStuff.apiURL('/newToken')
+          let record = {
+            token_type: this.form.new_token_type,
+            token_expiry: this.form.new_token_expiry,
+            application_name: this.deployableName,
+            environment_name: this.form.new_token_environment_name,
+            environment_owner: this.form.new_token_environment_owner
+          }
+          let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+          await axios.post(url, record, config)
+          this.newTokenModal = false
+          console.log(`New token request successfully sent to database`);
+        } catch (e) {
+          console.log(`Error while sending new token request to the database: `, e)
+        }
+
+        // Once data sent, reload table with the new token
+        try {
+          this.reloadTokens(); 
+          console.log(`Reloading...`)
+        } catch (e) {
+          console.log(`Error while reloading tokens on the browser: `, e)
+        }
+      } else {
+        this.errormode = 'inputError'
+      }
+    }, // - saveNewUser
+    
+    // SAVE EDITED USER
     async saveEditedUser() {
       try {
         let url = standardStuff.apiURL('/editUser')
@@ -921,6 +1041,23 @@ export default {
       };
     },  // -reloadUsers
 
+    // RELOAD THE DATABASE TABLE AFTER SAVING A NEW TOKEN
+    async reloadTokens() {
+      const url = standardStuff.apiURL('/tokens')
+      const params = {
+          params: { 
+            deployableName: this.deployableName
+          }
+      }
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+      let result = await axios.get(url, params, config)
+      console.log(`API returned`, result.data);
+      this.tokens = result.data.tokens
+      return {
+        tokens: this.tokens
+      };
+    },  // -reloadTokens
+
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW DEPLOYMENT
     async reloadDeployments() {
       const url = standardStuff.apiURL('/envDeployments')
@@ -1000,7 +1137,13 @@ export default {
     newUser() {
       this.newUserModal = true;
       return false
-    },
+    }, // -newUser
+
+    // OPEN MODAL FOR CREATE NEW TOKEN
+    newToken() {
+      this.newTokenModal = true;
+      return false;
+    }, // -newToken
 
     // OPEN MODAL AND CREATE NEW DEPENDENCY 
     newDependency(variable) {
@@ -1084,6 +1227,18 @@ export default {
       const currentUser = res8.data.user
       console.log('currentUser: ', currentUser)
 
+      // Import all versions for this deployable
+      const url9 = standardStuff.apiURL('/versions')
+      let res9 = await axios.get(url9, params, config)
+      console.log(`API9 returned`, res9.data);
+      const versions = res9.data.versions
+
+      // Import all tokens for this deployable
+      const url10 = standardStuff.apiURL('/tokens')
+      let res10 = await axios.get(url10, params, config)
+      console.log(`API10 returned`, res10.data);
+      const tokens = res10.data.tokens
+
       return {
         deployableName: deployableName,
         deployable: deployable,
@@ -1094,6 +1249,8 @@ export default {
         environments: environments,
         dependencies: dependencies,
         currentUser: currentUser,
+        versions: versions,
+        tokens: tokens,
       }
     } catch (e) {
       console.log(`Could not fetch project:`, e)

@@ -247,7 +247,7 @@ section.section
                 h1.title.is-size-5 Provisioning
                 p.is-size-6
                     | The following command can help you deploy this project on an ECS cluster, with an ECS service,
-                    | Secrets Manager secret, ECR repository and a Continuous integrstion Code Pipeline.
+                    | Secrets Manager secret, ECR repository and a Continuous integration Code Pipeline.
                 br
                 code.is-size-7
                     | $ AWS_PROFILE={{std_myProfile(environment)}} aws-explorer -r {{environment.aws_region}} provision
@@ -270,7 +270,7 @@ section.section
                     | &nbsp;&nbsp;&nbsp;&nbsp; -e {{environment.name}} \
                     br
                     | &nbsp;&nbsp;&nbsp;&nbsp; remote
-                    
+
    
 </template>
 

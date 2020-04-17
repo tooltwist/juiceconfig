@@ -106,6 +106,75 @@ export default {
                 next()
             });
         });
+
+        // Dynamically select VERSIONS for /_deployableNAME from MySQL db
+        server.get('/api/versions', async (req, res, next) => {
+            console.log(`GET /versions`);
+        
+            let deployableName = req.query.deployableName
+            let con = await db.checkConnection()
+            const sql = `SELECT * from deployable_version where deployable_name=?`
+            const params = [ deployableName ]
+        
+            con.query(sql, params, function (err, result) {
+                if (err) throw err;
+                res.send({ versions: result })
+                next()
+            });
+        });
+
+        // Dynamically select TOKENS for /_deployableNAME from MySQL db
+        server.get('/api/tokens', async (req, res, next) => {
+            console.log(`GET /tokens`);
+        
+            let deployableName = req.query.deployableName
+            let con = await db.checkConnection()
+            const sql = `SELECT * from token where application_name=?`
+            const params = [ deployableName ]
+        
+            con.query(sql, params, function (err, result) {
+                if (err) throw err;
+                res.send({ tokens: result })
+                next()
+            });
+        });
+
+        const {performance} = require('perf_hooks');
+        function generateUUID () {
+            var d = new Date().getTime()
+            if (performance && typeof performance.now === "function") {
+              d += performance.now()
+            }
+            
+            var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+              var r = (d + Math.random() * 16) % 16 | 0
+              d = Math.floor(d / 16)
+              return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16)
+            })
+
+            return uuid;
+        }
+
+        // Add a NEW TOKEN to the db token from /_deployableNAME
+        server.post('/api/newToken', async (req, res, next) => {
+            console.log(`POST /newToken`)
+
+            let id = generateUUID();
+        
+            let con = await db.checkConnection()
+            const tokenValues = {id: id, token_type: req.params.token_type, expiry_time: req.params.token_expiry, environment_owner: req.params.environment_owner, environment_name: req.params.environment_name, application_name: req.params.application_name}
+            let sql = `INSERT INTO token SET ?`
+            let params = [ tokenValues ]
+        
+            con.query( sql, params, (err, result) => {
+                if (err) throw err;
+
+                // Send reply
+                res.send({ status: 'ok' })
+                return next();
+            })
+        }); // End of section
+
         
         // Dynamically select ALL VARIABLES from MySQL db
         server.get('/api/variablesAll', async (req, res, next) => {
