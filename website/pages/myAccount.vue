@@ -8,7 +8,7 @@
                         tr  
                             td(style="justify:right;") 
                                 label Full name: 
-                            td(style="justify:left;") {{fullname}} (ID: {{user.id}})
+                            td(style="justify:left;") {{user.first_name}} {{user.last_name}} (ID: {{user.id}})
                         tr  
                             td(style="justify:right;") 
                                 label Email:
@@ -21,6 +21,8 @@
                             td(style="justify:right;") 
                                 label Access:
                             td(style="justify:left;") {{user.access}}
+                        br
+                        b-button.is-grey.is-small(@click.prevent="editMyAccount()") Edit
                 b-tab-item(label="Deployables")
                     b-table(:data="deployables", focusable)
                         template(slot-scope="props")
@@ -43,6 +45,34 @@
                                 | {{ props.row.description }}
                             b-table-column(field="notes", label="Notes")
                                 | {{ props.row.notes }}
+
+        // Edit My Account Modal starts below:
+        div(v-show="editAccountModal")
+            transition(name="modal")
+                div.modal-mask
+                    div.modal-wrapper
+                        div.modal-card
+                            header.modal-card-head
+                                p.modal-card-title Edit Account Details 
+                            section.modal-card-body
+                                slot(name="body")
+                                    form
+                                        div.formStyle First name:
+                                            div.control
+                                                input.input(v-model="form.new_first_name", type="text", value="first_name") 
+                                        div.formStyle Last name:
+                                            div.control
+                                                input.input(v-model="form.new_last_name", type="text", value="last_name") 
+                                        div.formStyle Email:
+                                            div.control
+                                                input.input(v-model="form.new_email", type="email", value="last_name") 
+                                        div.formStyle Role:
+                                            div.control
+                                                input.input(v-model="form.new_role", type="role", value="role") 
+                            footer.modal-card-foot 
+                                div.control
+                                    b-button(@click.stop="saveEditedAccount", type="is-primary is-light", size="is-small")  Save    
+                                    b-button(@click="editAccountModal=false", type="is-danger is-outlined", size="is-small") Cancel
 </template>
 
 <script>
@@ -52,22 +82,84 @@ import standardStuff from '../lib/standard-stuff'
 export default {
     data () {
         return {
+            form: {
+                new_first_name: '',
+                new_last_name: '',
+                new_email: '',
+                new_role: '',
+            },
             user: [ ],
             deployables: [ ],
             environments: [ ],
+            editAccountModal: false,
+            activeTab: 0,
         }
     },
 
     computed: {
         loggedIn: function() {
-        if (this.$loginservice && this.$loginservice.user) {
-            return true
-        }
-        return false
+            if (this.$loginservice && this.$loginservice.user) {
+                return true
+            }
+
+            return false
         },
+        
         fullname: function() {
-        return this.loggedIn ? this.$loginservice.user.fullname : ''
+            return this.loggedIn ? this.$loginservice.user.fullname : ''
         }
+    },
+
+    methods: {
+        // OPEN MODAL AND CHANGE VALUES FOR MY ACCOUNT
+        editMyAccount() {  
+        this.editAccountModal = true,
+        this.form.new_first_name = this.user.first_name,
+        this.form.new_last_name = this.user.last_name,
+        this.form.new_email = this.user.email,
+        this.form.new_role = this.user.role
+        return false
+        }, // -editMyAccount
+
+        // SAVE EDITED USER
+        async saveEditedAccount() {
+        try {
+            let url = standardStuff.apiURL('/editAccount')
+            let record = {
+                id: this.user.id,
+                first_name: this.form.new_first_name,
+                last_name: this.form.new_last_name,
+                email: this.form.new_email,
+                role: this.form.new_role,
+            }
+            let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+            await axios.post(url, record, config)
+
+            // Display new users details
+            this.editAccountModal = false;
+            this.reloadAccount();
+            console.log('New account details have been updated on the browser.')
+        } catch (e) {
+            console.log(`Error whilst updating browser with edited account:`, e)
+        } 
+        }, // - saveEditedAccount
+
+        // RELOAD THE DATABASE TABLE AFTER SAVING NEW ACCOUNT DETAILS
+        async reloadAccount() {
+            const url = standardStuff.apiURL('/myaccount')
+            const params = {
+                params: { 
+                    userName: this.user.username
+                }
+            }
+            const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+            let result = await axios.get(url, params, config)
+            this.user = result.data.record
+            return {
+                user: this.user
+            };
+        },  // -reloadAccount
+
     },
 
     async asyncData ({ app, params, error }) {

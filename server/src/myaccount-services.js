@@ -51,5 +51,27 @@ export default {
                 next()
             })
         }) // End of section
+
+        // Edit user account details for /myaccount on MySQL database
+        server.post('/api/editAccount', async (req, res, next) => {
+            console.log(`POST /editAccount`)
+        
+            let con = await db.checkConnection()
+            let first_name = req.params.first_name;
+            let last_name = req.params.last_name;
+            let role = req.params.role;
+            let email = req.params.email;
+            let id = req.params.id;
+            const sql = `UPDATE user SET first_name =?, last_name =?, role =?, email =? Where id =?`
+            let params = [ first_name, last_name, role, email, id ]
+        
+            con.query(sql, params, (err, result) => {
+                if (err) throw err;
+            
+                // Send a success reply
+                res.send({ status: 'ok' })
+                return next();
+            }) 
+        }); // - end of call
     }
 }

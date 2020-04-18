@@ -892,7 +892,7 @@ export default {
       }
     }, // - saveNewToken
 
-        // ADD A NEW VERSION FOR DEPLOYABLE - FROM MODAL 
+    // ADD A NEW VERSION FOR DEPLOYABLE - FROM MODAL 
     async saveNewVersion() {
       console.log(`saveNewVersion(): `)
       //Check that form is filled correctly
