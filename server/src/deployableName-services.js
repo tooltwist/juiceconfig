@@ -175,6 +175,24 @@ export default {
             })
         }); // End of section
 
+        // Add a NEW VERSION to the db deployable_version from /_deployableNAME
+        server.post('/api/newVersion', async (req, res, next) => {
+            console.log(`POST /newVersion`)
+        
+            let con = await db.checkConnection()
+            const versionValues = {version: req.params.version, build_no: req.params.build_no, registration_source: req.params.registration_source, registered_by: req.params.registered_by, deployable_name: req.params.deployable_name, deployable_owner: req.params.deployable_owner}
+            let sql = `INSERT INTO deployable_version SET ?`
+            let params = [ versionValues ]
+        
+            con.query( sql, params, (err, result) => {
+                if (err) throw err;
+
+                // Send reply
+                res.send({ status: 'ok' })
+                return next();
+            })
+        }); // End of section
+
         
         // Dynamically select ALL VARIABLES from MySQL db
         server.get('/api/variablesAll', async (req, res, next) => {

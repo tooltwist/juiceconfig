@@ -196,8 +196,9 @@ div
                     b-icon(icon="circle-edit-outline")
 
       b-tab-item(label="Versions")     
-        p This page will display all the versions for deployable {{deployableName}} in the db deployable_version. It requires values for: 
-          p deployable_owner, deployable_name, version (git hash), build_no, registration_time, registration_source, registered_by.
+        b-button.is-success(@click.prevent="newVersion()", style="float:right;") Create new version
+        br
+        br
         b-table(:data="versions", focusable)
             template(slot-scope="props")
               b-table-column(field="version", label="Version")
@@ -242,6 +243,11 @@ div
               p.modal-card-title Create a new token
             section.modal-card-body
               slot(name="body")
+                div(v-if="errormode === 'inputError'")
+                  article.message.is-danger.is-small
+                    div.message-header
+                      p Form Error
+                    div.message-body Please ensure that all necessary fields have values before saving.
                 form
                   div.form-group
                     div.formStyle Application Name: {{deployableName}}
@@ -266,6 +272,43 @@ div
               div.control
                 b-button(@click.stop="saveNewToken", type="is-primary is-light", size="is-small")  Save    
                 b-button(@click="newTokenModal=false", type="is-danger is-outlined", size="is-small") Cancel
+
+
+  // New Version Modal starts below:
+  div(v-show="newVersionModal")
+    transition(name="modal")
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Create a new version
+            section.modal-card-body
+              slot(name="body")
+                div(v-if="errormode === 'inputError'")
+                  article.message.is-danger.is-small
+                    div.message-header
+                      p Form Error
+                    div.message-body Please ensure that all necessary fields have values before saving.
+                form
+                  div.form-group
+                    div.formStyle Deployable Name: {{deployableName}}
+                    div.formStyle Deployable owner: {{deployable.owner}} 
+                    div.formStyle Version #:
+                      div.control
+                        input.input(v-model="form.new_version_hash", type="text", value="version", placeholder="Version")  
+                    div.formStyle Build no.: 
+                      div.control
+                        input.input(v-model="form.new_version_build_no", type="text", value="build_no")
+                    div.formStyle Registration source:
+                      div.control 
+                        input.input(v-model="form.new_version_registration_source", type="text", value="registration_source")
+                    div.formStyle Registered by:
+                      div.control
+                        input.input(v-model="form.new_version_registered_by", type="text", value="registered_by") 
+            footer.modal-card-foot
+              div.control
+                b-button(@click.stop="saveNewVersion", type="is-primary is-light", size="is-small")  Save    
+                b-button(@click="newVersionModal=false", type="is-danger is-outlined", size="is-small") Cancel
 
 
   // Edit Deployable details MODAL
@@ -578,6 +621,12 @@ export default {
         new_token_environment_name: '',
         new_token_environment_owner: '',
         new_token_expiry: '',
+
+        // Add a new version
+        new_version_registered_by: '',
+        new_version_hash: '',
+        new_version_build_no: '',
+        new_version_registration_source: '',
       },
       editingDetails: false,
 
@@ -616,6 +665,9 @@ export default {
 
       // Modal for new token
       newTokenModal: false,
+
+      // Modal for new version
+      newVersionModal: false,
 
       // Modal data for adding dependency
       newDependencyModal: false,
@@ -838,7 +890,43 @@ export default {
       } else {
         this.errormode = 'inputError'
       }
-    }, // - saveNewUser
+    }, // - saveNewToken
+
+        // ADD A NEW VERSION FOR DEPLOYABLE - FROM MODAL 
+    async saveNewVersion() {
+      console.log(`saveNewVersion(): `)
+      //Check that form is filled correctly
+      if (this.form.new_version_hash && this.form.new_version_build_no && this.form.new_version_registration_source && this.form.new_version_registered_by) {
+        // Send post request to server
+        try {
+          let url = standardStuff.apiURL('/newVersion')
+          let record = {
+            version: this.form.new_version_hash,
+            build_no: this.form.new_version_build_no,
+            registration_source: this.form.new_version_registration_source,
+            registered_by: this.form.new_version_registered_by,
+            deployable_name: this.deployableName,
+            deployable_owner: this.deployable.owner,
+          }
+          let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+          await axios.post(url, record, config)
+          this.newVersionModal = false
+          console.log(`New version request successfully sent to server`);
+        } catch (e) {
+          console.log(`Error while sending new version request to the server: `, e)
+        }
+
+        // Once data sent, reload table with the new version
+        try {
+          this.reloadVersions(); 
+          console.log(`Reloading...`)
+        } catch (e) {
+          console.log(`Error while reloading versions on the browser: `, e)
+        }
+      } else {
+        this.errormode = 'inputError'
+      }
+    }, // - saveNewVersion
     
     // SAVE EDITED USER
     async saveEditedUser() {
@@ -1058,6 +1146,23 @@ export default {
       };
     },  // -reloadTokens
 
+    // RELOAD THE DATABASE TABLE AFTER SAVING A NEW VERSION
+    async reloadVersions() {
+      const url = standardStuff.apiURL('/versions')
+      const params = {
+        params: { 
+          deployableName: this.deployableName
+        }
+      }
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+      let result = await axios.get(url, params, config)
+      console.log(`API returned`, result.data);
+      this.versions = result.data.versions
+      return {
+        versions: this.versions
+      };
+    },  // -reloadVersions
+
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW DEPLOYMENT
     async reloadDeployments() {
       const url = standardStuff.apiURL('/envDeployments')
@@ -1144,6 +1249,23 @@ export default {
       this.newTokenModal = true;
       return false;
     }, // -newToken
+
+    // OPEN MODAL FOR CREATE NEW VERSION
+    newVersion() {
+      this.newVersionModal = true;
+      this.form.new_version_registered_by = this.currentUser[0].username;
+      this.form.new_version_registration_source = 'Juice';
+      if (this.versions == 0) {
+        this.form.new_version_build_no = 1;
+      } else {
+        let lastbuild = this.versions[this.versions.length - 1].build_no;
+        let buildno = lastbuild;
+        buildno++;
+        this.form.new_version_build_no = buildno;
+      }
+      
+      return false;
+    }, // -newVersion
 
     // OPEN MODAL AND CREATE NEW DEPENDENCY 
     newDependency(variable) {
