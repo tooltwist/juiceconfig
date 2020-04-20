@@ -52,39 +52,6 @@ div
           .control
           button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
 
-          
-          //- div.form-group
-          //-   div(v-if="mode === 'display'")
-          //-     table(style="width:100%")
-          //-       tr 
-          //-         td(style="justify:right;") 
-          //-           label Name:
-          //-         td(style="justify:left;")
-          //-           | {{ deployable.name }}
-          //-       tr
-          //-         td(style="justify:right;")
-          //-           label(for='type') Type:
-          //-         td(style="justify:left;")
-          //-           | {{deployable.type}}
-          //-       tr
-          //-         td(style="justify:right;")
-          //-           label(for='product_owner') Product Owner:
-          //-         td(style="justify:left;")
-          //-           | {{deployable.product_owner}}
-          //-       tr
-          //-         td(style="justify:right;")
-          //-           label(for='description') Description: 
-          //-         td(style="justify:left;")
-          //-           | {{deployable.description}}
-          //-       tr
-          //-         td(style="justify:right;")
-          //-           label(for='is_project') Is this a project? 
-          //-         td(style="justify:left;")
-          //-           | {{ yesnoFilter }}
-          //-     br
-          //-     div(v-if="isEditable")
-          //-       b-button.stop(@click="setEditMode", type="is-primary is-outlined is-light", size="is-small")  Edit
-
       b-tab-item(label="Variables")
         // Variables
         h1.is-title.is-size-4(style="text-align:left;") Variables
@@ -261,13 +228,15 @@ div
                     div.formStyle Expiry time:
                       div.control
                         input.input(v-model="form.new_token_expiry", type="datetime-local", value="expiry_time", placeholder="Expiry")  
-                    div.formStyle Optional:
-                    div.formStyle Environment name:
-                      div.control
-                        input.input(v-model="form.new_token_environment_name", type="text", value="environment_name", placeholder="Environment Name")  
-                    div.formStyle Environment owner:
-                      div.control
-                        input.input(v-model="form.new_token_environment_owner", type="text", value="environment_owner", placeholder="Environment Owner")  
+                    
+                    // add a check box here
+                    br
+                    div.formStyle This token requires an environment specified    
+                      input(type="checkbox", @click="showEnvironmentsToken()") 
+                    div(v-if="showEnvironmentToken")
+                      div.formStyle Environment name:
+                        b-select(placeholder="Environment", v-model="form.new_token_environment_name")
+                          option(v-for="environment in environments") {{ environment.name }}  
             footer.modal-card-foot
               div.control
                 b-button(@click.stop="saveNewToken", type="is-primary is-light", size="is-small")  Save    
@@ -619,7 +588,6 @@ export default {
         // Add a new token
         new_token_type: '',
         new_token_environment_name: '',
-        new_token_environment_owner: '',
         new_token_expiry: '',
 
         // Add a new version
@@ -656,6 +624,9 @@ export default {
       variableError: null,
       output: '',
       errormode: false,
+
+      // Show environments option in token modal
+      showEnvironmentToken: false,
 
       // Modal data for editing existing user
       showUserEditModal: false,
@@ -865,6 +836,23 @@ export default {
         // Send post request to server
         try {
           let url = standardStuff.apiURL('/newToken')
+
+          if (this.showEnvironmentToken === false) {
+            this.form.new_token_environment_name = 'NULL';
+            this.form.new_token_environment_owner = 'NULL';
+          } else { // find environment owner based on name
+            let i = 0;
+            let ownerName = 'NULL';
+            this.environments.forEach(environment => { // set environment owner 
+                if (environment.name === this.form.new_token_environment_name) {
+                  ownerName = environment.owner
+                }
+              }
+            );
+
+            this.form.new_token_environment_owner = ownerName;
+          }
+
           let record = {
             token_type: this.form.new_token_type,
             token_expiry: this.form.new_token_expiry,
@@ -872,6 +860,7 @@ export default {
             environment_name: this.form.new_token_environment_name,
             environment_owner: this.form.new_token_environment_owner
           }
+
           let config = standardStuff.axiosConfig(this.$loginservice.jwt)
           await axios.post(url, record, config)
           this.newTokenModal = false
@@ -1250,6 +1239,16 @@ export default {
       return false;
     }, // -newToken
 
+    showEnvironmentsToken() {
+      if (this.showEnvironmentToken === true) {
+        this.showEnvironmentToken = false;
+      } else {
+        this.showEnvironmentToken = true;
+      }
+      
+      return false;
+    },
+
     // OPEN MODAL FOR CREATE NEW VERSION
     newVersion() {
       this.newVersionModal = true;
@@ -1332,6 +1331,7 @@ export default {
       console.log(`Calling ${url6}`);
       console.log(`config = `, config)
       let res6 = await axios.get(url6, config)
+      console.log(`API6 returned`, res6.data);
   
       const environments = res6.data.environments
 
