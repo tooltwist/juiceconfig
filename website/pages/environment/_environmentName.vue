@@ -132,57 +132,6 @@ section.section
       .control
           button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
 
-      //- // Environment information
-      //- table(style="width:100%")
-      //-   //- tr
-      //-     td(style="justify:right;") 
-      //-       label Name:
-      //-     td(style="justify:left;")
-      //-       | {{environment.name}}
-      //-   //- tr 
-      //-     td(style="justify:right;")
-      //-       label Description:
-      //-     td(style="justify:left;")
-      //-       | {{environment.description}}
-      //-   tr
-      //-     td(style="justify:right;")
-      //-       label Notes:
-      //-     td(style="justify:left;")
-      //-       | {{environment.notes}}
-      //-   tr
-      //-     td(style="justify:right;")
-      //-       label Type:
-      //-     td(style="justify:left;")
-      //-       select.select(v-model="environment.type")
-      //-         option(value="aws") Amazon Web Services (AWS)
-      //-         option(value="local") Local development machine
-      //-         option(value="other") Other
-      //-       | &nbsp;{{environment.type}}
-      //-   tr
-      //-     td(style="justify:right;")
-      //-       label Region:
-      //-     td(style="justify:left;")
-      //-       | {{environment.aws_region}}
-      //-   tr
-      //-     td(style="justify:right;")
-      //-       label Cloudformation Stack:
-      //-     td(style="justify:left;")
-      //-       | {{environment.aws_cf_stack}}
-      //-   tr
-      //-     td(style="justify:right;")
-      //-       label ECS Cluster URL:
-      //-     td(style="justify:left;")
-      //-       | {{environment.aws_cluster_url}}
-      //-   tr
-      //-     td(style="justify:right;")
-      //-       label VPC URL:
-      //-     td(style="justify:left;")
-      //-       | {{environment.aws_vpc_url}}
-      //- | {{environment}}
-      //- br
-      //- div(v-if="currentUser[0].access == 'full' || 'write' || 'super'")
-      //-   b-button.stop(@click="setEditMode", type="is-primary is-outlined is-light", size="is-small")  Edit
-
     b-tab-item(label="Deployments")
       // Deployments
       h1.is-title.is-size-4(style="text-align:left;") Deployments
@@ -273,30 +222,6 @@ section.section
               div(v-if="currentUser[0].access == 'full' || 'write' || 'super'")
                 a(href="", @click.prevent="editUser(props.row)")
                   b-icon(icon="circle-edit-outline")
-
-  // Edit environment information  MODAL
-  div(v-show="editEnvInfo == 'edit'")
-    transition(name="modal")
-      div.modal-mask
-        div.modal-wrapper
-          div.modal-card
-            header.modal-card-head
-              p.modal-card-title Edit Environment 
-                b {{ environmentName }}
-            section.modal-card-body
-              slot(name="body")
-                form
-                div.form-group
-                    div.formStyle Description:
-                      div.control
-                        input.input(v-model="form.edit_envdescription", type="text", value="description", placeholder="Description")  
-                    div.formStyle Notes:
-                      div.control
-                        input.input(v-model="form.edit_envnotes", type="text", value="notes", placeholder="Notes")  
-            footer.modal-card-foot      
-              div.control
-                b-button(@click.stop="saveEditedEnv", type="is-primary is-light", size="is-small")  Save    
-                b-button(@click="editEnvInfo='null'", type="is-danger is-outlined", size="is-small") Cancel
 
   // New Deployment Modal starts below:
   div(v-show="newDeploymentModal")
@@ -444,9 +369,6 @@ export default {
 
       // Edit User Modal
       showUserEditModal: false,
-
-      // Edit Environment Modal
-      editEnvInfo: null,
 
       // New Deployment Modal
       deploymentError: null,

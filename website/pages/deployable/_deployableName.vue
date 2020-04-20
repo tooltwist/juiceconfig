@@ -278,39 +278,6 @@ div
               div.control
                 b-button(@click.stop="saveNewVersion", type="is-primary is-light", size="is-small")  Save    
                 b-button(@click="newVersionModal=false", type="is-danger is-outlined", size="is-small") Cancel
-
-
-  // Edit Deployable details MODAL
-  div(v-show="editDeployableStatus == 'edit'")
-    transition(name="modal")
-      div.modal-mask
-        div.modal-wrapper
-          div.modal-card
-            header.modal-card-head
-              p.modal-card-title Edit Deployable 
-                b {{ deployableName }}
-            section.modal-card-body
-              slot(name="body")
-                form
-                  div.form-group
-                    div.formStyle Edit product owner:
-                      div.control
-                        input.input(name="product_owner", v-model="form.new_owner", type="text", value="product_owner", placeholder="Product Owners Name")
-                    div.formStyle Edit description:
-                      div.control
-                        input.input(name="description", v-model="form.new_description", type="text", value="description", placeholder="Description")
-                    div.formStyle Edit type:
-                      div.control
-                        input.input(name="type", v-model="form.new_type", type="text", value="type", placeholder="Type")
-                    div.formStyle Edit is this a project?
-                      div.control
-                        b-select(placeholder="Is this a project?", v-model="form.new_is_project", value="is_project") Is this deployable a project?:
-                          option(value="1") Yes
-                          option(value="0") No
-            footer.modal-card-foot  
-              div.control
-                b-button(@click.stop="saveDeployable", type="is-primary is-light", size="is-small")  Save    
-                b-button(@click="editDeployableStatus='null'", type="is-danger is-outlined", size="is-small") Cancel
   
   // Edit Variable Modal starts below:
   div(v-show="showModal")
@@ -602,7 +569,6 @@ export default {
       description: '',
       is_project: '',
       deployableName: '',
-      mode: 'display',
 
       activeTab: 0,
       deployments: [ ],
