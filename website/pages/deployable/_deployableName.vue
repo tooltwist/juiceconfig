@@ -448,12 +448,11 @@ div
                 slot(name="body")
                     form
                       div.form-group
-                        div.formStyle Child: 
-                          div.control
-                            div(v-if="dependencyError === null")
-                              input.input(name="new_child", v-model="form.new_child", type="text", placeholder="Dependent Child")
-                            div(v-else="dependencyError === `Dependency already exists`")
-                              input.input(name="new_child", v-model="form.new_child", type="text", placeholder="Dependent Child")
+                        div.formStyle Child:
+                          div.control 
+                            b-select(placeholder="Child", v-model="form.new_child")
+                              option(v-for="deployable in deployables") {{ deployable.name }} 
+                            div(v-if="dependencyError === `Dependency already exists`")
                               p.help.is-danger {{ deployableName }} already has a dependency with this child.
                         div.formStyle Prefix: 
                           div.control
@@ -615,6 +614,7 @@ export default {
       tokens: [ ],
       currentUser: [ ],
       deployable: '',
+      deployables: [ ],
       project: null, 
       newUserError: null,
       editDeployableStatus: null,
@@ -1361,9 +1361,16 @@ export default {
       console.log(`API10 returned`, res10.data);
       const tokens = res10.data.tokens
 
+      // Import all deployables for dependency modal
+      const url11 = standardStuff.apiURL('/deployables')
+      let res11 = await axios.get(url11, config)
+      console.log(`API11 returned`, res11.data);
+      const deployables = res11.data.deployables
+
       return {
         deployableName: deployableName,
         deployable: deployable,
+        deployables: deployables,
         variables: variables,
         deployments: deployments, 
         users: users,
