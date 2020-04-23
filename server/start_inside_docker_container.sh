@@ -3,7 +3,6 @@
 #	When this server is deployed inside a Docker
 #	container, this is the script that fires it up.
 #
-    # Here we are
 echo ""
 echo "start_inside_docker_container.sh"
 echo "--------------------------------"

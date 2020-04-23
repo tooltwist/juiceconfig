@@ -70,7 +70,7 @@ async function checkConnection() {
 			return resolve(connection);
 		});
 
-	})
+	})//- Promise
 }
 
 export default {
