@@ -52,46 +52,13 @@ div
           .control
           button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
 
-          
-          //- div.form-group
-          //-   div(v-if="mode === 'display'")
-          //-     table(style="width:100%")
-          //-       tr 
-          //-         td(style="justify:right;") 
-          //-           label Name:
-          //-         td(style="justify:left;")
-          //-           | {{ deployable.name }}
-          //-       tr
-          //-         td(style="justify:right;")
-          //-           label(for='type') Type:
-          //-         td(style="justify:left;")
-          //-           | {{deployable.type}}
-          //-       tr
-          //-         td(style="justify:right;")
-          //-           label(for='product_owner') Product Owner:
-          //-         td(style="justify:left;")
-          //-           | {{deployable.product_owner}}
-          //-       tr
-          //-         td(style="justify:right;")
-          //-           label(for='description') Description: 
-          //-         td(style="justify:left;")
-          //-           | {{deployable.description}}
-          //-       tr
-          //-         td(style="justify:right;")
-          //-           label(for='is_project') Is this a project? 
-          //-         td(style="justify:left;")
-          //-           | {{ yesnoFilter }}
-          //-     br
-          //-     div(v-if="isEditable")
-          //-       b-button.stop(@click="setEditMode", type="is-primary is-outlined is-light", size="is-small")  Edit
-
       b-tab-item(label="Variables")
         // Variables
         h1.is-title.is-size-4(style="text-align:left;") Variables
           div.buttons(style="float:right;")
             div(v-if="isEditable")
               button.button.is-primary(@click.prevent="newVariable(variables)", type="is-light")  + Add New Variable
-        br
+        br 
         div(v-if="this.variables.length === 0")
           br
           article.message.is-success.is-small
@@ -125,7 +92,7 @@ div
           div.buttons(style="float:right;")
             div(v-if="isEditable")
               button.button.is-primary(@click.prevent="newDeployment(deployments)",  type="is-light")  + Add New Deployment
-        br
+        br 
         div(v-if="this.deployments.length === 0")
           br
           article.message.is-success.is-small
@@ -195,37 +162,122 @@ div
                   a(href="", @click.prevent="editUser(props.row)")
                     b-icon(icon="circle-edit-outline")
 
-  // Edit Deployable details MODAL
-  div(v-show="editDeployableStatus == 'edit'")
+      b-tab-item(label="Versions")     
+        b-button.is-success(@click.prevent="newVersion()", style="float:right;") Create new version
+        br
+        br
+        b-table(:data="versions", focusable)
+            template(slot-scope="props")
+              b-table-column(field="version", label="Version")
+                | {{ props.row.version }}
+              b-table-column(field="build_no", label="Build #")
+                |  {{ props.row.build_no }}
+              b-table-column(field="registration_time", label="Registration Time")
+                |  {{ props.row.registration_time }}
+              b-table-column(field="registration_source", label="Registration Source")
+                | {{ props.row.registration_source }}
+              b-table-column(field="registered_by", label="Registered By")
+                | {{ props.row.registered_by}}
+
+      b-tab-item(label="Tokens")       
+        b-button.is-success(@click.prevent="newToken()", style="float:right;") Generate a random token
+        br
+        br
+        b-table(:data="tokens", focusable)
+          template(slot-scope="props")
+            b-table-column(field="id", label="ID")
+              | {{ props.row.id }}
+            b-table-column(field="token_type", label="Token Type")
+              |  {{ props.row.token_type }}
+            b-table-column(field="creation_time", label="Created")
+              |  {{ props.row.creation_time }}
+            b-table-column(field="expiry_time", label="Expires")
+              | {{ props.row.expiry_time }}
+            b-table-column(field="status", label="Status")
+              | {{ props.row.status }}
+            b-table-column(field="environment_name", label="Environment Name")
+              | {{ props.row.environment_name }}
+            b-table-column(field="environment_owner", label="Environment Owner")
+              | {{ props.row.environment_owner }}
+
+  // New Token Modal starts below:
+  div(v-show="newTokenModal")
     transition(name="modal")
       div.modal-mask
         div.modal-wrapper
           div.modal-card
             header.modal-card-head
-              p.modal-card-title Edit Deployable 
-                b {{ deployableName }}
+              p.modal-card-title Create a new token
             section.modal-card-body
               slot(name="body")
+                div(v-if="errormode === 'inputError'")
+                  article.message.is-danger.is-small
+                    div.message-header
+                      p Form Error
+                    div.message-body Please ensure that all necessary fields have values before saving.
                 form
                   div.form-group
-                    div.formStyle Edit product owner:
+                    div.formStyle Application Name: {{deployableName}}
+                    div.formStyle Token Type:
+                      b-select(placeholder="Token Type", v-model="form.new_token_type", value="new_token_type")
+                        option(value="approve") Approve
+                        option(value="approve_deploy") Approve and Deploy 
+                        option(value="deploy") Deploy
+                        option(value="downgrade") Downgrade 
+                        option(value="registration") Registration
+                    div.formStyle Expiry time:
                       div.control
-                        input.input(name="product_owner", v-model="form.new_owner", type="text", value="product_owner", placeholder="Product Owners Name")
-                    div.formStyle Edit description:
-                      div.control
-                        input.input(name="description", v-model="form.new_description", type="text", value="description", placeholder="Description")
-                    div.formStyle Edit type:
-                      div.control
-                        input.input(name="type", v-model="form.new_type", type="text", value="type", placeholder="Type")
-                    div.formStyle Edit is this a project?
-                      div.control
-                        b-select(placeholder="Is this a project?", v-model="form.new_is_project", value="is_project") Is this deployable a project?:
-                          option(value="1") Yes
-                          option(value="0") No
-            footer.modal-card-foot  
+                        input.input(v-model="form.new_token_expiry", type="datetime-local", value="expiry_time", placeholder="Expiry")  
+                    
+                    // add a check box here
+                    br
+                    div.formStyle This token requires an environment specified    
+                      input(type="checkbox", @click="showEnvironmentsToken()") 
+                    div(v-if="showEnvironmentToken")
+                      div.formStyle Environment name:
+                        b-select(placeholder="Environment", v-model="form.new_token_environment_name")
+                          option(v-for="environment in environments") {{ environment.name }}  
+            footer.modal-card-foot
               div.control
-                b-button(@click.stop="saveDeployable", type="is-primary is-light", size="is-small")  Save    
-                b-button(@click="editDeployableStatus='null'", type="is-danger is-outlined", size="is-small") Cancel
+                b-button(@click.stop="saveNewToken", type="is-primary is-light", size="is-small")  Save    
+                b-button(@click="newTokenModal=false", type="is-danger is-outlined", size="is-small") Cancel
+
+
+  // New Version Modal starts below:
+  div(v-show="newVersionModal")
+    transition(name="modal")
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Create a new version
+            section.modal-card-body
+              slot(name="body")
+                div(v-if="errormode === 'inputError'")
+                  article.message.is-danger.is-small
+                    div.message-header
+                      p Form Error
+                    div.message-body Please ensure that all necessary fields have values before saving.
+                form
+                  div.form-group
+                    div.formStyle Deployable Name: {{deployableName}}
+                    div.formStyle Deployable owner: {{deployable.owner}} 
+                    div.formStyle Version #:
+                      div.control
+                        input.input(v-model="form.new_version_hash", type="text", value="version", placeholder="Version")  
+                    div.formStyle Build no.: 
+                      div.control
+                        input.input(v-model="form.new_version_build_no", type="text", value="build_no")
+                    div.formStyle Registration source:
+                      div.control 
+                        input.input(v-model="form.new_version_registration_source", type="text", value="registration_source")
+                    div.formStyle Registered by:
+                      div.control
+                        input.input(v-model="form.new_version_registered_by", type="text", value="registered_by") 
+            footer.modal-card-foot
+              div.control
+                b-button(@click.stop="saveNewVersion", type="is-primary is-light", size="is-small")  Save    
+                b-button(@click="newVersionModal=false", type="is-danger is-outlined", size="is-small") Cancel
   
   // Edit Variable Modal starts below:
   div(v-show="showModal")
@@ -363,12 +415,11 @@ div
                 slot(name="body")
                     form
                       div.form-group
-                        div.formStyle Child: 
-                          div.control
-                            div(v-if="dependencyError === null")
-                              input.input(name="new_child", v-model="form.new_child", type="text", placeholder="Dependent Child")
-                            div(v-else="dependencyError === `Dependency already exists`")
-                              input.input(name="new_child", v-model="form.new_child", type="text", placeholder="Dependent Child")
+                        div.formStyle Child:
+                          div.control 
+                            b-select(placeholder="Child", v-model="form.new_child")
+                              option(v-for="deployable in deployables") {{ deployable.name }} 
+                            div(v-if="dependencyError === `Dependency already exists`")
                               p.help.is-danger {{ deployableName }} already has a dependency with this child.
                         div.formStyle Prefix: 
                           div.control
@@ -499,6 +550,17 @@ export default {
         // Edit existing user
         edit_useraccess: '',
         editmodal_userid: '',
+
+        // Add a new token
+        new_token_type: '',
+        new_token_environment_name: '',
+        new_token_expiry: '',
+
+        // Add a new version
+        new_version_registered_by: '',
+        new_version_hash: '',
+        new_version_build_no: '',
+        new_version_registration_source: '',
       },
       editingDetails: false,
 
@@ -507,7 +569,6 @@ export default {
       description: '',
       is_project: '',
       deployableName: '',
-      mode: 'display',
 
       activeTab: 0,
       deployments: [ ],
@@ -515,8 +576,11 @@ export default {
       environments: [ ],
       users: [ ],
       allUsers: [ ],
+      versions: [ ],
+      tokens: [ ],
       currentUser: [ ],
       deployable: '',
+      deployables: [ ],
       project: null, 
       newUserError: null,
       editDeployableStatus: null,
@@ -527,11 +591,20 @@ export default {
       output: '',
       errormode: false,
 
+      // Show environments option in token modal
+      showEnvironmentToken: false,
+
       // Modal data for editing existing user
       showUserEditModal: false,
 
       // Modal data for new user
       newUserModal: false,
+
+      // Modal for new token
+      newTokenModal: false,
+
+      // Modal for new version
+      newVersionModal: false,
 
       // Modal data for adding dependency
       newDependencyModal: false,
@@ -721,6 +794,96 @@ export default {
       }
     }, // - saveNewUser
 
+    // ADD A NEW TOKEN FOR DEPLOYABLE - FROM MODAL 
+    async saveNewToken() {
+      console.log(`saveNewToken(): `)
+      //Check that form is filled correctly
+      if (this.form.new_token_type && this.form.new_token_expiry) {
+        // Send post request to server
+        try {
+          let url = standardStuff.apiURL('/newToken')
+
+          if (this.showEnvironmentToken === false) {
+            this.form.new_token_environment_name = 'NULL';
+            this.form.new_token_environment_owner = 'NULL';
+          } else { // find environment owner based on name
+            let i = 0;
+            let ownerName = 'NULL';
+            this.environments.forEach(environment => { // set environment owner 
+                if (environment.name === this.form.new_token_environment_name) {
+                  ownerName = environment.owner
+                }
+              }
+            );
+
+            this.form.new_token_environment_owner = ownerName;
+          }
+
+          let record = {
+            token_type: this.form.new_token_type,
+            token_expiry: this.form.new_token_expiry,
+            application_name: this.deployableName,
+            environment_name: this.form.new_token_environment_name,
+            environment_owner: this.form.new_token_environment_owner
+          }
+
+          let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+          await axios.post(url, record, config)
+          this.newTokenModal = false
+          console.log(`New token request successfully sent to database`);
+        } catch (e) {
+          console.log(`Error while sending new token request to the database: `, e)
+        }
+
+        // Once data sent, reload table with the new token
+        try {
+          this.reloadTokens(); 
+          console.log(`Reloading...`)
+        } catch (e) {
+          console.log(`Error while reloading tokens on the browser: `, e)
+        }
+      } else {
+        this.errormode = 'inputError'
+      }
+    }, // - saveNewToken
+
+    // ADD A NEW VERSION FOR DEPLOYABLE - FROM MODAL 
+    async saveNewVersion() {
+      console.log(`saveNewVersion(): `)
+      //Check that form is filled correctly
+      if (this.form.new_version_hash && this.form.new_version_build_no && this.form.new_version_registration_source && this.form.new_version_registered_by) {
+        // Send post request to server
+        try {
+          let url = standardStuff.apiURL('/newVersion')
+          let record = {
+            version: this.form.new_version_hash,
+            build_no: this.form.new_version_build_no,
+            registration_source: this.form.new_version_registration_source,
+            registered_by: this.form.new_version_registered_by,
+            deployable_name: this.deployableName,
+            deployable_owner: this.deployable.owner,
+          }
+          let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+          await axios.post(url, record, config)
+          this.newVersionModal = false
+          console.log(`New version request successfully sent to server`);
+        } catch (e) {
+          console.log(`Error while sending new version request to the server: `, e)
+        }
+
+        // Once data sent, reload table with the new version
+        try {
+          this.reloadVersions(); 
+          console.log(`Reloading...`)
+        } catch (e) {
+          console.log(`Error while reloading versions on the browser: `, e)
+        }
+      } else {
+        this.errormode = 'inputError'
+      }
+    }, // - saveNewVersion
+    
+    // SAVE EDITED USER
     async saveEditedUser() {
       try {
         let url = standardStuff.apiURL('/editUser')
@@ -921,6 +1084,40 @@ export default {
       };
     },  // -reloadUsers
 
+    // RELOAD THE DATABASE TABLE AFTER SAVING A NEW TOKEN
+    async reloadTokens() {
+      const url = standardStuff.apiURL('/tokens')
+      const params = {
+          params: { 
+            deployableName: this.deployableName
+          }
+      }
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+      let result = await axios.get(url, params, config)
+      console.log(`API returned`, result.data);
+      this.tokens = result.data.tokens
+      return {
+        tokens: this.tokens
+      };
+    },  // -reloadTokens
+
+    // RELOAD THE DATABASE TABLE AFTER SAVING A NEW VERSION
+    async reloadVersions() {
+      const url = standardStuff.apiURL('/versions')
+      const params = {
+        params: { 
+          deployableName: this.deployableName
+        }
+      }
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+      let result = await axios.get(url, params, config)
+      console.log(`API returned`, result.data);
+      this.versions = result.data.versions
+      return {
+        versions: this.versions
+      };
+    },  // -reloadVersions
+
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW DEPLOYMENT
     async reloadDeployments() {
       const url = standardStuff.apiURL('/envDeployments')
@@ -1000,7 +1197,40 @@ export default {
     newUser() {
       this.newUserModal = true;
       return false
+    }, // -newUser
+
+    // OPEN MODAL FOR CREATE NEW TOKEN
+    newToken() {
+      this.newTokenModal = true;
+      return false;
+    }, // -newToken
+
+    showEnvironmentsToken() {
+      if (this.showEnvironmentToken === true) {
+        this.showEnvironmentToken = false;
+      } else {
+        this.showEnvironmentToken = true;
+      }
+      
+      return false;
     },
+
+    // OPEN MODAL FOR CREATE NEW VERSION
+    newVersion() {
+      this.newVersionModal = true;
+      this.form.new_version_registered_by = this.currentUser[0].username;
+      this.form.new_version_registration_source = 'Juice';
+      if (this.versions == 0) {
+        this.form.new_version_build_no = 1;
+      } else {
+        let lastbuild = this.versions[this.versions.length - 1].build_no;
+        let buildno = lastbuild;
+        buildno++;
+        this.form.new_version_build_no = buildno;
+      }
+      
+      return false;
+    }, // -newVersion
 
     // OPEN MODAL AND CREATE NEW DEPENDENCY 
     newDependency(variable) {
@@ -1067,6 +1297,7 @@ export default {
       console.log(`Calling ${url6}`);
       console.log(`config = `, config)
       let res6 = await axios.get(url6, config)
+      console.log(`API6 returned`, res6.data);
   
       const environments = res6.data.environments
 
@@ -1084,9 +1315,28 @@ export default {
       const currentUser = res8.data.user
       console.log('currentUser: ', currentUser)
 
+      // Import all versions for this deployable
+      const url9 = standardStuff.apiURL('/versions')
+      let res9 = await axios.get(url9, params, config)
+      console.log(`API9 returned`, res9.data);
+      const versions = res9.data.versions
+
+      // Import all tokens for this deployable
+      const url10 = standardStuff.apiURL('/tokens')
+      let res10 = await axios.get(url10, params, config)
+      console.log(`API10 returned`, res10.data);
+      const tokens = res10.data.tokens
+
+      // Import all deployables for dependency modal
+      const url11 = standardStuff.apiURL('/deployables')
+      let res11 = await axios.get(url11, config)
+      console.log(`API11 returned`, res11.data);
+      const deployables = res11.data.deployables
+
       return {
         deployableName: deployableName,
         deployable: deployable,
+        deployables: deployables,
         variables: variables,
         deployments: deployments, 
         users: users,
@@ -1094,6 +1344,8 @@ export default {
         environments: environments,
         dependencies: dependencies,
         currentUser: currentUser,
+        versions: versions,
+        tokens: tokens,
       }
     } catch (e) {
       console.log(`Could not fetch project:`, e)

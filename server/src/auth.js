@@ -171,7 +171,7 @@ export default async (req, res, next) => {
 
     console.log(`(((`)
     console.log(`auth middleware`);
-    // console.log(`authorization=`, authorization);
+    console.log(`authorization=`, authorization);
     console.log(`)))`);
     // next()
     // return
