@@ -135,7 +135,7 @@ export default {
         
             let deployableName = req.query.deployableName
             let con = await db.checkConnection()
-            const sql = `SELECT * from token where application_name=?`
+            const sql = `SELECT * from token where deployable_name =?`
             const params = [ deployableName ]
         
             con.query(sql, params, function (err, result) {
@@ -145,6 +145,7 @@ export default {
             });
         });
 
+        // Create a randomly generated token 
         const {performance} = require('perf_hooks');
         function generateUUID () {
             var d = new Date().getTime()
@@ -152,7 +153,7 @@ export default {
               d += performance.now()
             }
             
-            var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var uuid = 'xxxxxxxx-xxxx-4xxx'.replace(/[xy]/g, function (c) { 
               var r = (d + Math.random() * 16) % 16 | 0
               d = Math.floor(d / 16)
               return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16)
@@ -168,7 +169,7 @@ export default {
             let id = generateUUID();
         
             let con = await db.checkConnection()
-            const tokenValues = {id: id, token_type: req.params.token_type, expiry_time: req.params.token_expiry, environment_owner: req.params.environment_owner, environment_name: req.params.environment_name, application_name: req.params.application_name}
+            const tokenValues = {id: id, token_type: req.params.token_type, environment_owner: req.params.environment_owner, environment_name: req.params.environment_name, deployable_name: req.params.deployable_name, deployable_owner: req.params.deployable_owner}
             let sql = `INSERT INTO token SET ?`
             let params = [ tokenValues ]
         

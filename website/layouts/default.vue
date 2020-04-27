@@ -1,7 +1,7 @@
 <template lang="pug">
 div
   nav.headerStyle.navbar.mobileStyle(role="navigation" aria-label="main navigation")
-    div.navbar-brand.juiceHeaderLogo
+    div.navbar-brand.juiceHeaderLogo.mobile
       a.navbar-item.linkStyle(href="/")
         img.juiceHeadStyle(src="../assets/header-logo.png") 
     //- v-if(class="mobile")
@@ -11,7 +11,7 @@ div
     //a(class="navbar-item", href="/")
         .juiceLogo Juice.
 
-    div.navbar-end
+    div.navbar-end.mobileStyle
       b-navbar-item(href="https://juiceconfig.io", target="_blank") Docs
       div.seperatorStyle.mobile(v-if="loggedIn", separator="true", custom="true") | 
       b-dropdown(v-if="loggedIn", position="is-bottom-left", aria-role="menu")
@@ -164,7 +164,10 @@ export default {
     }
     div.mobileStyle {
       display: flex;
-      justify-content: space-evenly;
+      padding: 5px;
+      margin: 0px;
+      //justify-content: space-evenly;
+      float: right;
     }
   }
 

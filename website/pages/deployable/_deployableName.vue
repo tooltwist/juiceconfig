@@ -227,8 +227,6 @@ div
               |  {{ props.row.token_type }}
             b-table-column(field="creation_time", label="Created")
               |  {{ props.row.creation_time }}
-            b-table-column(field="expiry_time", label="Expires")
-              | {{ props.row.expiry_time }}
             b-table-column(field="status", label="Status")
               | {{ props.row.status }}
             b-table-column(field="environment_name", label="Environment Name")
@@ -261,18 +259,13 @@ div
                         option(value="deploy") Deploy
                         option(value="downgrade") Downgrade 
                         option(value="registration") Registration
-                    div.formStyle Expiry time:
-                      div.control
-                        input.input(v-model="form.new_token_expiry", type="datetime-local", value="expiry_time", placeholder="Expiry")  
-                    
-                    // add a check box here
-                    br
-                    div.formStyle This token requires an environment specified    
-                      input(type="checkbox", @click="showEnvironmentsToken()") 
-                    div(v-if="showEnvironmentToken")
-                      div.formStyle Environment name:
-                        b-select(placeholder="Environment", v-model="form.new_token_environment_name")
-                          option(v-for="environment in environments") {{ environment.name }}  
+                    div.formStyle(v-if="form.new_token_type === 'deploy' || 'approve_deploy' || 'downgrade'")
+                      div.formStyle This token requires an environment specified    
+                        input(type="checkbox", @click="showEnvironmentsToken()") 
+                      div(v-if="showEnvironmentToken")
+                        div.formStyle Environment name:
+                          b-select(placeholder="Environment", v-model="form.new_token_environment_name")
+                            option(v-for="environment in environments") {{ environment.name }}  
             footer.modal-card-foot
               div.control
                 b-button(@click.stop="saveNewToken", type="is-primary is-light", size="is-small")  Save    
@@ -646,7 +639,6 @@ export default {
         // Add a new token
         new_token_type: '',
         new_token_environment_name: '',
-        new_token_expiry: '',
 
         // Add a new version
         new_version_registered_by: '',
@@ -903,7 +895,7 @@ export default {
     async saveNewToken() {
       console.log(`saveNewToken(): `)
       //Check that form is filled correctly
-      if (this.form.new_token_type && this.form.new_token_expiry) {
+      if (this.form.new_token_type) {
         // Send post request to server
         try {
           let url = standardStuff.apiURL('/newToken')
@@ -926,8 +918,8 @@ export default {
 
           let record = {
             token_type: this.form.new_token_type,
-            token_expiry: this.form.new_token_expiry,
-            application_name: this.deployableName,
+            deployable_name: this.deployableName,
+            deployable_owner: this.deployable.owner,
             environment_name: this.form.new_token_environment_name,
             environment_owner: this.form.new_token_environment_owner
           }
