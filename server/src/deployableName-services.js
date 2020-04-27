@@ -130,13 +130,17 @@ export default {
         });
 
         // Dynamically select TOKENS for /_deployableNAME from MySQL db
-        server.get('/api/tokens', async (req, res, next) => {
-            console.log(`GET /tokens`);
+        server.get('/api/tokens/:deployable', async (req, res, next) => {
+            console.log(`GET /api/tokens:deployable`);
+
+            console.log(`deployable=`, req.params.deployable);
+
+            let { owner:deployableOwner, name:deployableName } = misc.splitOwnerName(req.params.deployable)
         
-            let deployableName = req.query.deployableName
+            // let deployableName = req.query.deployableName
             let con = await db.checkConnection()
-            const sql = `SELECT * from token where deployable_name =?`
-            const params = [ deployableName ]
+            const sql = `SELECT * FROM token WHERE deployable_owner=? AND deployable_name=?`
+            const params = [ deployableOwner, deployableName ]
         
             con.query(sql, params, function (err, result) {
                 if (err) throw err;
@@ -163,16 +167,30 @@ export default {
         }
 
         // Add a NEW TOKEN to the db token from /_deployableNAME
-        server.post('/api/newToken', async (req, res, next) => {
-            console.log(`POST /newToken`)
+        server.post('/api/token', async (req, res, next) => {
+            console.log(`POST /token`)
 
-            let id = generateUUID();
+            const id = generateUUID();
         
-            let con = await db.checkConnection()
-            const tokenValues = {id: id, token_type: req.params.token_type, environment_owner: req.params.environment_owner, environment_name: req.params.environment_name, deployable_name: req.params.deployable_name, deployable_owner: req.params.deployable_owner}
+            const tokenValues = {
+                id: id,
+                token_type: req.params.token_type,
+                deployable_name: req.params.deployable_name,
+                deployable_owner: req.params.deployable_owner,
+            }
+            if (req.params.target_environment_owner) {
+                target_environment_owner: req.params.target_environment_owner
+            }
+            if (req.params.target_environment_name) {
+                target_environment_name: req.params.target_environment_name
+            }
+            if (req.params.target_application_name) {
+                target_application_name: req.params.target_application_name
+            }
+            
             let sql = `INSERT INTO token SET ?`
             let params = [ tokenValues ]
-        
+            let con = await db.checkConnection()
             con.query( sql, params, (err, result) => {
                 if (err) throw err;
 

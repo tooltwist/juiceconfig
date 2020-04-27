@@ -253,19 +253,22 @@ div
                   div.form-group
                     div.formStyle Application Name: {{deployableName}}
                     div.formStyle Token Type:
-                      b-select(placeholder="Token Type", v-model="form.new_token_type", value="new_token_type")
+                      b-select(placeholder="Token Type", v-model="form.new_token_type")
+                        option(value="registration") Registration
                         option(value="approve") Approve
                         option(value="approve_deploy") Approve and Deploy 
                         option(value="deploy") Deploy
                         option(value="downgrade") Downgrade 
-                        option(value="registration") Registration
                     div.formStyle(v-if="form.new_token_type === 'deploy' || 'approve_deploy' || 'downgrade'")
                       div.formStyle This token requires an environment specified    
                         input(type="checkbox", @click="showEnvironmentsToken()") 
                       div(v-if="showEnvironmentToken")
                         div.formStyle Environment name:
-                          b-select(placeholder="Environment", v-model="form.new_token_environment_name")
-                            option(v-for="environment in environments") {{ environment.name }}  
+                          b-select(placeholder="Deployment", v-model="form.new_token_deployment")
+                            option(v-for="deployment in deployments", :value="deployment")
+                              | {{deployment.environment_owner}}:
+                              b {{deployment.environment}}
+                              | {{(deployment.application_name==deployment.deployable) ? '' : ` - ${deployment.application_name}`}}  
             footer.modal-card-foot
               div.control
                 b-button(@click.stop="saveNewToken", type="is-primary is-light", size="is-small")  Save    
@@ -637,8 +640,9 @@ export default {
         editmodal_userid: '',
 
         // Add a new token
-        new_token_type: '',
-        new_token_environment_name: '',
+        new_token_type: 'registration',
+        new_token_environment_name: '',//ZZZ unused now
+        new_token_deployment: null,
 
         // Add a new version
         new_version_registered_by: '',
@@ -898,32 +902,36 @@ export default {
       if (this.form.new_token_type) {
         // Send post request to server
         try {
-          let url = standardStuff.apiURL('/newToken')
 
-          if (this.showEnvironmentToken === false) {
-            this.form.new_token_environment_name = 'NULL';
-            this.form.new_token_environment_owner = 'NULL';
-          } else { // find environment owner based on name
-            let i = 0;
-            let ownerName = 'NULL';
-            this.environments.forEach(environment => { // set environment owner 
-                if (environment.name === this.form.new_token_environment_name) {
-                  ownerName = environment.owner
-                }
-              }
-            );
+          // if (this.showEnvironmentToken === false) {
+          //   this.form.new_token_environment_name = 'NULL';
+          //   this.form.new_token_environment_owner = 'NULL';
+          // } else { // find environment owner based on name
+          //   let i = 0;
+          //   let ownerName = 'NULL';
+          //   this.environments.forEach(environment => { // set environment owner 
+          //       if (environment.name === this.form.new_token_environment_name) {
+          //         ownerName = environment.owner
+          //       }
+          //     }
+          //   );
 
-            this.form.new_token_environment_owner = ownerName;
-          }
+          //   this.form.new_token_environment_owner = ownerName;
+          // }
+          console.log(`this.form=`, this.form.new_token_deployment);
 
           let record = {
             token_type: this.form.new_token_type,
-            deployable_name: this.deployableName,
             deployable_owner: this.deployable.owner,
-            environment_name: this.form.new_token_environment_name,
-            environment_owner: this.form.new_token_environment_owner
+            deployable_name: this.deployableName,
           }
-
+          if (this.form.new_token_deployment) {
+            record.target_environment_owner = this.form.new_token_deployment.environment_owner
+            record.target_environment_name = this.form.new_token_deployment.environment_name
+            record.target_application_name = this.form.new_token_deployment.application_name
+          }
+console.log(`record is`, record);
+          let url = standardStuff.apiURL('/token')
           let config = standardStuff.axiosConfig(this.$loginservice.jwt)
           await axios.post(url, record, config)
           this.newTokenModal = false
@@ -1181,14 +1189,16 @@ export default {
 
     // RELOAD THE DATABASE TABLE AFTER SAVING A NEW TOKEN
     async reloadTokens() {
-      const url = standardStuff.apiURL('/tokens')
-      const params = {
-          params: { 
-            deployableName: this.deployableName
-          }
-      }
+      const url = standardStuff.apiURL(`/tokens/${this.deployableOwner}:${this.deployableName}`)
+      console.log(`YYYY AAA RRR PP`, url);
+      // const params = {
+      //     params: { 
+      //       deployableName: this.deployableName
+      //     }
+      // }
       const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-      let result = await axios.get(url, params, config)
+      let result = await axios.get(url, config)
+      // let result = await axios.get(url, params, config)
       console.log(`API returned`, result.data);
       this.tokens = result.data.tokens
       return {
@@ -1653,8 +1663,9 @@ console.log(`index after scanning:`, JSON.stringify(index, '', 2));
       const versions = res9.data.versions
 
       // Import all tokens for this deployable
-      const url10 = standardStuff.apiURL('/tokens')
-      let res10 = await axios.get(url10, params, config)
+      const url10 = standardStuff.apiURL(`/tokens/${deployableOwner}:${deployableName}`)
+      let res10 = await axios.get(url10, config)
+      // let res10 = await axios.get(url10, params, config)
       console.log(`API10 returned`, res10.data);
       const tokens = res10.data.tokens
 
