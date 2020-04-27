@@ -21,7 +21,7 @@ div
               .field-body
                 .field
                   .control
-                    select.select(v-model="deployable.type", :disabled="!editingDetails")
+                    select.select(v-model="deployable.type", :disabled="!editingDetails", @input="saveDetails")
                       option(value="project") Project
                       option(value="non project") Non project
             .field.is-horizontal
@@ -46,7 +46,7 @@ div
               .field-body
                 .field
                   .control
-                    select.select(v-model="deployable.type", :disabled="!editingDetails")
+                    select.select(v-model="deployable.type", :disabled="!editingDetails", @input="saveDetails")
                       option(value="project") Project
                       option(value="non project") Non project
           .control
@@ -57,7 +57,9 @@ div
         h1.is-title.is-size-4(style="text-align:left;") Variables
           div.buttons(style="float:right;")
             div(v-if="isEditable")
-              button.button.is-primary(@click.prevent="newVariable(variables)", type="is-light")  + Add New Variable
+              button.button.is-primary(v-if="variables.length>0", @click="editingDetails= !editingDetails") {{editingDetails?'Done':'Edit'}}
+              button.button.is-light(@click.prevent="showLearnVariablesDialog")  Learn Variables
+              button.button.is-primary(@click.prevent="newVariable(variables)")  + Add New Variable
         br 
         div(v-if="this.variables.length === 0")
           br
@@ -66,25 +68,59 @@ div
               | There are no variables for this deployable yet. Would you like to add a 
               a(href="" @click.prevent="newVariable(variables)") new variable?
         div(v-else)
-          b-table(:data="variables", focusable)
-            template(slot-scope="props")
-              b-table-column(field="name", label="Name")
-                | {{ props.row.name }}
-              b-table-column(field="description", label="Description")
-                |  {{ props.row.description }}
-              b-table-column(field="type", label="Type")
-                |  {{ props.row.type }}
-              b-table-column(field="mandatory", label="Mandatory")
-                | {{ props.row.mandatory | yesno }}
-              b-table-column(field="is_external", label="Is external?")
-                | {{ props.row.is_external | yesno }}
-              b-table-column(field="", label="")
-                div(v-if="isEditable")
-                  a(href="", @click.prevent="editVariable(props.row)")
-                    b-icon(icon="circle-edit-outline")
+          br
+          table.table.my-variable-table(:data="variables", focusable)
+            tr.is-size-7
+              th(colspan="2")
+                | Name
+                br
+                span.is-light(style="padding-left:20px;") Example
+              th Type
+              th.has-text-centered Mandatory
+              th.has-text-centered External
+              th.has-text-centered Sensitive
+              th Description
+              th
+            template(v-for="variable in variables")
+              tr.is-size-7.my-variable-line-1
+                td(colspan="2")
+                  input.my-name-input(v-if="editingDetails", v-model="variable.name", @input="updateVariable(variable)")
+                  span(v-else) {{ variable.name }} ({{variable._name}})
+                td
+                  select.selectZ.is-size-7(v-if="editingDetails", v-model="variable.type", @input="updateVariable(variable)")
+                    option(value="string") String
+                    option(value="number") Number
+                  //- input(v-if="editingDetails", v-model="variable.type", @input="updateVariable(variable)")
+                  span(v-else) {{ variable.type }}
+                td.has-text-centered
+                  input(v-if="editingDetails", type="checkbox", v-model="variable.mandatory", @input="updateVariable(variable)")
+                  input.checkbox(v-else, type="checkbox", v-model="variable.mandatory", disabled="true")
+                td.has-text-centered
+                  input(v-if="editingDetails", type="checkbox", v-model="variable.is_external", @input="updateVariable(variable)")
+                  input.checkbox(v-else, type="checkbox", v-model="variable.is_external", disabled="true")
+                td.has-text-centered
+                  input(v-if="editingDetails", type="checkbox", v-model="variable.is_sensitive", @input="updateVariable(variable)")
+                  input.checkbox(v-else, type="checkbox", v-model="variable.is_sensitive", disabled="true")
+                td
+                  input(v-if="editingDetails", v-model="variable.description", @input="updateVariable(variable)")
+                  span(v-else) {{ variable.description }}
+                td
+                  | X
+                //- b-table-column(field="example", label="Example")
+                //- b-table-column(field="type", label="Type")
+                //- b-table-column(field="", label="")
+                  div(v-if="isEditable")
+                    a(href="", @click.prevent="editVariable(props.row)")
+                      b-icon(icon="circle-edit-outline")
+              tr.is-size-7.my-variable-line-2(v-if="variable.example", @input="updateVariable(variable)")
+                td(style="width:20px;")
+                td(colspan=7)
+                  input.my-example-input(v-if="editingDetails", v-model="variable.example")
+                  span(v-else) {{ variable.example }}
           //- modal(v-if="showModal", @close="showModal = false")
             h3(slot="header") Edit Variable
             button.button(@click="showModal=false") Hide
+          button.button.is-size-small(@click="editingDetails= !editingDetails") {{editingDetails?'Done':'Edit'}}
 
       b-tab-item(label="Deployments")
         // Deployments
@@ -244,7 +280,7 @@ div
 
 
   // New Version Modal starts below:
-  div(v-show="newVersionModal")
+  div(v-show="modalMode==='newVersion'")
     transition(name="modal")
       div.modal-mask
         div.modal-wrapper
@@ -277,7 +313,63 @@ div
             footer.modal-card-foot
               div.control
                 b-button(@click.stop="saveNewVersion", type="is-primary is-light", size="is-small")  Save    
-                b-button(@click="newVersionModal=false", type="is-danger is-outlined", size="is-small") Cancel
+                b-button(@click="modalMode='none'", type="is-danger is-outlined", size="is-small") Cancel
+
+  // Modal to import variables from example JSON:
+  div(v-show="modalMode==='learnVariables'")
+    transition(name="modal")
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Learn variables from example config (JSON)
+            section.modal-card-body
+              slot(name="body")
+                div(v-if="errormode === 'inputError'")
+                  article.message.is-danger.is-small
+                    div.message-header
+                      p Form Error
+                    div.message-body Please ensure that all necessary fields have values before saving.
+                form
+                  textarea.textarea.is-size-7(v-model="importJSON", @input.stop="scanJson", placeholder="Paste JSON here")
+
+                  div(v-if="importJSON.trim() === ''")
+                    br
+                    b-notification(:closable="false")
+                      .is-size-6 To copy a json file into the buffer:
+                      .my-bash $ pbcopy &lt;&nbsp;
+                        b config.json
+                      br
+                      .is-size-6 To copy a javascript file into the buffer:
+                      .my-bash $ node -e 'console.log(JSON.stringify(require("
+                        b ./config.js
+                        |"),"",2))' | pbcopy
+                      br
+                      .is-size-6 (Replace config.json or config.js with your config file)
+                  div(v-else-if="jsonError")
+                    | {{jsonError}}
+                  div(v-else-if="importVariables.length > 0")
+                    br
+                    table.my-table.is-small.is-size-7
+                      tr
+                        th
+                          input(type="checkbox", v-model="selectAllImports", @change="toggleImports")
+                        th Op
+                        th Name
+                      tr(v-for="v in importVariables")
+                        td(style="padding-right:10px;")
+                          label.checkbox(v-model="v.op")
+                            input(type="checkbox", v-model="v.accept")
+                        td(style="padding-right:10px;")
+                            | {{v.op}}
+                        td(style="padding-right:10px;")
+                          | {{v.name}}
+                        td(style="padding-right:10px;")
+                          | {{v.example}}
+            footer.modal-card-foot
+              div.control
+                b-button.is-small(@click.stop="updateVariablesFromImport", type="is-primary is-light", :disabled="importVariables.length < 1") Update    
+                b-button.is-small(@click="modalMode='none'", type="is-danger is-outlined") Cancel
   
   // Edit Variable Modal starts below:
   div(v-show="showModal")
@@ -562,7 +654,6 @@ export default {
         new_version_build_no: '',
         new_version_registration_source: '',
       },
-      editingDetails: false,
 
       // Editing deployables existing values
       product_owner: '',
@@ -604,7 +695,15 @@ export default {
       newTokenModal: false,
 
       // Modal for new version
-      newVersionModal: false,
+      modalMode: 'none', // none|newVersion|importJson|newUser|userEdit|newToken|newDependancy
+
+      // edit details
+      editingDetails: false,
+
+      importJSON: '',
+      jsonError: '',
+      importVariables: [ ],
+      selectAllImports: false,
 
       // Modal data for adding dependency
       newDependencyModal: false,
@@ -621,8 +720,12 @@ export default {
       variable_description: '',
       variable_type: '',
       variable_mandatory: '',
+
+      // Variables waiting to be saved, with setTimeout delay
+      // variableName => { timer, variable }
+      saveVariableTimers: { },
     }
-  },
+  },//- data
   
   computed: {
     yesnoFilter: function() {
@@ -641,7 +744,8 @@ export default {
        } else {
          return false
        }
-    }
+    },
+
   },
 
   methods: {
@@ -716,11 +820,12 @@ export default {
         try {
           let url = standardStuff.apiURL('/newVariable')
           let record = {
+            deployable_owner: this.deployableOwner,
+            deployable_name: this.deployableName,
             name: this.form.variable_name,
             description: this.form.variable_description,
             type: this.form.variable_type,
             mandatory: this.form.variable_mandatory,
-            deployable: this.deployableName,
             external: this.form.variable_is_external,
           }
           let config = standardStuff.axiosConfig(this.$loginservice.jwt)
@@ -865,7 +970,7 @@ export default {
           }
           let config = standardStuff.axiosConfig(this.$loginservice.jwt)
           await axios.post(url, record, config)
-          this.newVersionModal = false
+          this.modalMode = 'none'
           console.log(`New version request successfully sent to server`);
         } catch (e) {
           console.log(`Error while sending new version request to the server: `, e)
@@ -1053,18 +1158,16 @@ export default {
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW OR EDITED VARIABLES
     async reloadVariables() {
       const  url = standardStuff.apiURL('/variables')
-      const params = { 
-        params: {
-          deployableName: this.deployableName
-        }
+      const params = {
+          params: { 
+            deployableOwner: this.deployableOwner,
+            deployableName: this.deployableName
+          }
       }
       const config = standardStuff.axiosConfig(this.$loginservice.jwt)
       let res = await axios.get(url, params, config)
       this.variables = res.data.variables
       console.log(`Variables have been reloaded on the browser.`)
-      return {
-        variables: this.variables
-      };
     },  // -reloadVariables 
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW PROJECT USER
@@ -1137,14 +1240,15 @@ export default {
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW DEPENDENCY
     async reloadDependencies() {
-      const url = standardStuff.apiURL('/dependencies1')
-      const params = {
-          params: { 
-            deployableName: this.deployableName
-          }
-      }
+      const url = standardStuff.apiURL('/deployable/${this.deployableOwner}:${this.deployableName}/dependancies')
+      // const params = {
+      //     params: { 
+      //       deployableName: this.deployableName
+      //     }
+      // }
       const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-      let res4 = await axios.get(url, params, config)
+      // let res4 = await axios.get(url, params, config)
+      let res4 = await axios.get(url, config)
       console.log(`Dependencies have been reloaded on the browser`);
       this.dependencies = res4.data.dependencies
       return {
@@ -1217,7 +1321,7 @@ export default {
 
     // OPEN MODAL FOR CREATE NEW VERSION
     newVersion() {
-      this.newVersionModal = true;
+      this.modalMode = 'newVersion';
       this.form.new_version_registered_by = this.currentUser[0].username;
       this.form.new_version_registration_source = 'Juice';
       if (this.versions == 0) {
@@ -1243,7 +1347,238 @@ export default {
       this.newDeploymentModal = true;
       return false
     }, // -newDeployment
-  },
+
+    showLearnVariablesDialog() {
+      this.importJSON = ''
+      this.importVariables = { }
+      this.modalMode = 'learnVariables'
+    },
+
+    // We are importing variable names from example JSON
+    // 1. Check the JSON is valid.
+    // 2. Display a list of possible variables.
+    scanJson() {
+      console.log(`scanJson()`);
+      console.log(`pre-existing this.importVariables=`, this.importVariables);
+      if (this.importJSON===null || this.importJSON.trim() === '') {
+        this.jsonError = ''
+        return
+      }
+      try {
+
+        // Add these items to our list. At the same time
+        // create a hash so we can lookup variable names.
+        let config = JSON.parse(this.importJSON)
+console.log(`config is`, config);
+
+        //
+        let index = { }
+        for (let path in this.importVariables) {
+          const variable = this.importVariables[path]
+          index[variable.name] = variable
+console.log(`Adding existsing ${variable.name}`);          
+        }
+        console.log(`existing index is`, JSON.stringify(index, '', 2));
+
+        // Add any new fields to our index of stuff to update.
+        let scan = (prefix, obj) => {
+          for (let name in obj) {
+            let value = obj[name]
+            let path = `${prefix}${prefix?'.':''}${name}`
+
+            if (typeof(value) === 'object') {
+              scan(path, value)
+            } else {
+              // if (typeof(index[path]) === 'undefined') {
+              // console.log(`add ${path}`);
+              if (index[path]) {
+                // console.log(`Already in index`);
+              } else {
+                let { is_sensitive, example } = safeExample(path, value)
+                index[path] = {
+                  name: path,
+                  op: 'add',
+                  accept: true,
+                  is_sensitive,
+                  example,
+                }
+              }
+            }
+          }
+        }//- scan
+        scan('', config)
+console.log(`index after scanning:`, index);
+console.log(`index after scanning:`, JSON.stringify(index, '', 2));
+
+        // Compare our existing variables against those in the JSON.
+        this.variables.forEach(variable => {
+          let def = index[variable.name]
+          if (def) {
+            // We already know this variable
+            // def.op = 'nada'
+            if (def.op !== 'delete') {
+              delete index[variable.name]
+            }
+          } else {
+            // This variable is not in the JSON. Delete it?
+            index[variable.name] = {
+              name: variable.name,
+              op: 'delete',
+              accept: true,
+              example: '' }
+          }
+        })
+
+        // Display them as a sorted list
+        this.importVariables = [ ]
+        for (let name in index) {
+          let value = index[name]
+          this.importVariables.push(value)
+        }
+        this.importVariables.sort((v1, v2) => {
+          if (v1.name < v2.name) return -1
+          if (v1.name > v2.name) return +1
+          return 0
+        })
+
+        this.jsonError = ''
+      } catch (e) {
+        console.log(`JSON WAS NOT VALID`, e.message);
+        this.jsonError = e.message
+      }
+    },//- scanJson
+
+    toggleImports () {
+      // console.log(`toggleImports()`);
+
+      // See if they are all selected, or none selected.
+      let allSelected = true
+      let noneSelected = true
+      this.importVariables.forEach(v => {
+        if (v.accept) {
+          noneSelected = false
+        } else {
+          allSelected = false
+        }
+      })
+
+      let newAccept = this.selectAllImports
+      if (noneSelected) {
+        newAccept = true
+      } else if (allSelected) {
+        newAccept = false
+      }
+
+      this.importVariables.forEach(v => {
+        v.accept = newAccept
+      })
+      this.selectAllImports = newAccept
+    },
+
+    async updateVariablesFromImport() {
+      console.log(`updateVariablesFromImport()`);
+      console.log(`pre-existing this.importVariables=`, this.importVariables);
+      for (let i = 0; i < this.importVariables.length; i++) {
+        let v = this.importVariables[i]
+        if (!v.accept) {
+          continue;
+        }
+        if (v.op === 'add') {
+          // console.log(` -> add`, v);
+
+          // If no error, send post request to server
+          try {
+            let url = standardStuff.apiURL('/newVariable')
+            let record = {
+              deployable_owner: this.deployableOwner,
+              deployable_name: this.deployableName,
+              name: v.name,
+              description: '',//this.form.variable_description,
+              type: 'string',//this.form.variable_type,
+              mandatory: true,//this.form.variable_mandatory,
+              external: false,//this.form.variable_is_external,
+              is_sensitive: v.is_sensitive,
+              example: v.example,
+            }
+            // console.log(`save`, record);
+            let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+            await axios.post(url, record, config)
+            // console.log(`New variable successfully sent to database`);
+          } catch (e) {
+            console.log(`Error while adding new variable to the database: `, e)
+          }//-try
+
+        } else if (v.op === 'delete') {
+          // console.log(` -> delete`, v);
+          try {
+            let url = standardStuff.apiURL(`/variable/${this.deployableOwner}:${this.deployableName}/${v.name}`)
+            let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+            // console.log(`URL=${url}`);
+            await axios.delete(url, config)
+          } catch (e) {
+            console.log(`Error while updating variables: `, e)
+          }//-try
+        }
+      }//- for
+
+      // Once data sent, reload with the new variable
+      try {
+        this.reloadVariables(); 
+        console.log(`Variables have been reloaded on the browser.`)
+        this.modalMode = 'none'
+      } catch (e) {
+        console.log(`Error while reloading variables on the browser: `, e)
+      }
+    },//- updateVariablesFromImport()
+
+    updateVariable(variable) {
+      console.log(`Update variable `, variable);
+
+
+    // saveDetails: async function () {
+        let meTimer = this.saveVariableTimers[variable.name]
+        let self = this
+        if (meTimer) {
+            clearTimeout(meTimer.timer)
+        } else {
+          meTimer = { timer: null, variable }
+          this.saveVariableTimers[variable.name] = meTimer
+        }
+
+        meTimer.timer = setTimeout(async function () {
+            // console.log(`Updating...`, self.deployment);
+            self.timer = null // Clear the cancel handle
+            console.log(` DO IT! Update variable`, meTimer);
+          //   const url = standardStuff.apiURL('/variable')
+          //   const config = standardStuff.axiosConfig(self.$loginservice.jwt)
+          //   console.log(`UPDATING VARIABLE`, self.environment);
+          //  let result = await axios.put(url, self.environment, config)
+          //   console.log(`result is `, result);
+            try {
+              let url = standardStuff.apiURL('/variable')
+              // let record = {
+              //   description: this.form.new_variable_description,
+              //   type: this.form.new_variable_type,
+              //   mandatory: this.form.new_variable_mandatory,
+              //   external: this.form.new_variable_is_external,
+              //   deployable: this.deployableName,
+              //   name: this.variable_name,
+              // }
+              variable.deployable_owner = self.deployableOwner
+              variable.deployable_name = self.deployableName
+              let config = standardStuff.axiosConfig(self.$loginservice.jwt)
+              let result = await axios.post(url, variable, config)
+              // this.showModal = false
+              console.log(`Updated variable successfully sent to database`, result)
+            } catch (e) {
+              console.log(`Error while sending edited variable to the database: `, e)
+            }
+
+
+
+        }, 1000)
+    },//- updatevariable
+  },//- methods
 
   /*
    *  Call our API using Axios, to get the project data.
@@ -1259,6 +1594,7 @@ export default {
       const url = standardStuff.apiURL('/deployable')
       const params = {
           params: { 
+            deployableOwner: deployableOwner,
             deployableName: deployableName
           }
       }
@@ -1273,6 +1609,7 @@ export default {
       let res2 = await axios.get(url2, params, config)
       console.log(`API2 returned`, res2.data);
       const variables = res2.data.variables
+      variables.forEach(v => {v._name = v.name})
 
       // Select the deployments for this deployable
       const url3 = standardStuff.apiURL('/envDeployments')
@@ -1281,8 +1618,10 @@ export default {
       const deployments = res3.data.deployments
 
       // Select dependencies for this deployable
-      const url4 = standardStuff.apiURL('/dependencies1')
-      let res4 = await axios.get(url4, params, config)
+      // const url4 = standardStuff.apiURL('/dependencies1')
+      const url4 = standardStuff.apiURL('/deployable/${deployableOwner}:${deployableName}/dependancies')
+      let res4 = await axios.get(url4, config)
+      // let res4 = await axios.get(url4, params, config)
       console.log(`API4 returned dependencies:`, res4.data);
       const dependencies = res4.data.dependencies
 
@@ -1334,6 +1673,7 @@ export default {
       const deployables = res11.data.deployables
 
       return {
+        deployableOwner: deployableOwner,
         deployableName: deployableName,
         deployable: deployable,
         deployables: deployables,
@@ -1352,6 +1692,64 @@ export default {
       alert(`Error while fetching project ${deployableName}`)
     }
   }
+}
+
+// Obfuscate obviously sensitive values
+// Returns { is_sensitive, example }
+function safeExample(path, value) {
+  path = path.toLowerCase()
+  // return value
+  if (
+    path.indexOf('key') >= 0
+    || path.indexOf('secret') >= 0
+    || path.indexOf('password') >= 0
+    || path.indexOf('passwd') >= 0
+    || path.indexOf('username') >= 0
+  ) {
+
+    // The value needs to be obfuscated
+    let pos = 0
+    let final = ''
+    const skipStrings = [ 'http://', 'https://', 'AKIA', 'API' ]
+    skipStrings.forEach(skip => {
+      if (value.startsWith(skip)) {
+        final += skip
+        value = value.substring(skip.length)
+      }
+    })
+    while (value.length > 0) {
+      let c = value.charAt(0)
+      if (
+        (c >= 'a' && c <= 'z')
+        || (c >= 'A' && c <= 'Z')
+        || (c >= '0' && c <= '9')
+        || (c=='!')
+        || (c=='@')
+        || (c=='#')
+        || (c=='$')
+        || (c=='%')
+        || (c=='^')
+        || (c=='&')
+        || (c=='*')
+        || (c=='*')
+        || (c=='(')
+        || (c==')')
+        || (c=='{')
+        || (c=='[')
+        || (c==']')
+        || (c=='?')
+      ) {
+        final += 'x'
+      } else {
+        final += c
+      }
+      value = value.substring(1)
+    }
+    return { is_sensitive: true, example: final }
+  }
+
+  // No need to obfuscate
+  return { is_sensitive: false, example: value }
 }
 </script>
 
@@ -1442,4 +1840,52 @@ a.my-not-input-a {
     top: 6px;
 }
 
+.my-variable-table {
+  border: solid 1px #dbdbdb;
+  width: 100%;
+
+  th {
+    background-color: #e0e0e0;
+  }
+
+  .my-variable-line-1 {
+    // background-color: yellow;
+    border-bottom: none;
+    td {
+      border-bottom: solid 1px #ededed;
+      padding-top: 2px;
+      padding-bottom: 2px;
+    }
+  }
+  .my-variable-line-2 {
+    td {
+      padding-top: 2px;
+      padding-bottom: 2px;
+      color: #aaa;
+    }
+  }
+  .my-name-input {
+    min-width: 200px;
+    font-weight: 600;
+  }
+  input.my-example-input {
+    min-width: 330px;
+    color: #888;
+    border-top: solid 1px #e7e7e7;
+    border-left: solid 1px #e7e7e7;
+    border-right: solid 1px #e7e7e7;
+    border-bottom: solid 1px #e7e7e7;
+    padding-left: 4px;
+  }
+}
+
+// Show source code
+.my-bash {
+  padding-top: 8px;
+  padding-left: 20px;
+  // font-family:'Courier New', Courier, monospace;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-size: 18px;
+  color: #66a;
+}
 </style>

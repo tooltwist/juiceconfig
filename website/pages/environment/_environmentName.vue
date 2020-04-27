@@ -356,6 +356,7 @@ export default {
       currentUser: [],
 
       noData: false,
+      environmentOwner: '',
       environmentName: '',
       environment: null,
       deployments: [],
@@ -684,6 +685,7 @@ console.log(`environment=> ${environmentOwner}, ${environmentName}`);
       console.log('currentUser: ', currentUser)
     
       return {
+        environmentOwner: environmentOwner,
         environmentName: environmentName,
         environment: environment,
         deployments: deployments,

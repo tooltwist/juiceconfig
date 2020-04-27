@@ -1,6 +1,7 @@
 import restify from 'restify';
 import db from './database-mysql';
 import auth from './auth'
+import misc from './misc'
 
 export default {
 	register (server) {
@@ -30,11 +31,13 @@ export default {
         server.get('/api/deployable', async (req, res, next) => {
             console.log(`GET /deployable`);
         
+            let deployableOwner = req.query.deployableOwner
             let deployableName = req.query.deployableName
             let con = await db.checkConnection()
-            const sql = `SELECT * from deployable where name=?`
-            const params = [ deployableName ]
-        
+            const sql = `SELECT * from deployable where owner=? AND name=?`
+            const params = [ deployableOwner, deployableName ]
+            console.log(`  sql=${sql}`);
+            console.log(`  params=`, params);
             con.query(sql, params, function (err, result) {
                 if (err) throw err;
                 console.log("Result: " + result);
@@ -92,13 +95,16 @@ export default {
         });
         
         // Dynamically select DEPENDENCIES for /_deployableNAME from MySQL db
-        server.get('/api/dependencies1', async (req, res, next) => {
-            console.log(`GET /dependencies1`);
+        server.get('/api/deployable/:deployable/dependancies', async (req, res, next) => {
+            console.log(`GET /deployable/:deployable/dependancies`);
         
-            let deployableName = req.query.deployableName
+            console.log(`query=`, req.query);
+            console.log(`params=`, req.params);
+            let { owner:parentOwner, name:parentName } = misc.splitOwnerName(req.params.deployable)
+            // let deployableName = req.query.deployableName
             let con = await db.checkConnection()
-            const sql = `SELECT * from dependency where parent=?`
-            const params = [ deployableName ]
+            const sql = `SELECT * FROM dependency WHERE parent_owner=? AND parent_name=?`
+            const params = [ parentOwner, parentName ]
         
             con.query(sql, params, function (err, result) {
                 if (err) throw err;
@@ -213,11 +219,14 @@ export default {
         server.get('/api/variables', async (req, res, next) => {
             console.log(`GET /variables`);
         
+            let deployableOwner = req.query.deployableOwner
             let deployableName = req.query.deployableName
             let con = await db.checkConnection()
-            const sql = `SELECT * FROM variable WHERE deployable=?`
-            const params = [ deployableName ]
-        
+            const sql = `SELECT * FROM variable WHERE deployable_owner=? AND deployable_name=?`
+            const params = [ deployableOwner, deployableName ]
+            console.log(`  sql=${sql}`);
+            console.log(`  params=`, params);
+
             con.query(sql, params, function (err, result) {
                 if (err) throw err;
                 console.log("Result: " + result);
@@ -250,16 +259,23 @@ export default {
         }); // End of section*/
         
         // Variables
-        server.get('/api/variableValues', async (req, res, next) => {
-            console.log(`GET /variableValues`);
+        server.get('/api/deployment/:environment/:applicationName/variableValues', async (req, res, next) => {
+            console.log(`GET /deployment/:env/:app/variableValues`);
         
-            let environmentOwner = req.query.environmentOwner
-            let environment = req.query.environment
-            let applicationName = req.query.applicationName
+            // console.log(`query=`, req.query);
+            // console.log(`params=`, req.params);
+            let { owner:environmentOwner, name:environmentName } = misc.splitOwnerName(req.params.environment)
+
+            // let environmentOwner = req.query.environmentOwner
+            // let environment = req.query.environment
+            let applicationName = req.params.applicationName
+            console.log(`environmentOwner=${environmentOwner}`);
+            console.log(`environmentName=${environmentName}`);
+            console.log(`applicationName=${applicationName}`);
         
             let con = await db.checkConnection()
-            const sql = `SELECT * FROM variable_value WHERE environment_owner=? AND environment=? AND application_name=?`
-            const params = [ environmentOwner, environment, applicationName ]
+            const sql = `SELECT * FROM variable_value WHERE environment_owner=? AND environment_name=? AND application_name=?`
+            const params = [ environmentOwner, environmentName, applicationName ]
         
             con.query(sql, params, function (err, result) {
                 if (err) throw err;
@@ -275,13 +291,13 @@ export default {
         
             // See what variables we currently have in th DB
             let environmentOwner = req.params.environmentOwner
-            let environment = req.params.environment
+            let environmentName = req.params.environmentName
             let applicationName = req.params.applicationName
             let variableValues = req.params.variableValues
         
             let con = await db.checkConnection()
-            const sql = `SELECT * FROM variable_value WHERE environment_owner=? AND environment=? AND application_name=?`
-            const params = [ environmentOwner, environment, applicationName ]
+            const sql = `SELECT * FROM variable_value WHERE environment_owner=? AND environment_name=? AND application_name=?`
+            const params = [ environmentOwner, environmentName, applicationName ]
         
             let toAdd = []
             let toUpdate = []
@@ -314,13 +330,19 @@ export default {
                         toUpdate.push({ variableName, value: newValue })
                     }
                 }
-            
-                deleteVariableValues(con, environmentOwner, environment, applicationName, toDelete, (err) => {
+console.log(`yarp 1`);
+                deleteVariableValues(con, environmentOwner, environmentName, applicationName, toDelete, (err) => {
+console.log(`yarp 2`);
                     if (err) throw err
-                    addVariableValues(con, environmentOwner, environment, applicationName, toAdd, (err) => {
-                    if (err) throw err
-                        updateVariableValues(con, environmentOwner, environment, applicationName, toUpdate, err => {
+console.log(`yarp 3`);
+                    addVariableValues(con, environmentOwner, environmentName, applicationName, toAdd, (err) => {
+console.log(`yarp 4`);
+                        if (err) throw err
+console.log(`yarp 5`);
+                        updateVariableValues(con, environmentOwner, environmentName, applicationName, toUpdate, err => {
+console.log(`yarp 6`);
                             if (err) throw err
+console.log(`yarp 7`);
                 
                             // Seems all worked.
                             res.send({ status: 'ok' })
@@ -337,7 +359,7 @@ export default {
             if (array.length === 0) {
                 return cb(null)
             }
-            let sql = `DELETE FROM variable_value WHERE environment_owner=? AND environment=? AND application_name=? AND (`
+            let sql = `DELETE FROM variable_value WHERE environment_owner=? AND environment_name=? AND application_name=? AND (`
             let params = [ environmentOwner, environment, applicationName ]
             let sep = ''
             array.forEach(variableName => {
@@ -366,7 +388,7 @@ export default {
             let sql = `INSERT INTO variable_value SET ?`
             let params = {
                 environment_owner: environmentOwner,
-                environment: environment,
+                environment_name: environment,
                 application_name: applicationName,
                 variable_name: array[index].variableName,
                 value: array[index].value
@@ -384,7 +406,7 @@ export default {
             doAdd(0)
         }
         
-        async function updateVariableValues(connection, environmentOwner, environment, applicationName, array, cb) {
+        async function updateVariableValues(connection, environmentOwner, environmentName, applicationName, array, cb) {
             console.log(`updateVariableValues()`, array);
         
             let doUpdate = (index) => {
@@ -392,11 +414,11 @@ export default {
                     return cb(null)
                 }
             
-                let sql = `UPDATE variable_value SET value=? WHERE environment_owner=? AND environment=? AND application_name=? AND variable_name=?`
+                let sql = `UPDATE variable_value SET value=? WHERE environment_owner=? AND environment_name=? AND application_name=? AND variable_name=?`
                 let params = [
                     array[index].value,
                     environmentOwner,
-                    environment,
+                    environmentName,
                     applicationName,
                     array[index].variableName
                 ]
@@ -414,13 +436,23 @@ export default {
             }
             doUpdate(0)
         } // End of section
-        
+
         // Add a new VARIABLE for /_deployableNAME on MySQL db
         server.post('/api/newVariable', async (req, res, next) => {
             console.log(`POST /newVariable`)
         
             let con = await db.checkConnection()
-            const variableValues = {name: req.params.name, description: req.params.description, type: req.params.type, mandatory: req.params.mandatory, deployable: req.params.deployable, is_external: req.params.external}
+            const variableValues = {
+                deployable_owner: req.params.deployable_owner,
+                deployable_name: req.params.deployable_name,
+                name: req.params.name,
+                description: req.params.description,
+                type: req.params.type,
+                mandatory: req.params.mandatory,
+                is_external: req.params.external,
+                is_sensitive: req.params.is_sensitive,
+                example: req.params.example,
+            }
             let sql = `INSERT INTO variable SET ?`
             let params = [ variableValues ]
         
@@ -439,15 +471,19 @@ export default {
             console.log(`POST /variable`)
         
             let con = await db.checkConnection()
-            const deployable = req.params.deployable;
+            const deployable_owner = req.params.deployable_owner;
+            const deployable_name = req.params.deployable_name;
             const name = req.params.name;
             const description = req.params.description;
             const type = req.params.type;
             const mandatory = req.params.mandatory;
-            const is_external = req.params.external;
-            let sql = `UPDATE variable SET type=?, description =?, mandatory=?, is_external=? WHERE name=? AND deployable=?`
-            let params = [ type, description, mandatory, is_external, name, deployable ]
-        
+            const is_external = req.params.is_external;
+            const is_sensitive = req.params.is_sensitive;
+            const example = req.params.example;
+            let sql = `UPDATE variable SET type=?, description =?, mandatory=?, is_external=?, is_sensitive=?, example=? WHERE deployable_owner=? AND deployable_name=? AND name=?`
+            let params = [ type, description, mandatory, is_external, is_sensitive, example, deployable_owner, deployable_name, name ]
+            console.log(`sql=${sql}`);
+            console.log(`params=`, params);
             con.query(sql, params, (err, result) => {
                 if (err) throw err;
                 console.log("Result: ", result)
@@ -457,7 +493,26 @@ export default {
                 return next();
             })
         }); // End of section
+
+        // Add a new VARIABLE for /_deployableNAME on MySQL db
+        server.del('/api/variable/:deployable/:name', async (req, res, next) => {
+            console.log(`DEL /variable`, req.params)
         
+            let con = await db.checkConnection()
+            const { owner:deployableOwner, name:deployableName } = misc.splitOwnerName(req.params.deployable)
+            const name = req.params.name
+            const sql = `DELETE FROM variable WHERE deployable_owner=? AND deployable_name=? AND name=?`
+            const params = [ deployableOwner, deployableName, name ]
+            console.log(`  sql=${sql}`)
+            console.log(`  params=`, params)
+            con.query( sql, params, (err, result) => {
+                if (err) throw err;
+                // console.log("Result: NEW variable- " + req.params.name + " deployable- " + req.params.deployable + " Description- " + req.params.description) 
+                res.send({ status: 'ok' })
+                return next();
+            })
+        }); // End of section
+     
         // Add a new DEPENDENCY for /_deployableNAME on MySQL db        
         server.post('/api/newDependency', async (req, res, next) => {
             console.log(`POST /newDependency`)

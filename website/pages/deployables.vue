@@ -12,11 +12,8 @@ section.section
         b-icon(v-else-if="props.row.type==='api'", icon="run", size="is-small")
         b-icon(v-else-if="props.row.type==='project'", icon="android-studio", size="is-small")
         b-icon(v-else, icon="webpack", size="is-small")
-        nuxt-link(:to="`/deployable/${props.row.name}`")
-          span(v-html="std_deployableDisplay(props.row, true)")
-        //{{stdOwnerPrefix(props.row.owner)}}{{ props.row.name }}
-        //- b-table-column(field="product_owner" ,label="Owner")
-          | {{ props.row.product_owner }}
+        nuxt-link(:to="`/deployable/${std_toQualifiedName(props.row.owner,props.row.name)}`")
+            span(v-html="std_toQualifiedDisplay(props.row.owner,props.row.name,true)")
       b-table-column(field="description", label="Description")
         | {{ props.row.description }}
       b-table-column(field="is_project", label="Project")

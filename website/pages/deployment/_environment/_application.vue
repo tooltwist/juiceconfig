@@ -138,16 +138,22 @@ section.section
                 br
                 br
             div(v-if="variableRecursive.length > 0")
-                form(v-for="(variable, index) in variableRecursive")
-                    div.formStyle.field.is-horizontal
-                        div.field-label.is-normal
-                            label.label(style="width:200px;") {{ variable.variableName }}: 
-                        div.field-body
-                            div.field
-                                p.control()
-                                    input.input(v-if="editingValues", style="width:100%;", type="text", v-model="variable.value", placeholder="Configuration Value")
-                                    //- p.control(v-else)
-                                    p.my-not-input-p(v-if="!editingValues") &nbsp;{{variable.value}}
+                div.buttons(style="float:right;")
+                    .control(v-if="editingDetails", )
+                        button.button.is-success(@click="saveVariableValues") Save Changes
+                        | &nbsp;&nbsp;
+                        button.button.is-light(@click="editingDetails= false") Cancel
+                    .control(v-else)
+                        button.button.is-success(@click="editingDetails= !editingDetails") Edit
+                br
+                table.my-values-table
+                    tr.is-size-7(v-for="(variable, index) in variableRecursive")
+                        td.my-values-td-label
+                            b-tooltip(:label="variable.description", position="is-bottom", multilined)
+                                | {{ variable.variableName }}
+                        td.my-values-td-value
+                            input(v-if="editingDetails", style="width:100%;", type="text", v-model="variable.value", :placeholder="variable.example")
+                            .my-value(v-else) {{variable.value}}
 
             section(v-if="unusedValues.length > 0")
                 hr
@@ -161,7 +167,7 @@ section.section
                         div.field-label.is-normal
                             label.label(style="width:200px;") {{ val.variableName }}: 
                         div.field-body
-                            b-field(v-if="editingValues")
+                            b-field(v-if="editingDetails")
                                 b-input(
                                     v-model="val.value"
                                     icon-right="close-circle"
@@ -171,12 +177,14 @@ section.section
                                 p.my-not-input-p &nbsp;{{val.value}}
             br
 
-            .control(v-if="editingValues", )
-                button.button.is-success(@click="saveVariableValues") Save Changes
-                | &nbsp;&nbsp;
-                b-button.button.is-danger.is-outlined.is-light(tag="nuxt-link", to="/deployments") Cancel
-            .control(v-else)
-                button.button.is-warning(@click="editingValues= !editingValues") Edit
+            div.buttons(style="float:right;")
+                .control(v-if="editingDetails", )
+                    button.button.is-success(@click="saveVariableValues") Save Changes
+                    | &nbsp;&nbsp;
+                    button.button.is-light(@click="editingDetails= false") Cancel
+                .control(v-else)
+                    button.button.is-success(@click="editingDetails= !editingDetails") Edit
+                
 
             //- // Submit Modal 
             //- div(v-show="submitModal")
@@ -199,7 +207,7 @@ section.section
             //-                             b-button(@click="submitModal = false", type="is-danger", size="is-small") Cancel
 
 
-        b-tab-item(label="Configuration", v-if="environment.type === 'aws'")
+        b-tab-item(label="Configuration")
             p How will you provide the configuration to this application?
             br
             section
@@ -210,7 +218,6 @@ section.section
                         | Amazon Secrets Manager&nbsp;&nbsp;&nbsp;
                     b-radio(v-model="configType", size="is-small", name="configType", native-value="environment")
                         | Environment variable
-
             br
 
             // Configuration file
@@ -241,6 +248,33 @@ section.section
                 textarea.textarea.my-textarea(readonly="true", style="font-family: courier;")
                     | {{codeToSetEnvVariable}}
                 button.button.is-small.is-success(@click="downloadSetEnvironment") Download
+
+
+        b-tab-item(label="Docs")
+            //- p How will you provide the configuration to this application?
+            br
+            section
+                .block(style="margin-left: 80px;")
+                    b-radio(v-model="docType", size="is-small", name="docType", native-value="markup-table")
+                        | Markup Table
+                    | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    b-radio(v-model="docType", size="is-small", name="docType", native-value="markup-list")
+                        | Markup List
+
+            br
+            // Documentation in Markup for Wiki
+            div(v-if="docType==='markup-table'")
+                .notification
+                    | Github markup - table
+                textarea.textarea.my-textarea(readonly="true", style="font-family: courier;")
+                    | {{markupDocumentationTable}}
+                button.button.is-small.is-success(@click="downloadMarkupDocumentationTable") Download
+            div(v-if="docType==='markup-list'")
+                .notification
+                    | Github markup - list
+                textarea.textarea.my-textarea(readonly="true", style="font-family: courier;")
+                    | {{markupDocumentationList}}
+                button.button.is-small.is-success(@click="downloadMarkupDocumentationList") Download
 
         b-tab-item(label="Commands", zv-if="environment.type==='aws'")
             .notification
@@ -303,10 +337,10 @@ export default {
             activeTab: 0,
             noSecureValues: true,
             editingDetails: false,
-            editingValues: false,
             updateDelay: null,
 
-            configType: 'file'
+            configType: 'file',
+            docType: 'markup-list',
         }
     },
 
@@ -398,14 +432,8 @@ console.log(`YYYYY YARP 1`, deployment);
         // const variablesDepend = res5.data.variables
 
         // Variables for dependencies and deployable (recursive array data)
-        const url6 = standardStuff.apiURL('/variablesConfig')
-        const params6 = {
-            params: {
-                deployable_owner: deployment.deployable_owner,
-                deployable: deployment.deployable
-            }
-        }
-        let res6 = await axios.get(url6, params6, config)
+        const url6 = standardStuff.apiURL(`/deployable/${deployment.deployable_owner}:${deployment.deployable}/variablesConfig`)
+        let res6 = await axios.get(url6, config)
         console.log(`API6 variablesConfig=`, res6.data)
         const variableRecursive = res6.data
 
@@ -414,15 +442,8 @@ console.log(`YYYYY YARP 1`, deployment);
         // Select variable values for this deployment
 console.log(`YARP XUT 1`);
 
-        const url7 = standardStuff.apiURL('/variableValues')
-        const params7 = {
-            params: {
-                environmentOwner: environmentOwner,
-                environment: environmentName,
-                applicationName: applicationName
-            }
-        }
-        let result7 = await axios.get(url7, params7, config)
+        const url7 = standardStuff.apiURL(`/deployment/${environmentOwner}:${environmentName}/${applicationName}/variableValues`)
+        let result7 = await axios.get(url7, config)
 console.log(`YARP XUT 1`);
         console.log(`API7 variableValues=`, result7.data)
         const variableValues = result7.data.variableValues
@@ -499,29 +520,20 @@ console.log(`YYYYY YARP 2`, deployment);
             let script = `export JUICE_CONFIG=env:::$(cat<<ENDDD\n${json}\nENDDD`
             // console.log(`script=${script}`);
             return script
-        },
+        },//- codeToSetEnvVariable
 
         codeForSecretsManager: function( ) {
-            // return 'xyz'
             let mode = this.noSecureValues ? 'type' : 'value'
             let json = this.jsonAsString('envvar')
 
             let vars = ''
             this.variableRecursive.forEach((v, i) => {
-
-                //ZZZZZ
                 let value = v.value
                 let type = v.type
-                // console.log(`*** name=${v.variableName}, value=${value}, type=${type}`);
-                
-                if (v.variableName.endsWith('host')) { type = 'text'; value = 'yarp.yar.yep.com' }
-                if (v.variableName.endsWith('port')) { type = 'number'; value = 123 }
-                if (v.variableName.endsWith('isAwesome')) { type = 'boolean'; value = false }
-                // console.log(`    name=${v.variableName}, value=${value}, type=${type}`);
-
-
-
-                // console.log(`v is`, v);
+                vars += `\n# ${v.variableName}${v.description ? ('  -  '+v.description) : ''}\n`
+                if (v.example) {
+                    vars += `#   [e.g. ${v.example}]\n`
+                }
                 let envvar = this.environmentVariableName(v.variableName)
                 switch (type) {
                     case 'number':
@@ -531,6 +543,7 @@ console.log(`YYYYY YARP 2`, deployment);
                         vars += `${envvar}=${this.noSecureValues ? 'BOOLEAN' : value}\n`
                         break
                     case 'text':
+                    case 'string':
                     default:
                         vars += `${envvar}=${this.noSecureValues ? 'STRING' : `"${value}"`}\n`
                         break
@@ -563,8 +576,46 @@ console.log(`YYYYY YARP 2`, deployment);
 
             // console.log(`script=${script}`);
             return script
-        },
+        },//- codeForSecretsManager
 
+        markupDocumentationTable () {
+            let str = ''
+            str += `&nbsp;\n`
+            str += `### Configuration variables for \`${this.applicationName}\`\n`
+            str += `_Generated by [Juice](http://juiceconfig.io) ${new Date()}_  \n`
+            str += `&nbsp;\n`
+            str += `| Name | Type | Example | Description |\n`
+            str += `| ---- | ---- | ------- | ----------- |\n`
+            this.variableRecursive.forEach((v, i) => {
+                let value = v.value
+                let type = v.type
+                str += `| ${v.variableName} | ${v.type} | ${v.example} | ${v.description} |\n`
+            })
+            return str
+        },//- markupDocumentationTable
+
+        markupDocumentationList () {
+            let str = ''
+            str += `&nbsp;\n`
+            str += `### Configuration variables for \`${this.applicationName}\`\n`
+            str += `_Generated by [Juice](http://juiceconfig.io) ${new Date()}_  \n`
+            str += `&nbsp;\n`
+
+            this.variableRecursive.forEach((v, i) => {
+                let value = v.value
+                let type = v.type
+                str += '- - -\n'
+                str += `#### \`${v.variableName}\`\n`
+                str += `| Description: | ${v.description ? ('**'+this.wikiText(v.description)+'**') : ''} |\n`
+                str += `| ----: | :----- |\n`
+                str += `| Type: | ${v.type} |\n`
+                str += `| Mandatory: | ${v.mandatory ? 'yes' : 'no' } |\n`
+                if (v.example) {
+                    str += `| Example: | \`${this.wikiText(v.example)}\`  |\n`
+                }
+            })
+            return str
+        },//- markupDocumentationList
     },
 
     methods: {
@@ -588,7 +639,7 @@ console.log(`YYYYY YARP 2`, deployment);
                 self.setValue(obj, mode, '', v.variableName, v.type, v.value)
             })
             let json2 = JSON.stringify(obj, '', 2)
-            if (mode === 'value') {
+            if (mode === 'value' || mode === 'envvar') {
                 json2 = json2.split(`"${NUM_START}`).join('')
                 json2 = json2.split(`${NUM_END}"`).join('')
                 json2 = json2.split(`"${BOOL_START}`).join('')
@@ -603,12 +654,12 @@ console.log(`YYYYY YARP 2`, deployment);
         },
 
         setValue: function(obj, mode, sofar, name, type, value) {
-            // console.log(`setValue(obj, mode:${mode}, name:${sofar}/${name}, type:${type}, value:${value})`);
+            // console.log(`setValue(obj, mode:${mode}, sofar:${sofar}, name:${name}, type:${type}, value:${value})`);
 
-            type = 'text'
-            if (name === 'host') { type = 'text'; value = 'yarp.yar.yep.com' }
-            if (name === 'port') { type = 'number'; value = 123 }
-            if (name === 'isAwesome') { type = 'boolean'; value = false }
+            // type = 'text'
+            // if (name === 'host') { type = 'text'; value = 'yarp.yar.yep.com' }
+            // if (name === 'port') { type = 'number'; value = 123 }
+            // if (name === 'isAwesome') { type = 'boolean'; value = false }
 
             // If name is x.y.z, let's find the first bit (x)
             let errmsg = ''
@@ -616,7 +667,9 @@ console.log(`YYYYY YARP 2`, deployment);
             if (pos >= 0) {
                 let prefix = name.substring(0, pos)
                 let suffix = name.substring(pos + 1)
-                sofar += `${sofar}${prefix}.`
+                // console.log(` - prefix=${prefix}`);
+                // console.log(` - suffix=${suffix}`);
+                sofar = `${sofar}${prefix}.`
                 switch (typeof(obj[prefix])) {
                     case 'undefined':
                         // New object
@@ -634,6 +687,10 @@ console.log(`YYYYY YARP 2`, deployment);
             } else {
                 // New value
                 // console.log(`- set it ${name}, mode=${mode}`);
+
+                // let path = sofar ? `${sofar}.${name}` : name
+                let path = `${sofar}${name}`
+                // console.log(`Zpath=${path}`);
                 
                 switch (mode) {
                     case 'value':
@@ -641,11 +698,21 @@ console.log(`YYYYY YARP 2`, deployment);
                         break
 
                     case 'envvar':
-                        obj[name] = `\${${this.environmentVariableName(name)}}`
+                        // obj[name] = `YARPX\${${this.environmentVariableName(name)}}`
+                        if (type==='string' || type==='text') {
+                            obj[name] = `\${${this.environmentVariableName(path)}}`
+                        } else if (type==='number') {
+                            obj[name] = `${NUM_START}\${${this.environmentVariableName(path)}}${NUM_END}`
+                        } else if (type==='boolean') {
+                            obj[name] = `\${${this.environmentVariableName(path)}}`
+                        } else {
+                            console.log(`Unknown type for ${sofar}.${name} (${type})`);
+                            return `Unknown type for ${sofar}.${name} (${type})\n`
+                        }
                         break
 
                     case 'type':
-                        if (type==='text') {
+                        if (type==='string' || type==='text') {
                             obj[name] = `STRING`
                         } else if (type==='number') {
                             obj[name] = `NUMBER`
@@ -671,6 +738,7 @@ console.log(`YYYYY YARP 2`, deployment);
             })
             n2 = n2.toUpperCase();
             n2 = n2.replace(/\./g, '_')
+            n2 = n2.replace(/UR_L/g, 'URL')
             return n2
         },//- environmentVariableName
 
@@ -715,6 +783,34 @@ console.log(`YYYYY YARP 2`, deployment);
             document.body.appendChild(link)
             link.click()
         },
+
+        downloadMarkupDocumentationTable: function () {
+            const filename = `config-documentation-${this.environmentName}-${this.applicationName}-table.md`
+            let content = this.markupDocumentationTable
+            var myblob = new Blob([content], {
+                type: 'text/plain'
+            });
+            const url = window.URL.createObjectURL(myblob)
+            const link = document.createElement('a')
+            link.href = url
+            link.setAttribute('download', filename) //or any other extension
+            document.body.appendChild(link)
+            link.click()
+        },//- downloadMarkupDocumentationTable
+
+        downloadMarkupDocumentationList: function () {
+            const filename = `config-documentation-${this.environmentName}-${this.applicationName}-list.md`
+            let content = this.markupDocumentationList
+            var myblob = new Blob([content], {
+                type: 'text/plain'
+            });
+            const url = window.URL.createObjectURL(myblob)
+            const link = document.createElement('a')
+            link.href = url
+            link.setAttribute('download', filename) //or any other extension
+            document.body.appendChild(link)
+            link.click()
+        },//- downloadMarkupDocumentationList
 
         // updateDeployment: async function () {
         //     console.log(`updateDeployment() `, this.deployment);
@@ -763,16 +859,18 @@ console.log(`YYYYY YARP 2`, deployment);
 
             let request = {
                 environmentOwner: this.environmentOwner,
-                environment: this.environmentName, 
+                environmentName: this.environmentName, 
                 applicationName: this.applicationName,
                 variableValues: {
                     // We'll put the values here
                 }
             }
             // Add the known variables
+            const DEBUG = true
             this.variableRecursive.forEach(v => {
-                // if (v.value)
-                request.variableValues[v.variableName] = v.value
+                if (!DEBUG || v.value) {
+                    request.variableValues[v.variableName] = v.value
+                }
             })
             this.unusedValues.forEach(uv => {
                 if (!uv.deleted && uv.value) {
@@ -780,11 +878,10 @@ console.log(`YYYYY YARP 2`, deployment);
                 }
             })
 
-            console.log(`values to save=`, request);
             const url = standardStuff.apiURL('/variableValues')
             const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-            await axios.post(url, request, this.axiosConfig)
-            this.editingValues = false            
+            let response = await axios.post(url, request, config)
+            this.editingDetails = false
         },
 
         trimUrl: function (url) {
@@ -794,12 +891,31 @@ console.log(`YYYYY YARP 2`, deployment);
                 return `...${url.substring(url.length - maxlen)}`
             }
             return url
+        },
+
+        // Escape characters for Wiki markdown
+        wikiText: function (text) {
+            if (!text) return ''
+            let result = ''
+            while (text.length > 0) {
+                let c = text.charAt(0)
+                text = text.substring(1)
+                if (c === '\n') {
+                    result += '<br/>'
+                } else if (c==='|' || c==='*' || c==='_') {
+                    result += '\\|'
+                } else {
+                    result += c
+                }
+            }
+            return result
         }
 
     }//- methods
 }
 </script>
-<style lang="scss">
+
+<style lang="scss" scoped>
 .modal-mask {
   position: fixed;
   z-index: 9998;
@@ -907,4 +1023,50 @@ a.my-not-input-a {
     position: relative;
     top: 6px;
 }
+
+.my-values-table {
+    border: solid 1px #333;
+    width: 100%;
+    tr {
+        // border-bottom: solid 1px red;
+    //   border-bottom: solid 1px #ededed;
+        border-bottom: solid 1px #ddd;
+    //   padding-top: 2px;
+    //   padding-bottom: 2px;
+        // height: 25px;
+    }
+    td {
+    }
+    .my-values-td-label {
+        padding-left: 5px;
+        border-right: solid 1px #ddd;
+        font-size: 13px;
+        color: #333;
+    }
+
+    .my-values-td-value {
+        // background-color: yellow;
+        width: 50%;
+        padding-left: 5px;
+        padding-top: 0px;
+        padding-bottom: 0px;
+        input {
+            border-style: none;
+            font-size: 13px;
+            // font-size: 14px;
+            // ::placeholder {
+            //     color: red;
+            // }
+        }
+        input::-webkit-input-placeholder,
+        input::-ms-input-placeholder,
+        input::placeholder {
+            color:#aaf;
+        }
+        .my-value {
+            font-size: 13px;
+        }
+    }
+}
+
 </style>

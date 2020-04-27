@@ -16,7 +16,7 @@ function apiURL(path) {
 
   if (urlPrefix) {
     const url = `${urlPrefix}${path}`
-    console.log(`API endpoint is ${url}`)
+    // console.log(`API endpoint is ${url}`)
     return url
   }
   const prefix = 'api'

@@ -448,7 +448,7 @@ async function checkHealth(deployment) {
   
   
   // Call health check to determine status
-  console.log(`Checking health of `, deployment);
+  // console.log(`Checking health of `, deployment);
 
     const healthcheckUrl = deployment.website_url + deployment.healthcheck
     let result
@@ -457,13 +457,13 @@ async function checkHealth(deployment) {
       try {
 
         let url = standardStuff.apiURL('/proxyHealthcheck')
-        console.log(`checkHealth(${deployment.environment}.${deployment.application_name}): ${url}`);
+        // console.log(`checkHealth(${deployment.environment}.${deployment.application_name}): ${url}`);
         result = await axios.get(url, {
           params: {
             url: healthcheckUrl
           }
         });
-        console.log(`Proxy returned:`, result);
+        // console.log(`Proxy returned:`, result);
         deployment._healthcheck.status = result.data.status
         // deployment._healthcheck.text = result.data.text
         switch (deployment._healthcheck.status) {
