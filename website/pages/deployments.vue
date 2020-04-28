@@ -4,56 +4,44 @@
       div.buttons.has-text-weight-normal(style="float:right;")
         //b-button(class="is-primary", tag="nuxt-link", to="/newEnvironment",  type="is-light")  + New Deployment
         b-button.is-primary(@click="initNewDeploymentDialog")  + New Deployment
+    b-tabs(v-model="activeTab", :animated="false")
+      b-tab-item(label="Deployments")
+        b-notification(aria-close-label="Close notification")
+          | When a &nbsp;
+          b deployable
+          | &nbsp;is running in an&nbsp;
+          b environment
+          | &nbsp;it is called an&nbsp;
+          strong application
+          | . A deployable can be run in multiple environments, and also
+          | as multiple instances within an environment.
 
-    //- <div class="modal-card">
-    //-   <header class="modal-card-head">
-    //-     <p class="modal-card-title">Modal title</p>
-    //-     <button class="delete" aria-label="close"></button>
-    //-   </header>
-    //-   <section class="modal-card-body">
-    //-     <!-- Content ... -->
-    //-   </section>
-    //-   <footer class="modal-card-foot">
-    //-     <button class="button is-success">Save changes</button>
-    //-     <button class="button">Cancel</button>
-    //-   </footer>
-    //- </div>
-
-
-    b-notification(aria-close-label="Close notification")
-      | When a &nbsp;
-      b deployable
-      | &nbsp;is running in an&nbsp;
-      b environment
-      | &nbsp;it is called an&nbsp;
-      strong application
-      | . A deployable can be run in multiple environments, and also
-      | as multiple instances within an environment.
-
-
-    b-table(:data="deployments", focusable)
-      template(slot-scope="props")
-        b-table-column(field="environment", label="Environment")
-          b-tooltip(:label="props.row._healthcheck.text", position="is-right", multilined, :type="healthcheckColor(props.row._healthcheck.status)")
-            b-icon(:icon="healthcheckIcon(props.row._healthcheck.status)", size="is-small", :type="healthcheckColor(props.row._healthcheck.status)")
-          nuxt-link(:to="`/environment/${std_toQualifiedName(props.row.environment_owner,props.row.environment)}`")
-            span(v-html="std_toQualifiedDisplay(props.row.environment_owner,props.row.environment,true)")
-        b-table-column(field="application_name", label="Name")
-          | {{ props.row.application_name }}
-        b-table-column(field="deployable", label="Deployable")
-          nuxt-link(:to="`/deployable/${std_toQualifiedName(props.row.deployable_owner,props.row.deployable)}`")
-            span(v-html="std_toQualifiedDisplay(props.row.deployable_owner,props.row.deployable,true)")
-        b-table-column(field="", label="")
-          b-button.button.is-small.is-primary.is-outlined(tag="nuxt-link", :to="`../deployment/${props.row.environment_owner}:${props.row.environment}/${props.row.application_name}`") Configure
-        
-
-      //- // Edit User Modal starts below:
-      //- | YARP
-      //- .modal
-      //-   .modal-background
-      //-     .modal-content
-      //-       | Here is the model
-      //-     button.modal-close.is-large(aria-label="close")
+        b-table(:data="deployments", focusable)
+          template(slot-scope="props")
+            b-table-column(field="environment", label="Environment")
+              b-tooltip(:label="props.row._healthcheck.text", position="is-right", multilined, :type="healthcheckColor(props.row._healthcheck.status)")
+                b-icon(:icon="healthcheckIcon(props.row._healthcheck.status)", size="is-small", :type="healthcheckColor(props.row._healthcheck.status)")
+              nuxt-link(:to="`/environment/${std_toQualifiedName(props.row.environment_owner,props.row.environment)}`")
+                span(v-html="std_toQualifiedDisplay(props.row.environment_owner,props.row.environment,true)")
+            b-table-column(field="application_name", label="Name")
+              | {{ props.row.application_name }}
+            b-table-column(field="deployable", label="Deployable")
+              nuxt-link(:to="`/deployable/${std_toQualifiedName(props.row.deployable_owner,props.row.deployable)}`")
+                span(v-html="std_toQualifiedDisplay(props.row.deployable_owner,props.row.deployable,true)")
+            b-table-column(field="", label="")
+              b-button.button.is-small.is-primary.is-outlined(tag="nuxt-link", :to="`../deployment/${props.row.environment_owner}:${props.row.environment}/${props.row.application_name}`") Configure
+      
+      b-tab-item(label="Healthchecks")        
+        table.tableStyle
+          // headings
+          tr
+            td.transform.cellWidth
+            td.transform.cellWidth(v-for="env in environments") {{env.name}}
+          // Row for each deployable
+          tr(v-for="dep in deployables")
+            td.cellWidth {{dep.name}}
+            td.cellWidth(v-for="env in environments")
+              | YARP
 
     .modal(:class="{ 'is-active': showDialog }")
       .modal-background
@@ -144,6 +132,7 @@ export default {
       deployableId: '', // owner:name
 
       showSaveErrorMsg: false,
+      activeTab: 0,
     }
   }, // - data
 
@@ -197,6 +186,16 @@ export default {
   },
 
   computed: {
+    /*// Create new object with deployment values
+    deploymentsGrid: function() {
+      deployables.forEach(d => {
+        if (d.deployable ) { 
+
+        }
+      })
+
+    }, // - end of deploymentsGrid*/
+
     defaultApplicationName: function () {
 
       // See if a deployable has been selected.
@@ -568,4 +567,22 @@ async function loadDeployments (axiosConfig) {
 </script>
 
 <style lang="scss">
+  .transform {
+    height: 120px;
+    transform: rotate(270deg) translate(0px, 40px);
+    float: none;
+    vertical-align: bottom;
+  }
+  
+  .tableStyle {
+    border: solid thin; 
+
+  }
+
+  .cellWidth {
+    white-space: nowrap;
+    vertical-align: top; 
+    border: solid thin lightgray;
+    padding: 3px;
+  }
 </style>
