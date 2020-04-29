@@ -31,6 +31,7 @@
             b-table-column(field="", label="")
               b-button.button.is-small.is-primary.is-outlined(tag="nuxt-link", :to="`../deployment/${props.row.environment_owner}:${props.row.environment}/${props.row.application_name}`") Configure
       
+      // A grid showing all the available deployables/environments and their health checks
       b-tab-item(label="Healthchecks")        
         table.tableStyle
           // headings
@@ -40,8 +41,8 @@
           // Row for each deployable
           tr(v-for="dep in deployables")
             td.cellWidth {{dep.name}}
-            td.cellWidth(v-for="env in environments")
-              | YARP
+            td.cellWidth.cellDataStyle(v-for="env in environments")
+              div(v-for="application in isDeployed(env.name, dep.name)") {{application}}
 
     .modal(:class="{ 'is-active': showDialog }")
       .modal-background
@@ -186,16 +187,6 @@ export default {
   },
 
   computed: {
-    /*// Create new object with deployment values
-    deploymentsGrid: function() {
-      deployables.forEach(d => {
-        if (d.deployable ) { 
-
-        }
-      })
-
-    }, // - end of deploymentsGrid*/
-
     defaultApplicationName: function () {
 
       // See if a deployable has been selected.
@@ -272,6 +263,21 @@ export default {
 
   methods: {
     ...standardStuff.methods,
+
+    isDeployed (environmentName, deployableName) {
+      let arr = [];
+
+      for (let i = 0; i < this.deployments.length; i++) {
+        let deployment = this.deployments[i];
+        if (deployment.deployable === deployableName && deployment.environment === environmentName) {
+          let j = 0;
+          arr[j] = deployment.application_name;
+          j++;
+        } 
+      }
+
+      return arr; // an array of application names for the selected environment and deployable
+    },
 
     applicationExists (environmentOwner, environmentName, applicationName) {
         for (let i = 0; i < this.deployments.length; i++) {
@@ -568,21 +574,28 @@ async function loadDeployments (axiosConfig) {
 
 <style lang="scss">
   .transform {
-    height: 120px;
-    transform: rotate(270deg) translate(0px, 40px);
+    height: 140px;
+    transform: rotate(270deg) translate(0px, 50px);
     float: none;
     vertical-align: bottom;
+    column-width: 100px;
+    text-align: center;
   }
-  
+
   .tableStyle {
     border: solid thin; 
-
   }
 
   .cellWidth {
     white-space: nowrap;
     vertical-align: top; 
     border: solid thin lightgray;
-    padding: 3px;
+    padding: 6px;
+  }
+
+  .cellDataStyle {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
   }
 </style>
