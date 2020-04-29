@@ -33,16 +33,19 @@
       
       // A grid showing all the available deployables/environments and their health checks
       b-tab-item(label="Healthchecks")        
-        table.tableStyle
-          // headings
-          tr
-            td.transform.cellWidth
-            td.transform.cellWidth(v-for="env in environments") {{env.name}}
-          // Row for each deployable
-          tr(v-for="dep in deployables")
-            td.cellWidth {{dep.name}}
-            td.cellWidth.cellDataStyle(v-for="env in environments")
-              div(v-for="application in isDeployed(env.name, dep.name)") {{application}}
+        div(style="overflow-x:auto;")
+          table.tableStyle
+            // headings
+            tr
+              td.transform.cellWidth
+              td.transform.cellWidth(v-for="env in environments") {{env.name}}
+            // Row for each deployable
+            tr(v-for="dep in deployables")
+              td.cellWidth {{dep.name}}
+              td.cellWidth.cellDataStyle(v-for="env in environments")
+                div(v-for="deployment in isDeployed(env.name, dep.name)") {{deployment.application_name}}  
+                  b-tooltip(:label="deployment._healthcheck.text", position="is-right", multilined, :type="healthcheckColor(deployment._healthcheck.status)")
+                    b-icon(:icon="healthcheckIcon(deployment._healthcheck.status)", size="is-small", :type="healthcheckColor(deployment._healthcheck.status)")
 
     .modal(:class="{ 'is-active': showDialog }")
       .modal-background
@@ -271,7 +274,7 @@ export default {
         let deployment = this.deployments[i];
         if (deployment.deployable === deployableName && deployment.environment === environmentName) {
           let j = 0;
-          arr[j] = deployment.application_name;
+          arr[j] = deployment;
           j++;
         } 
       }
