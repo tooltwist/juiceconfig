@@ -111,7 +111,8 @@ export default {
 
   methods: {
     doLogout: function () {
-      this.$loginservice.logout()
+      this.$loginservice.logout();
+      this.$router.push('/');
     }
   }
 }
