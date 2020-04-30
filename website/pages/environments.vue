@@ -1,8 +1,14 @@
 <template lang="pug">
   section.section
     h1.title Environments
-      div.buttons.has-text-weight-normal(style="float:right;")
-        b-button.is-primary(tag="nuxt-link", to="/newEnvironment",  type="is-light")  + Add New Environment
+      div(style="float:right; display: flex;")
+        b-select.is-primary(v-model="group")
+          option(value="") 
+          option(:value="group", v-for="group in groups") {{ group.group_name }}
+  
+        div.buttons.has-text-weight-normal(style="padding: 0px 5px;")
+          b-button.is-primary(tag="nuxt-link", to="/newEnvironment",  type="is-light")  + Add New Environment
+
     b-notification(aria-close-label="Close notification")
       | An &nbsp;
       b environment
@@ -17,7 +23,7 @@
       | Projects and applications can share environments, rather than
       | having dedicated servers for each stage. When deploying to AWS, each environment corresponds to an ECS Cluster.
 
-    b-table(:data="environments", focusable)
+    b-table(:data="selectedGroup", focusable)
       template(slot-scope="props")
         b-table-column(field="name", label="Name")
           nuxt-link(:to="`/environment/${std_toQualifiedName(props.row.owner,props.row.name)}`")
@@ -26,6 +32,8 @@
           | {{ props.row.description }}
         b-table-column(field="notes", label="Notes")
           | {{ props.row.notes }}
+        b-table-column(field="group_name", label="Group") 
+          | {{ props.row.group_name }}
 </template>
 
 <script>
@@ -38,6 +46,8 @@ export default {
   data () {
     return {
       environments: [ ],
+      groups: [ ],
+      group: '',
     }
   }, // - data
 
@@ -47,24 +57,56 @@ export default {
    */
   async asyncData ({ app, params, error }) {
     try {
-
       // Get the environments
-      const url = standardStuff.apiURL('/environments')
+      const url = standardStuff.apiURL('/showEnvironments')
       const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
       console.log(`Calling ${url}`);
       let reply = await axios.get(url, config)
       console.log(`Response is: `, reply)
 
+      // Load all groups for distinction
+      const url2 = standardStuff.apiURL('/groups')
+      console.log(`Calling ${url2}`);
+      let reply2 = await axios.get(url2, config)
+      console.log(`Response2 is: `, reply2)
+
       return {
-        environments: reply.data.environments
+        environments: reply.data.environments,
+        groups: reply2.data.groups,
       }
     } catch (e) {
       console.log(`Error while fetching environments: `, e)
     }
   },
 
+  computed: {
+    // This function changes the display of the environments table based on the selection of group 
+    selectedGroup: function () {
+      console.log('Group is ', this.group.group_name);
+      
+      let environmentsGrouped = [ ];
+      let j = 0;
+
+      for (let i = 0; i < this.environments.length; i++) {
+        let environment = this.environments[i];
+
+        if (environment.group_name === this.group.group_name) {
+          environmentsGrouped[j] = environment;
+          j++;
+        }
+      }
+    
+      if (environmentsGrouped.length === 0) {
+        return this.environments;
+      } else {
+        return environmentsGrouped;
+      }
+    }
+  },
+
   methods: {
     ...standardStuff.methods,
+
   }
 }
 </script>

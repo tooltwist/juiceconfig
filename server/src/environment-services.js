@@ -18,6 +18,20 @@ export default {
             });
         }); // End of section
 
+        // Select ALL GROUPS from MySQL database
+        server.get('/api/groups', async (req, res, next) => {
+            console.log(`GET /groups`);
+        
+            let con = await db.checkConnection()
+            const sql = `SELECT * FROM environment_group`
+            
+            con.query(sql, function (err, result) {
+                if (err) throw err;
+                res.send({ groups: result })
+                next()
+            });
+        }); // End of section
+
         // Adding a new environment to the DB
         server.post('/api/newEnvironment', auth, async (req, res, next) => {
             console.log(`POST /newEnvironment`)
