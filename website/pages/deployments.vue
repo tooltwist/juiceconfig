@@ -43,7 +43,7 @@
             tr(v-for="dep in deployables")
               td.cellWidth {{dep.name}}
               td.cellWidth.cellDataStyle(v-for="env in environments")
-                div(v-for="deployment in isDeployed(env.name, dep.name)") {{deployment.application_name}}  
+                div(v-for="deployment in isDeployed(env.name, dep.name)") 
                   b-tooltip(:label="deployment._healthcheck.text", position="is-right", multilined, :type="healthcheckColor(deployment._healthcheck.status)")
                     b-icon(:icon="healthcheckIcon(deployment._healthcheck.status)", size="is-small", :type="healthcheckColor(deployment._healthcheck.status)")
 

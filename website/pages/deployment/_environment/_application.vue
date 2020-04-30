@@ -1035,8 +1035,7 @@ a.my-not-input-a {
     //   padding-bottom: 2px;
         // height: 25px;
     }
-    td {
-    }
+
     .my-values-td-label {
         padding-left: 5px;
         border-right: solid 1px #ddd;
