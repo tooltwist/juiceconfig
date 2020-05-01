@@ -33,7 +33,10 @@
         b-table-column(field="notes", label="Notes")
           | {{ props.row.notes }}
         b-table-column(field="group_name", label="Group") 
-          span(:class="groupColour(props.row.group_name)") {{ props.row.group_name }}
+          span(v-if="groupColour(props.row.group_name) === ''") {{ props.row.group_name }}
+          span(v-else)
+            span(:class="['tag', groupColour(props.row.group_name)]") {{ props.row.group_name }}
+
 </template>
 
 <script>
@@ -119,7 +122,7 @@ export default {
       }
 
       if (colour === 'none') {
-        return 'is-black';
+        return '';
       } else if (colour === 'red') {
         return 'is-danger';
       } else if (colour === 'blue') {
@@ -128,8 +131,10 @@ export default {
         return 'is-success';
       } else if (colour === 'orange') {
         return 'is-primary'
+      } else if (colour === 'yellow') {
+        return 'is-warning';
       } else {
-        return 'is-black';
+        return '';
       }
     },//- groupColour
 
