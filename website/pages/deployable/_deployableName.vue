@@ -1371,14 +1371,14 @@ console.log(`record is`, record);
         // Add these items to our list. At the same time
         // create a hash so we can lookup variable names.
         let config = JSON.parse(this.importJSON)
-console.log(`config is`, config);
+        console.log(`config is`, config);
 
         //
         let index = { }
         for (let path in this.importVariables) {
           const variable = this.importVariables[path]
           index[variable.name] = variable
-console.log(`Adding existsing ${variable.name}`);          
+          console.log(`Adding existsing ${variable.name}`);          
         }
         console.log(`existing index is`, JSON.stringify(index, '', 2));
 
@@ -1409,8 +1409,8 @@ console.log(`Adding existsing ${variable.name}`);
           }
         }//- scan
         scan('', config)
-console.log(`index after scanning:`, index);
-console.log(`index after scanning:`, JSON.stringify(index, '', 2));
+        console.log(`index after scanning:`, index);
+        console.log(`index after scanning:`, JSON.stringify(index, '', 2));
 
         // Compare our existing variables against those in the JSON.
         this.variables.forEach(variable => {
@@ -1537,9 +1537,9 @@ console.log(`index after scanning:`, JSON.stringify(index, '', 2));
       console.log(`Update variable `, variable);
 
 
-    // saveDetails: async function () {
-        let meTimer = this.saveVariableTimers[variable.name]
-        let self = this
+      // saveDetails: async function () {
+      let meTimer = this.saveVariableTimers[variable.name]
+      let self = this
         if (meTimer) {
             clearTimeout(meTimer.timer)
         } else {

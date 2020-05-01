@@ -33,7 +33,7 @@
         b-table-column(field="notes", label="Notes")
           | {{ props.row.notes }}
         b-table-column(field="group_name", label="Group") 
-          | {{ props.row.group_name }}
+          span(:class="groupColour(props.row.group_name)") {{ props.row.group_name }}
 </template>
 
 <script>
@@ -106,6 +106,32 @@ export default {
 
   methods: {
     ...standardStuff.methods,
+
+    groupColour: function(group_name) {
+      let colour = 'none';
+
+      for (let i = 0; i < this.groups.length; i++) {
+        let group = this.groups[i];
+
+        if (group.group_name === group_name) {
+          colour = group.colour;
+        }
+      }
+
+      if (colour === 'none') {
+        return 'is-black';
+      } else if (colour === 'red') {
+        return 'is-danger';
+      } else if (colour === 'blue') {
+        return 'is-info';
+      } else if (colour === 'green') {
+        return 'is-success';
+      } else if (colour === 'orange') {
+        return 'is-primary'
+      } else {
+        return 'is-black';
+      }
+    },//- groupColour
 
   }
 }
