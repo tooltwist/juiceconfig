@@ -18,49 +18,67 @@ section.section
                 a(href="/newEnvironment") create another environment?
     div(v-else)
         h1.title Add New Environment:
-        //- div(v-if="mode === 'inputError'")
-            article(class="message is-danger is-small")
-                div(class="message-header")
-                    p Form Error
-                div(class="message-body") Please ensure that all fields have values before saving.
         
         form
-                .field
-                    label.label New environment name
-                    input.input(name="new_environment", v-model="form.new_environment", type="text", placeholder="Environment name")
-                    p.help.is-danger(v-if="environmentExists") This environment name already exists.
-                //- div.form-group
-                //-     div.formStyle(class="control") New environment name:
-                //-         div(v-if="environmentError === null")
-                //-             input.input(name="new_environment", v-model="form.new_environment", type="text", placeholder="Environment name")
-                //-         div(v-else="environmentError === `Environment already exists`")
-                //-             input.input.is-danger(v-model="form.new_environment", type="text", placeholder="Environment Name")
-                //-             p(class="help is-danger") This environment name already exists. Try again.
-                .field
-                    label.label Type
-                    .control
-                        .select
-                            select(v-model="form.type")
-                                option(value="aws") Amazon Web Services (AWS)
-                                option(value="local") Local development machine
-                                option(value="other") Other
-                .field
-                    label.label Description
-                    //- div.formStyle(class="control") Description:
-                    input.input(name="new_description", v-model="form.new_description", type="text", placeholder="Description")
-                .field
-                    label.label Is this a universal (all-accessible) environment?
-                    //- div.formStyle Is this a universal (all-accessible) environment?
-                    b-select(placeholder="Is this a universal environment?", v-model="form.is_universal")
-                        option(value="true") Yes
-                        option(value="false") No
-                .field
-                    label.label Notes
-                    //- div.formStyle(class="control") Notes:
-                    textarea.textarea(name="new_notes", v-model="form.new_notes", type="text", placeholder="Notes")
-                div.control
-                    b-button.buttonStyle(@click.prevent="newEnvironment", type="is-primary is-light", :disabled="!readyToSave")  Save
-                    b-button.buttonStyle(tag="nuxt-link", to="/environments", type="is-danger is-outlined") Cancel
+            .field
+                label.label Owner:
+                    input.input(v-model="form.new_owner", type="text", :disabled="true")
+            .field
+                label.label New environment name
+                input.input(name="new_environment", v-model="form.new_environment", type="text", placeholder="Environment name")
+                p.help.is-danger(v-if="environmentExists") This environment name already exists.
+            .field
+                label.label Type
+                .control
+                    .select
+                        select(v-model="form.type")
+                            option(value="aws") Amazon Web Services (AWS)
+                            option(value="local") Local development machine
+                            option(value="other") Other
+            div(v-if="form.type === 'aws'", style="position:relative; left:50px; width:900px") 
+                .field 
+                    label.label AWS account:
+                    input.input(name="aws_account", v-model="form.aws_account", type="text", placeholder="Account ID")
+                .field 
+                    label.label AWS profile:
+                    input.input(name="aws_profile", v-model="form.aws_profile", type="text", placeholder="Profile name")
+                .field  
+                    label.label AWS region:
+                    input.input(name="aws_region", v-model="form.aws_region", type="text", placeholder="Region")
+                .field 
+                    label.label AWS cf stack:
+                    input.input(name="aws_cf_stack", v-model="form.aws_cf_stack", type="text", placeholder="Cloudformation Stack")
+                .field 
+                    label.label AWS cluster url:
+                    input.input(name="aws_cluster_url", v-model="form.aws_cluster_url", type="text", placeholder="ECS Cluster URL")
+                .field 
+                    label.label AWS VPC url:
+                    input.input(name="aws_upc_vrl", v-model="form.aws_vpc_url", type="text", placeholder="UPC URL")
+                br
+            .field
+                label.label Description
+                input.input(name="new_description", v-model="form.new_description", type="text", placeholder="Description")
+            .field
+                label.label Is this a universal environment? (all-accessible)
+                b-select(placeholder="Universal", v-model="form.is_universal")
+                    option(value="true") Yes
+                    option(value="false") No
+            .field
+                label.label Is this a secure environment?
+                b-select(placeholder="Secure", v-model="form.is_secure_environment")
+                    option(value="1") Yes
+                    option(value="0") No
+            .field
+                label.label Group name: 
+                b-select(placeholder="Group name", v-model="form.group_name")
+                    option(value="") None
+                    option(v-for="group in groups", :value="`${group.group_name}`") {{group.group_name}}
+            .field
+                label.label Notes
+                textarea.textarea(name="new_notes", v-model="form.new_notes", type="text", placeholder="Notes")
+            div.control
+                b-button.buttonStyle(@click.prevent="newEnvironment", type="is-primary is-light", :disabled="!readyToSave")  Save
+                b-button.buttonStyle(tag="nuxt-link", to="/environments", type="is-danger is-outlined") Cancel
 </template>
 
 <script>
@@ -73,21 +91,29 @@ export default {
         return {
             initialisationError: false,
             form: {
+                new_owner: '',
                 new_environment: '',
                 new_description: '',
                 type: '',
+                group_name: '',
                 new_notes: '',
                 is_universal: false,
+                is_aws: '',
+                aws_account: '',
+                aws_profile: '',
+                aws_region: '',
+                aws_cf_stack: '',
+                aws_cluster_url: '',
+                aws_vpc_url: '',
+                is_secure_environment: '',
             },
-            // mode: false,
             saveMode: false,
             environments: '',
-            // environmentError: false,
+            groups: '',
         }
     },
 
     computed: {
-
         // Check for existing environment name
         environmentExists () {
             if (this.form.new_environment) {
@@ -123,59 +149,42 @@ export default {
             if (!this.readyToSave) {
                 return
             }
-            // if (this.form.new_environment && this.form.new_description && this.form.new_notes && this.form.is_universal) {
 
-                // // Check for existing environment name
-                // let found = false
-                // this.environments.forEach(environment => {
-                //     if (environment.name === this.form.new_environment) {
-                //         console.log(`There is already an existing environment with these values!`)
-                //         found = true
-                //     }
-                // })
-                
-                // // If matching environment is found, send error 
-                // if (found) {
-                //     console.log(`There is already a environment with these values... Error message shown!`)
-                //     this.environmentError = true
-                //     return 
-                // }
-                // this.environmentError = false
+            try {
+                e.preventDefault();
 
-                // If no error, send post request to server
-                try {
-                    e.preventDefault();
-
-
-                    const url = standardStuff.apiURL('/newEnvironment')
-                    const record = {
-                        name: this.form.new_environment,
-                        description: this.form.new_description,
-                        notes: this.form.new_notes,
-                        is_universal: this.form.is_universal
-                    }
-                    const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-                    await axios.post(url, record, config)
-                    // Prevent input error from showing
-                    // this.mode = false;
-                    console.log('New environment successfully sent to the database.');
-                } catch (e) {
-                    console.log(`Error while sending new environment to the database: `, e)
+                if (this.form.type === 'aws') {
+                    this.form.is_aws = 1;
                 }
-            // } else {
-            //     this.mode = 'inputError';
-            //     console.log('Input error: please ensure all fields are filled.')
-            // }
 
-            // Show successful save message
-            // if (this.mode != 'inputError') {
-            //     try {
-                    this.saveMode = true
-                    console.log(this.saveMode, 'Successful')
-                // } catch (e) {
-                //     console.log(`Error while changing saveMode to success: `, e)
-                // }
-            // }
+                const url = standardStuff.apiURL('/newEnvironment')
+                const record = {
+                    name: this.form.new_environment,
+                    description: this.form.new_description,
+                    notes: this.form.new_notes,
+                    group_name: this.form.group_name,
+                    is_universal: this.form.is_universal,
+                    is_aws: this.form.is_aws,
+                    is_secure_environment: this.form.is_secure_environment,
+                    aws_account: this.form.aws_account,
+                    aws_profile: this.form.aws_profile,
+                    aws_region: this.form.aws_region,
+                    aws_cf_stack: this.form.aws_cf_stack,
+                    aws_cluster_url: this.form.aws_cluster_url,
+                    aws_vpc_url: this.form.aws_vpc_url,
+
+                }
+                const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+                await axios.post(url, record, config)
+                // Prevent input error from showing
+                // this.mode = false;
+                console.log('New environment successfully sent to the database.');
+            } catch (e) {
+                console.log(`Error while sending new environment to the database: `, e)
+            }
+            
+            this.saveMode = true
+            console.log(this.saveMode, 'Successful')
         },
     },
 
@@ -185,6 +194,8 @@ export default {
      */
     async asyncData ({ app, params, error }) {
         console.log(`asyncData()`);
+
+        let me = app.$nuxtLoginservice.user.username;
         
         try {        
             // Get the environments
@@ -194,9 +205,20 @@ export default {
             let reply = await axios.get(url, config)
             console.log(`Response is: `, reply)
 
+            // Get environment groups 
+            const url2 = standardStuff.apiURL('/groups')
+            console.log(`Calling ${url2}`);
+            let reply2 = await axios.get(url2, config)
+            console.log(`Response2 is: `, reply2)
+
             return {
-                environments: reply.data.environments
+                environments: reply.data.environments,
+                groups: reply2.data.groups,
+                form: {
+                    new_owner: me,
+                }
             }
+
         } catch (e) {
             console.log(`Error while fetching environments: `, e)
             return {
@@ -204,7 +226,6 @@ export default {
             }
         }
     },//- asyncData
-
 }
 </script>
 

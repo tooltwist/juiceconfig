@@ -42,8 +42,17 @@ export default {
                 owner: req.identity.username,
                 name: req.params.name,
                 description: req.params.description,
+                group_name: req.params.group_name,
                 notes: req.params.notes,
-                is_universal: req.params.is_universal
+                is_universal: req.params.is_universal,
+                is_aws: req.params.is_aws,
+                is_secure_environment: req.params.is_secure_environment,
+                aws_account: req.params.aws_account,
+                aws_profile: req.params.aws_profile,
+                aws_region: req.params.aws_region,
+                aws_cf_stack: req.params.aws_cf_stack,
+                aws_cluster_url: req.params.aws_cluster_url,
+                aws_vpc_url: req.params.aws_vpc_url
             }
             console.log(`sql=${sql}`);
             console.log(`newEnv=`, newEnvironment);
