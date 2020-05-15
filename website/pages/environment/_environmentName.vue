@@ -47,7 +47,7 @@ section.section
                         //- input.input(v-if="editingDetails", v-model.trim="environment.notes", placeholder="URL to ECS Service", @input="saveDetails")
                         //- a.my-not-input-a(v-else-if="validUrl(environment.notes)", :href="environment.notes", target="_blank") &nbsp;{{environment.notes}}
                         //- p.my-not-input-p(v-else) &nbsp;{{environment.notes}}
-      .control
+      div(v-if="isOwner()").control
           button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
 
     b-tab-item(label="AWS", v-if="environment.type==='aws'")
@@ -129,20 +129,20 @@ section.section
                         input.input(v-if="editingDetails", v-model.trim="environment.aws_vpc_url", placeholder="URL to VPC dashboard", @input="saveDetails")
                         a.my-not-input-a(v-else-if="validUrl(environment.aws_vpc_url)", :href="environment.aws_vpc_url", target="_blank") &nbsp;{{environment.aws_vpc_url}}
                         p.my-not-input-p(v-else) &nbsp;{{environment.aws_vpc_url}}
-      .control
+      div(v-if="isOwner()").control
           button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
 
     b-tab-item(label="Deployments")
       // Deployments
       h1.is-title.is-size-4(style="text-align:left;") Deployments
-        div.buttons(style="float:right;")
-          div(v-if="currentUser[0].access == 'full' || 'write' || 'super'")
-            button.button.is-primary(@click.prevent="newDeployment(deployments)", type="is-light")  + Add new deployment
+        div(v-if="isOwner()").buttons(style="float:right;")
+          button.button.is-primary(@click.prevent="newDeployment(deployments)", type="is-light")  + Add new deployment
       br
       div(v-if="this.deployments.length === 0") 
         br
         article.message.is-success.is-small
-          div.message-body There are no deployments for this environment yet. Would you like to add one?
+          div(v-if="isOwner()").message-body There are no deployments for this environment yet. Would you like to add one?
+          div(v-else).message-body Nothing to show.
       div(v-else)
         b-table(:data="deployments", focusable)
           template(slot-scope="props")
@@ -153,7 +153,7 @@ section.section
             b-table-column(field="notes", label="Notes")
               | {{ props.row.notes }}
             b-table-column(field="", label="")
-              div(v-if="currentUser[0].access == 'full' || 'write' || 'super'")
+              div(v-if="isOwner()")
                 b-button.button.is-small.is-primary.is-outlined(tag="nuxt-link", :to="`../config/${props.row.environment}/${props.row.deployable}`") Configure
             //- | {{props.row.environment}}
     
@@ -191,37 +191,33 @@ section.section
             br
             | &nbsp;&nbsp;&nbsp;&nbsp; remote
 
-
-
-    div(v-if="environmentName !== 'localhost'")
-      b-tab-item(label="Users")
-        // Users
-        h1.is-title.is-size-4(style="text-align:left;") Users
-          div.buttons(style="float:right;")
-            div(v-if="currentUser[0].access == 'full' || 'write' || 'super'")
-              button.button.is-primary(@click.prevent="newUser", type="is-light")  + Add New User
+    b-tab-item(v-if="isOwner()", label="Users")
+      // Users
+      h1.is-title.is-size-4(style="text-align:left;") Users
+        div(v-if="isOwner()").buttons(style="float:right;")
+          button.button.is-primary(@click.prevent="newUser", type="is-light")  + Add New User
+      br
+      div(v-if="this.users.length === 0")
         br
-        div(v-if="this.users.length === 0")
-          br
-          article.message.is-success.is-small
-            div.message-body There are no users for this environment yet. Would you like to add a new user?
-        b-table(:data="users", focusable)
-          template(slot-scope="props")
-            b-table-column(field="environment", label="Environment")
-              | {{ props.row.environment }}
-            b-table-column(field="first_name", label="First Name")
-              | {{ props.row.first_name }}
-            b-table-column(field="last_name", label="Last Name")
-              | {{ props.row.last_name }}
-            div(v-if="access === 'admin'")
-              b-table-column(field="user_id", label="User ID")
-                | {{ props.row.user_id }}
-            b-table-column(field="access", label="Access")  
-              | {{ props.row.access }}
-            b-table-column(field="", label="")
-              div(v-if="currentUser[0].access == 'full' || 'write' || 'super'")
-                a(href="", @click.prevent="editUser(props.row)")
-                  b-icon(icon="circle-edit-outline")
+        article.message.is-success.is-small
+          div.message-body There are no users for this environment yet. Would you like to add a new user?
+      b-table(:data="users", focusable)
+        template(slot-scope="props")
+          b-table-column(field="environment", label="Environment")
+            | {{ props.row.environment }}
+          b-table-column(field="first_name", label="First Name")
+            | {{ props.row.first_name }}
+          b-table-column(field="last_name", label="Last Name")
+            | {{ props.row.last_name }}
+          div(v-if="access === 'admin'")
+            b-table-column(field="user_id", label="User ID")
+              | {{ props.row.user_id }}
+          b-table-column(field="access", label="Access")  
+            | {{ props.row.access }}
+          b-table-column(field="", label="")
+            div(v-if="isOwner()")
+              a(href="", @click.prevent="editUser(props.row)")
+                b-icon(icon="circle-edit-outline")
 
   // New Deployment Modal starts below:
   div(v-show="newDeploymentModal")
@@ -380,6 +376,15 @@ export default {
 
   methods: {
     ...standardStuff.methods,
+
+    // CHECK IF CURRENT USER IS OWNER 
+    isOwner() {
+      if ( this.currentUser[0].username == this.environment.owner ) {
+        return 1;
+      } else {
+        return 0;
+      }
+    },
 
     // ADD A NEW DEPLOYMENT TO THE DATABASE - FROM MODAL 
     async saveNewDeployment() {
