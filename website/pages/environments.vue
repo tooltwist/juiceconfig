@@ -32,7 +32,7 @@
           | {{ props.row.description }}
         b-table-column(field="notes", label="Notes")
           | {{ props.row.notes }}
-        b-table-column(field="group_name", label="Group") 
+        b-table-column(v-if="groups.length != 0", field="group_name", label="Group") 
           span(v-if="groupColour(props.row.group_name) === ''") {{ props.row.group_name }}
           span(v-else)
             span(:class="['tag', groupColour(props.row.group_name)]") {{ props.row.group_name }}

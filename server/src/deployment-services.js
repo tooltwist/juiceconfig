@@ -22,11 +22,10 @@ export default {
 
       // Either the environment or the deployable must be for the
       // current user. They can't just go looking at everyone's stuff.
-      //ZZZZ
 
       let con = await db.checkConnection()
       let sql = `SELECT * from deployments`
-      // let sql = `SELECT * from deployments where environment =?`
+      
       const params = [ ];
       let first = true
       if (environmentName) {

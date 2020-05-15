@@ -5,13 +5,19 @@ import restify from 'restify';
 export default {
 	register (server) {
         // Select ALL ENVIRONMENTS from MySQL database
-        server.get('/api/showEnvironments', async (req, res, next) => {
+        server.get('/api/showEnvironments', auth, async (req, res, next) => {
             console.log(`GET /showEnvironments`);
-        
-            let con = await db.checkConnection()
-            const sql = `SELECT * FROM environment`
             
-            con.query(sql, function (err, result) {
+            // Check if owner matches the username for private accounts 
+            let me = req.identity.username
+
+            console.log(`I am ${me}`);
+
+            const sql = `SELECT * FROM environment WHERE owner =?`
+            const params = [ me ];
+            
+            let con = await db.checkConnection()
+            con.query(sql, params, function (err, result) {
                 if (err) throw err;
                 res.send({ environments: result })
                 next()

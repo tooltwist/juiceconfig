@@ -49,24 +49,28 @@ div
                     select.select(v-model="deployable.type", :disabled="!editingDetails", @input="saveDetails")
                       option(value="project") Project
                       option(value="non project") Non project
-          .control
-          button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
+          div(v-if="isOwner()").control
+            button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
 
       b-tab-item(label="Variables")
         // Variables
         h1.is-title.is-size-4(style="text-align:left;") Variables
-          div.buttons(style="float:right;")
+          div.buttons(v-if="isOwner()", style="float:right;")
             div(v-if="isEditable")
               button.button.is-primary(v-if="variables.length>0", @click="editingDetails= !editingDetails") {{editingDetails?'Done':'Edit'}}
               button.button.is-light(@click.prevent="showLearnVariablesDialog")  Learn Variables
               button.button.is-primary(@click.prevent="newVariable(variables)")  + Add New Variable
         br 
         div(v-if="this.variables.length === 0")
-          br
-          article.message.is-success.is-small
-            div.message-body 
-              | There are no variables for this deployable yet. Would you like to add a 
-              a(href="" @click.prevent="newVariable(variables)") new variable?
+          div(v-if="isOwner()")
+            br
+            article.message.is-success.is-small
+              div.message-body 
+                | There are no variables for this deployable yet. Would you like to add a 
+                a(href="" @click.prevent="newVariable(variables)") new variable?
+          div(v-else)
+            article.message.is-success.is-small 
+              div.message-body Nothing to show.
         div(v-else)
           br
           table.table.my-variable-table(:data="variables", focusable)
@@ -120,7 +124,7 @@ div
           //- modal(v-if="showModal", @close="showModal = false")
             h3(slot="header") Edit Variable
             button.button(@click="showModal=false") Hide
-          button.button.is-size-small(@click="editingDetails= !editingDetails") {{editingDetails?'Done':'Edit'}}
+          //button.button.is-size-small(@click="editingDetails= !editingDetails") {{editingDetails?'Done':'Edit'}}
 
       b-tab-item(label="Deployments")
         // Deployments
@@ -168,35 +172,34 @@ div
             b-table-column(field="version", label="Version")
               | {{ props.row.version }}
 
-      div(v-if="deployable.is_project === 1")
-        b-tab-item(label="Users")
-          // Users
-          h1.is-title.is-size-4 Users
-            div.buttons(style="float:right;")
-              div(v-if="isEditable")
-                button.button.is-primary(@click.prevent="newUser", type="is-light")  + Add New User
+      b-tab-item(v-if="isOwner()", label="Users")
+        // Users
+        h1.is-title.is-size-4 Users
+          div.buttons(style="float:right;")
+            div(v-if="isEditable")
+              button.button.is-primary(@click.prevent="newUser", type="is-light")  + Add New User
+        br
+        div(v-if="this.users.length === 0")
           br
-          div(v-if="this.users.length === 0")
-            br
-            article.message.is-success.is-small
-              div.message-body There are no users for this deployable yet. Would you like to add a new user?
-          b-table(:data="users", focusable)
-            template(slot-scope="props")
-              b-table-column(field="project", label="Project")
-                | {{ props.row.project }}
-              b-table-column(field="first_name", label="First Name")
-                | {{ props.row.first_name }}
-              b-table-column(field="last_name", label="Last Name")
-                | {{ props.row.last_name }}
-              div(v-if="access === 'admin'")
-                b-table-column(field="user_id", labe="Users ID")
-                  | {{ props.row.user_id }}
-              b-table-column(field="access", label="Access")  
-                | {{ props.row.access }}
-              b-table-column(field="", label="")
-                div(v-if="isEditable")
-                  a(href="", @click.prevent="editUser(props.row)")
-                    b-icon(icon="circle-edit-outline")
+          article.message.is-success.is-small
+            div.message-body There are no users for this deployable yet. Would you like to add a new user?
+        b-table(:data="users", focusable)
+          template(slot-scope="props")
+            b-table-column(field="project", label="Project")
+              | {{ props.row.project }}
+            b-table-column(field="first_name", label="First Name")
+              | {{ props.row.first_name }}
+            b-table-column(field="last_name", label="Last Name")
+              | {{ props.row.last_name }}
+            div(v-if="access === 'admin'")
+              b-table-column(field="user_id", labe="Users ID")
+                | {{ props.row.user_id }}
+            b-table-column(field="access", label="Access")  
+              | {{ props.row.access }}
+            b-table-column(field="", label="")
+              div(v-if="isEditable")
+                a(href="", @click.prevent="editUser(props.row)")
+                  b-icon(icon="circle-edit-outline")
 
       b-tab-item(label="Versions")     
         b-button.is-success(@click.prevent="newVersion()", style="float:right;") Create new version
@@ -747,6 +750,15 @@ export default {
   methods: {
     ...standardStuff.methods,
 
+    // CHECK IF CURRENT USER IS OWNER 
+    isOwner() {
+      if ( this.currentUser[0].username == this.deployable.owner ) {
+        return 1;
+      } else {
+        return 0;
+      }
+    },
+
     // SAVE EDITED DEPLOYABLE DETAILS 
     saveDetails: async function () {
       let self = this
@@ -986,7 +998,7 @@ console.log(`record is`, record);
       } else {
         this.errormode = 'inputError'
       }
-    }, // - saveNewVersion
+    }, // - saveNewVersion 
     
     // SAVE EDITED USER
     async saveEditedUser() {
@@ -1221,7 +1233,7 @@ console.log(`record is`, record);
       return {
         versions: this.versions
       };
-    },  // -reloadVersions
+    },  // -reloadVersions 
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW DEPLOYMENT
     async reloadDeployments() {
@@ -1309,7 +1321,7 @@ console.log(`record is`, record);
     newToken() {
       this.newTokenModal = true;
       return false;
-    }, // -newToken
+    }, // -newToken 
 
     showEnvironmentsToken() {
       if (this.showEnvironmentToken === true) {
@@ -1336,7 +1348,7 @@ console.log(`record is`, record);
       }
       
       return false;
-    }, // -newVersion
+    }, // -newVersion 
 
     // OPEN MODAL AND CREATE NEW DEPENDENCY 
     newDependency(variable) {
@@ -1667,7 +1679,7 @@ console.log(`record is`, record);
       let res10 = await axios.get(url10, config)
       // let res10 = await axios.get(url10, params, config)
       console.log(`API10 returned`, res10.data);
-      const tokens = res10.data.tokens
+      const tokens = res10.data.tokens 
 
       // Import all deployables for dependency modal
       const url11 = standardStuff.apiURL('/deployables')
@@ -1687,8 +1699,8 @@ console.log(`record is`, record);
         environments: environments,
         dependencies: dependencies,
         currentUser: currentUser,
-        versions: versions,
-        tokens: tokens,
+        //versions: versions,
+        //tokens: tokens,
       }
     } catch (e) {
       console.log(`Could not fetch project:`, e)

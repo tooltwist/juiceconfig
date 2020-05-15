@@ -22,10 +22,20 @@ section.section
                 div(class="message-header")
                     p Form Error
                 div(class="message-body") Please ensure that all fields have values before saving.
+        
+        div(v-if="global === true")
+            article.message.is-warning.is-small
+                .message-header Public mode selected:
+                .message-body
+                    p Your deployable will be publicly accesible by any user, however they will not be able to edit or update the deployable.
+        
         form
             .field
                 label.label Owner:
                     input.input(v-model="form.new_owner", type="text", :disabled="true")
+            .field 
+                p.is-small Public deployable 
+                    input(type="checkbox", @click="globalDeployable") 
             .field
                 label.label New deployable name:
                     input.input(v-model="form.new_deployable", type="text", placeholder="Deployable Name")
@@ -60,13 +70,16 @@ export default {
             initialisationError: false,
             
             form: {
+                is_global: 0,
                 new_owner: '',
                 new_deployable: '',
                 new_product_owner: '',
                 new_description: '',
                 is_project: 0
             },
+            global: false,
             // mode: false,
+            ownerName: '',
             savedMode: false,
             deployables: [ ],
             deployableError: null,
@@ -90,6 +103,7 @@ export default {
             
             return {
                 deployables: result.data.deployables,
+                ownerName: me,
                 form: {
                     new_owner: me
                 }
@@ -135,6 +149,16 @@ export default {
     },
 
     methods: {
+        globalDeployable () {
+            if (this.form.is_global != 1) {
+                this.form.is_global = 1;
+                this.global = true;
+            } else {
+                this.form.is_global = 0;
+                this.global = false;
+            }
+        },
+
         async newDeployable(e) {
             console.log(`newDeployable()`, this);
 
@@ -142,72 +166,28 @@ export default {
             if (!this.readyToSave) {
                 return
             }
-            
-            // Check that form is correctly filled out
-            // if (this.form.new_deployable && this.form.is_project && this.form.new_product_owner && this.form.new_description) {
-                
-                // // Check for existing deployable name
-                // let found = false
-                // this.deployables.forEach(deployable => {
-                //     if (deployable.name === this.form.new_deployable) {
-                //         console.log(`There is already an existing deployable with these values!`)
-                //         found = true
-                //     }
-                // })
-                // 
-                // // If matching deployable is found, send error 
-                // if (found) {
-                //     console.log(`There is already a deployable with these values... Error message shown!`)
-                //     this.deployableError = `Deployable already exists`
-                //     return 
-                // }
-                // this.deployableError = false
+            try {
+                e.preventDefault();                    
 
-                // If no error, send post request to server
-                try {
-                    e.preventDefault();
-
-                    // let jwt = this.$loginservice.jwt
-                    // let config = {
-                    //     headers: {
-                    //         authorization: `Bearer ${jwt}`,
-                    //     }
-                    // }
-                    // console.log(`config is`, config);
-                    
-
-                    console.log(`calling /newDeployable`);
-                    let record = {
-                        owner: this.form.new_owner,
-                        name: this.form.new_deployable,
-                        product_owner: this.form.new_product_owner,
-                        description: this.form.new_description,
-                        is_project: this.form.is_project,
-                    }
-                    console.log(`record = `, record);
-                    let url = standardStuff.apiURL('/newDeployable')
-                    const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-                    await axios.post(url, record, config)
-                    // Prevent input error from showing
-                    // this.mode = false;
-                } catch (err) {
-                    console.log(`Error while sending new deployable to the database: `, err)
+                console.log(`calling /newDeployable`);
+                let record = {
+                    owner: this.form.new_owner,
+                    name: this.form.new_deployable,
+                    product_owner: this.form.new_product_owner,
+                    description: this.form.new_description,
+                    is_project: this.form.is_project,
                 }
-            // } else {
-            //     this.mode = 'inputError';
-            //     console.log('Input error: please ensure all fields are filled.')
-            // }
+                console.log(`record = `, record);
+                let url = standardStuff.apiURL('/newDeployable')
+                const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+                await axios.post(url, record, config)
 
-            // // Show successful save message
-            // if (this.mode != 'inputError') {
-            //     try {
-                    this.savedMode = true
-                    console.log(this.savedMode, 'Successful')
-            //     } catch (err) {
-            //         console.log(`Error while updating savedMode to success: `, err)
-            //     }
-            // } 
+            } catch (err) {
+                console.log(`Error while sending new deployable to the database: `, err)
+            }
             
+            this.savedMode = true
+            console.log(this.savedMode, 'Successful')
         },
     },//- methods
 }
