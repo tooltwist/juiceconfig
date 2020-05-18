@@ -41,7 +41,7 @@ export default {
            console.log(`POST /newProjectUser`)
        
             let con = await db.checkConnection()
-            const userValues = {user_id: req.params.id, project: req.params.project, access: req.params.access}
+            const userValues = {user_id: req.params.id, username: req.params.username, project: req.params.project, access: req.params.access}
             let sql = `INSERT INTO project_user SET ?`
             let params = [ userValues ]
     

@@ -185,8 +185,8 @@ div
             div.message-body There are no users for this deployable yet. Would you like to add a new user?
         b-table(:data="users", focusable)
           template(slot-scope="props")
-            b-table-column(field="project", label="Project")
-              | {{ props.row.project }}
+            b-table-column(field="username", label="Username")
+              | {{ props.row.username }}
             b-table-column(field="first_name", label="First Name")
               | {{ props.row.first_name }}
             b-table-column(field="last_name", label="Last Name")
@@ -194,12 +194,13 @@ div
             div(v-if="access === 'admin'")
               b-table-column(field="user_id", labe="Users ID")
                 | {{ props.row.user_id }}
-            b-table-column(field="access", label="Access")  
-              | {{ props.row.access }}
-            b-table-column(field="", label="")
-              div(v-if="isEditable")
-                a(href="", @click.prevent="editUser(props.row)")
-                  b-icon(icon="circle-edit-outline")
+            b-table-column(field="access", label="Access", style="display:flex")    
+              div(v-if="props.row.access === 'collab'") Collaborator  
+              div(v-else-if="props.row.access === 'prod_owner'") Product Owner  
+              div(v-else-if="props.row.access === 'owner'") Owner  
+              div(v-else) {{ props.row.access }}  
+              a(href="", @click.prevent="editUser(props.row)") 
+                b-icon(icon="circle-edit-outline")
 
       b-tab-item(label="Versions")     
         b-button.is-success(@click.prevent="newVersion()", style="float:right;") Create new version
@@ -548,19 +549,16 @@ div
                     div.form-group
                       div.formStyle Select User: 
                         div.control
-                        div(v-if="newUserError === null")
                           b-select(placeholder="User", v-model="form.new_projectuser") User:
                             option(v-for="user in allUsers", :value="user.id") {{ user.first_name }} {{ user.last_name }}
                         div(v-if="newUserError === `User already exists`") 
-                          b-select(placeholder="User", v-model="form.new_projectuser") User:
-                            option(v-for="user in allUsers", :value="user.id") {{ user.first_name }} {{ user.last_name }}
                           p.help.is-danger {{ deployableName }} already has this user added.
                       div.formStyle Access:
                         div.control
                           b-select(placeholder="Access", v-model="form.new_user_access") Type:
-                            option(value="limited") Limited
-                            option(value="write") Write
-                            option(value="conditional") Conditional (recommended for clients only)
+                            option(value="collab") Collaborator
+                            option(value="owner") Owner
+                            option(value="prod_owner") Product Owner
             footer.modal-card-foot 
               div.control
                 b-button(@click.stop="saveNewUser",  type="is-primary is-light", size="is-small")  Save
@@ -581,9 +579,9 @@ div
                   div.form-group
                     b-field.formStyle.control Edit accessibility:
                       b-select(placeholder="Accessibility", v-model="form.edit_useraccess", value="accessibility") 
-                        option(value="limited") Limited
-                        option(value="write") Write
-                        option(value="conditional") Conditional (clients-only)
+                        option(value="collab") Collaborator
+                        option(value="owner") Owner
+                        option(value="prod_owner") Product Owner
             footer.modal-card-foot 
               div.control
                 b-button(@click.stop="saveEditedUser", type="is-primary is-light", size="is-small")  Save    
@@ -637,6 +635,7 @@ export default {
         // Adding a new user
         new_projectuser: '',
         new_user_access: '',
+        new_username: '',
 
         // Edit existing user
         edit_useraccess: '',
@@ -879,13 +878,21 @@ export default {
         }
         this.newUserError = null
 
+        this.allUsers.forEach(user => {
+          if (user.id === this.form.new_projectuser) {
+            this.form.new_username = user.username;
+          }
+        })
+
         // If no error, send post request to server
         try {
           let url = standardStuff.apiURL('/newProjectUser')
+
           let record = {
             id: this.form.new_projectuser,
             access: this.form.new_user_access,
-            project: this.deployableName
+            project: this.deployableName,
+            username: this.form.new_username,
           }
           let config = standardStuff.axiosConfig(this.$loginservice.jwt)
           await axios.post(url, record, config)

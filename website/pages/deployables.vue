@@ -1,10 +1,19 @@
 <template lang="pug">
 section.section
   h1.title Deployables
+    b-select(style="float:right;", placeholder="Sort by:")
+      option(disabled selected) Sort by:
+      option(value="showAll") Show all
+      option(value="projects") Projects only
+      option(value="myDeployables") My deployables
+      option(value="collab") Collaborative
+      option(value="public") Public 
     div.buttons.has-text-weight-normal(style="float:right;")  
-      button.button.is-primary.is-outlined(v-if="justProjects", @click="justProjects=false") Show all Deployables
-      button.button.is-primary.is-outlined(v-else, @click="justProjects=true") Show Projects   
+      //button.button.is-primary.is-outlined(v-if="justProjects", @click="justProjects=false") Show all Deployables
+      //button.button.is-primary.is-outlined(v-else, @click="justProjects=true") Show Projects   
       b-button.is-primary(tag="nuxt-link", to="/newDeployable",  type="is-light")  + Add New Deployable
+
+  
   b-table(:data="listOfDeployables", focusable) 
     template(slot-scope="props")
       b-table-column(field="name", label="Name")
@@ -20,6 +29,8 @@ section.section
             span(v-html="std_toQualifiedDisplay(props.row.owner,props.row.name,true)")
       b-table-column(field="description", label="Description")
         | {{ props.row.description }}
+      b-table-column(field="type", label="Type")
+        | {{ props.row.type }}
       b-table-column(field="is_project", label="Project")
         | {{ props.row.is_project | yesno }}
         
@@ -53,6 +64,26 @@ export default {
       //   }
       // })
       // return arr
+
+      let arr = [ ]
+
+      if (command === 'projects') {
+        this.projects.forEach(project => {
+          if (project.is_project || !this.justProjects) {
+            arr.push(project)
+          }
+        })
+
+        return arr
+      } else if (command === 'myDeployables') {
+
+      } else if (command === 'collab') {
+
+      } else if (command === 'public') {
+
+      } else {
+        return this.projects
+      }
     },
   },
 
@@ -84,4 +115,8 @@ export default {
 </script>
 
 <style lang="scss">
+.hover tr:hover {
+  background-color: green;
+}
+
 </style>

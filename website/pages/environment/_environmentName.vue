@@ -203,8 +203,8 @@ section.section
           div.message-body There are no users for this environment yet. Would you like to add a new user?
       b-table(:data="users", focusable)
         template(slot-scope="props")
-          b-table-column(field="environment", label="Environment")
-            | {{ props.row.environment }}
+          b-table-column(field="username", label="Username")
+            | {{ props.row.username }}
           b-table-column(field="first_name", label="First Name")
             | {{ props.row.first_name }}
           b-table-column(field="last_name", label="Last Name")
@@ -213,7 +213,10 @@ section.section
             b-table-column(field="user_id", label="User ID")
               | {{ props.row.user_id }}
           b-table-column(field="access", label="Access")  
-            | {{ props.row.access }}
+            div(v-if="props.row.access === 'collab'") Collaborator
+            div(v-else-if="props.row.access === 'prod_owner'") Product Owner
+            div(v-else-if="props.row.access === 'owner'") Owner
+            div(v-else) {{ props.row.access }}
           b-table-column(field="", label="")
             div(v-if="isOwner()")
               a(href="", @click.prevent="editUser(props.row)")
@@ -286,9 +289,9 @@ section.section
                       div.formStyle Access:
                         div.control
                           b-select(placeholder="Access", v-model="form.new_user_access") Type:
-                            option(value="limited") Limited
-                            option(value="write") Write
-                            option(value="conditional") Conditional (recommended for clients only)
+                            option(value="collab") Collaborator
+                            option(value="owner") Owner
+                            option(value="prod_owner") Product Owner
             footer.modal-card-foot
               div.control
                 b-button(@click.stop="saveNewUser",  type="is-primary is-light", size="is-small")  Save
@@ -311,9 +314,9 @@ section.section
                       div.formStyle
                         b-field.control Change accessibility:
                           b-select(placeholder="Accessibility", v-model="form.edit_useraccess", value="accessibility") 
-                            option(value="limited") Limited
-                            option(value="write") Write
-                            option(value="conditional") Conditional (clients-only)
+                            option(value="collab") Collaborator
+                            option(value="owner") Owner
+                            option(value="prod_owner") Product Owner
             footer.modal-card-foot 
               div.control
                 b-button(@click.stop="saveEditedUser", type="is-primary is-light", size="is-small")  Save    
@@ -344,6 +347,7 @@ export default {
         // Add new user
         new_environmentuser: '',
         new_user_access: '',
+        new_username: '',
       },
       editingDetails: false,
 
@@ -518,13 +522,20 @@ export default {
         }
         this.newUserError = null
 
+        this.allUsers.forEach(user => {
+          if (user.id === this.form.new_environmentuser) {
+            this.form.new_username = user.username;
+          }
+        })
+
         // If no error, send post request to server
         try {
           let url = standardStuff.apiURL('/newEnvironmentUser')
           let record = {
             id: this.form.new_environmentuser,
             access: this.form.new_user_access,
-            environment: this.environmentName
+            environment: this.environmentName,
+            username: this.form.new_username,
           }
           let config = standardStuff.axiosConfig(this.$loginservice.jwt)
           await axios.post(url, record, config)

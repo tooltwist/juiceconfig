@@ -70,7 +70,7 @@ export default {
         
             let deployableName = req.query.deployableName
             let con = await db.checkConnection()
-            const sql = `SELECT PU.project, PU.user_id, PU.access, U.first_name, U.last_name FROM project_user PU left outer join user U on PU.user_id = U.id WHERE PU.project=?`
+            const sql = `SELECT PU.project, PU.username, PU.user_id, PU.access, U.first_name, U.last_name FROM project_user PU left outer join user U on PU.user_id = U.id WHERE PU.project=?`
             let params = [ deployableName ]
         
             con.query(sql, params, function (err, result) {

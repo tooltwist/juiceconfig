@@ -25,7 +25,7 @@ export default {
             
             let environmentName = req.query.environmentName
             let con = await db.checkConnection()
-            const sql = `SELECT EU.environment, EU.user_id, EU.access, U.first_name, U.last_name FROM environment_user EU left outer join user U on EU.user_id = U.id WHERE EU.environment=?`
+            const sql = `SELECT EU.environment, EU.username, EU.user_id, EU.access, U.first_name, U.last_name FROM environment_user EU left outer join user U on EU.user_id = U.id WHERE EU.environment=?`
             let params = [ environmentName ]
         
             con.query(sql, params, function (err, result) {
@@ -60,7 +60,7 @@ export default {
             console.log(`POST /newEnvironmentUser`)
         
             let con = await db.checkConnection()
-            const userValues = {user_id: req.params.id, environment: req.params.environment, access: req.params.access}
+            const userValues = {user_id: req.params.id, username: req.params.username, environment: req.params.environment, access: req.params.access}
             let sql = `INSERT INTO environment_user SET ?`
             let params = [ userValues ]
         
