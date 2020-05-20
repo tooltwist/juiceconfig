@@ -1,18 +1,16 @@
 <template lang="pug">
 section.section
   h1.title Deployables
-    b-select(style="float:right;", placeholder="Sort by:")
-      option(disabled selected) Sort by:
-      option(value="showAll") Show all
-      option(value="projects") Projects only
-      option(value="myDeployables") My deployables
-      option(value="collab") Collaborative
-      option(value="public") Public 
-    div.buttons.has-text-weight-normal(style="float:right;")  
-      //button.button.is-primary.is-outlined(v-if="justProjects", @click="justProjects=false") Show all Deployables
-      //button.button.is-primary.is-outlined(v-else, @click="justProjects=true") Show Projects   
-      b-button.is-primary(tag="nuxt-link", to="/newDeployable",  type="is-light")  + Add New Deployable
-
+    div(style="float:right; display: flex;")
+      b-select(placeholder="Sort by:", v-model="sortBy")
+        option(disabled selected) Sort by:
+        option(value="showAll") Show all
+        option(value="projects") Projects only
+        option(value="myDeployables") My deployables
+        option(value="collab") Collaborative
+        option(value="public") Public 
+      div.buttons.has-text-weight-normal(style="padding: 0px 5px;")   
+        b-button.is-primary(tag="nuxt-link", to="/newDeployable",  type="is-light")  + Add New Deployable
   
   b-table(:data="listOfDeployables", focusable) 
     template(slot-scope="props")
@@ -31,8 +29,6 @@ section.section
         | {{ props.row.description }}
       b-table-column(field="type", label="Type")
         | {{ props.row.type }}
-      b-table-column(field="is_project", label="Project")
-        | {{ props.row.is_project | yesno }}
         
 </template>
 
@@ -46,44 +42,61 @@ export default {
   data () {
     return {
       projects: [ ],
-      justProjects: false,
+      currentUser: '',
+      projectUsers: [],
+      sortBy: 'showAll',
     }
   }, // - data
 
   computed: {
-    listOfDeployables: function() {
-      let filteredList = this.projects.filter(project => {
-        return (project.is_project || !this.justProjects)
-      })
-      return filteredList
-      // Alternative method:
-      // let arr = [ ]
-      // this.projects.forEach(project => {
-      //   if (project.is_project || !this.justProjects) {
-      //     arr.push(project)
-      //   }
-      // })
-      // return arr
+    listOfDeployables: function () {      
+      let sortedDeployables = [ ];
+      let j = 0;
 
-      let arr = [ ]
+      if (this.sortBy != 'showAll') {
+        for (let i = 0; i < this.projects.length; i++) {
+          let deployable = this.projects[i];
 
-      if (command === 'projects') {
-        this.projects.forEach(project => {
-          if (project.is_project || !this.justProjects) {
-            arr.push(project)
-          }
-        })
+          if (this.sortBy === 'projects') { // show projects only 
+            if (deployable.type === 'project') {
+              sortedDeployables[j] = deployable;
+              j++;
+            }
+          } else if (this.sortBy === 'myDeployables') { // show deployables owned by user only
+            if (deployable.owner === this.currentUser) {
+              sortedDeployables[j] = deployable;
+              j++;
+            }
 
-        return arr
-      } else if (command === 'myDeployables') {
+            // check if user is secondary owner in project_user db - might change this later in case 
+            // original user wants to exchange their ownership with another user... 
+            this.projectUsers.forEach(project => {
+              if (deployable.name === project.project && project.access === 'owner') {
+                sortedDeployables[j] = deployable;
+                j++;
+              }
+            })
 
-      } else if (command === 'collab') {
-
-      } else if (command === 'public') {
-
+          } else if (this.sortBy === 'public') { // show all public (global) deployables
+            if (deployable.is_global != '0' || deployable.is_global != 0) {
+              sortedDeployables[j] = deployable;
+              j++;
+            }
+          } else if (this.sortBy === 'collab') { // show all deployables that user collaborates on
+            // Compare collab deployables with projects to create list
+            this.projectUsers.forEach(project => {
+              if (deployable.name === project.project && project.access === 'collab') {
+                sortedDeployables[j] = deployable;
+                j++;
+              }
+            })
+          } 
+        }
       } else {
-        return this.projects
+        return this.projects; 
       }
+    
+      return sortedDeployables; 
     },
   },
 
@@ -92,7 +105,16 @@ export default {
    *  See https://nuxtjs.org/guide/async-data#handling-errors
    */
   async asyncData ({ app, params, error }) {
+    let currentUser = app.$nuxtLoginservice.user.username
+
     try {
+      const params = {
+        params: { 
+          username: currentUser
+        }
+      }
+
+      // Retrieve ALL deployables from db table deployables 
       console.log(`------------------- asyncData`)
       const url = standardStuff.apiURL('/deployables')
       const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
@@ -100,8 +122,16 @@ export default {
       const projects = res.data.deployables;
       console.log(`data::: `, res.data.deployables)
 
+      // Retrieve all records with current userid from project_user db table
+      const url2 = standardStuff.apiURL('/projectAccess')
+      let res2 = await axios.get(url2, params, config);
+      const projectUsers = res2.data.records;
+      console.log(`data2::: `, res2.data.records)
+
       return {
         projects: projects,
+        currentUser: currentUser,
+        projectUsers: projectUsers,
       }
     } catch (e) {
       console.log(`Error while fetching deployables:`, e)

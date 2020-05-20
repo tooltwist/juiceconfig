@@ -113,6 +113,9 @@ export default {
             if (typeof(req.params.description) != 'undefined') {
                 record.description = req.params.description
             }
+            if (typeof(req.params.group_name) != 'undefinted') {
+                record.group_name = req.params.group_name
+            }
             if (typeof(req.params.notes) != 'undefined') {
                 record.notes = req.params.notes
             }

@@ -26,9 +26,11 @@ export default {
             console.log(`GET /usersProjects`);
         
             let userID = req.query.userID
+            console.log('userid === ', userID)
             let con = await db.checkConnection()
             const sql = `SELECT * from project_user where user_id=?`
             const params = [ userID ]
+
         
             con.query(sql, params, function (err, result) {
                 if (err) throw err;

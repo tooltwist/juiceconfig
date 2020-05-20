@@ -23,7 +23,8 @@ div
                   .control
                     select.select(v-model="deployable.type", :disabled="!editingDetails", @input="saveDetails")
                       option(value="project") Project
-                      option(value="non project") Non project
+                      option(value="api") API
+                      option(value="database") Database
             .field.is-horizontal
               .field-label.is-normal 
                 label.label(style="width:200px;") Product Owner:
@@ -41,14 +42,14 @@ div
                   .control
                     textarea.textarea(v-model.trim="deployable.description", placeholder="Description", :disabled="!editingDetails", @input="saveDetails")
             .field.is-horizontal
-              .field-label.is-normal  
-                label.label(style="width:200px;") Is this a project?
+              .field-label.is-normal
+                label.label(style="width:200px;") Public:
               .field-body
                 .field
                   .control
-                    select.select(v-model="deployable.type", :disabled="!editingDetails", @input="saveDetails")
-                      option(value="project") Project
-                      option(value="non project") Non project
+                    select.select(v-model="deployable.is_global", :disabled="!editingDetails", @input="saveDetails")
+                      option(value="1") Yes
+                      option(value="0") No
           div(v-if="isOwner()").control
             button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
 
@@ -164,9 +165,11 @@ div
         b-table(:data="dependencies", focusable)
           template(slot-scope="props")
             b-table-column(field="parent", label="Parent")
-              | {{ props.row.parent }}
+              nuxt-link(:to="`/deployable/${props.row.parent_name}`")
+                span(v-html="std_toQualifiedDisplay(props.row.parent_owner, props.row.parent_name)")
             b-table-column(field="child", label="Child")
-              | {{ props.row.child }}
+              nuxt-link(:to="`/deployable/${props.row.child_name}`")
+                span(v-html="std_toQualifiedDisplay(props.row.child_owner, props.row.child_name)")
             b-table-column(field="prefix", label="Prefix")
               | {{ props.row.prefix }}
             b-table-column(field="version", label="Version")
@@ -447,6 +450,10 @@ div
                             b-select(placeholder="Is this variable external?", v-model="form.variable_is_external", value="is_external") Is this variable external?:
                               option(value="1") Yes
                               option(value="0") No
+                          div.formStyle Sensitive:
+                            b-select(placeholder="Is this variable sensitive?", v-model="form.variable_is_sensitive", value="is_sensitive") Is this variable sensitive?:
+                              option(value="1") Yes
+                              option(value="0") No
             footer.modal-card-foot
               div.control
                 b-button(@click.stop="saveNewVariable",  type="is-primary is-light", size="is-small")  Save    
@@ -609,6 +616,7 @@ export default {
         new_type: '',
         new_description: '',
         new_is_project: '',
+        is_global: '',
   
         // Editing an existing variable
         new_variable_description: '',
@@ -622,15 +630,18 @@ export default {
         variable_type: '',
         variable_mandatory: '',
         variable_is_external: '',
+        variable_is_sensitive: '',
 
         // Adding a new deployment
         new_notes: '',
         new_environment: '',
+        new_environment_owner: '',
 
         // Adding a dependency
         new_child: '',
         new_prefix: '',
         new_version: '',
+        child_owner: '',
 
         // Adding a new user
         new_projectuser: '',
@@ -782,8 +793,8 @@ export default {
           product_owner: this.form.new_owner,
           type: this.form.new_type,
           description: this.form.new_description,
-          is_project: this.form.new_is_project,
-          name: this.deployableName
+          name: this.deployableName,
+          is_global: this.form.is_global,
         }
         let config = standardStuff.axiosConfig(this.$loginservice.jwt)
         await axios.post(url, record, config)
@@ -794,7 +805,7 @@ export default {
         this.deployable.product_owner = this.form.new_owner
         this.deployable.type = this.form.new_type
         this.deployable.description = this.form.new_description
-        this.deployable.is_project = this.form.new_is_project
+        this.deployable.is_global = this.form.is_global
         console.log('New deployable details have been updated on the browser.')
       } catch (e) {
         console.log(`Error while updating browser: `, e)
@@ -834,6 +845,7 @@ export default {
             type: this.form.variable_type,
             mandatory: this.form.variable_mandatory,
             external: this.form.variable_is_external,
+            sensitive: this.form.variable_is_sensitive,
           }
           let config = standardStuff.axiosConfig(this.$loginservice.jwt)
           await axios.post(url, record, config)
@@ -1051,6 +1063,13 @@ console.log(`record is`, record);
         }
         this.deploymentError = null
 
+        // Find environment owner for db table
+        this.environments.forEach(environment => {
+          if (environment.name === this.form.new_environment) {
+            this.form.new_environment_owner = environment.username;
+          }
+        })
+
         // If no error, send post request to server
         try {
           let url = standardStuff.apiURL('/newDeployment')
@@ -1058,6 +1077,7 @@ console.log(`record is`, record);
             environment: this.form.new_environment,
             notes: this.form.new_notes,
             deployable: this.deployableName,
+            environment_owner: this.new_environment_owner,
           }
           let config = standardStuff.axiosConfig(this.$loginservice.jwt)
           await axios.post(url, record, config)
@@ -1117,14 +1137,22 @@ console.log(`record is`, record);
         }
         this.dependencyError = null
 
+        this.deployables.forEach(deployable => {
+          if (deployable.name === this.form.new_child) {
+            this.form.child_owner = deployable.owner;
+          }
+        })
+
         // If no error, send post request to server
         try {
           let url = standardStuff.apiURL('/newDependency')
           let record = {
-            child: this.form.new_child,
+            child_name: this.form.new_child,
+            child_owner: this.form.child_owner,
             prefix: this.form.new_prefix,
             version: this.form.new_version,
-            deployable: this.deployableName
+            deployable: this.deployableName,
+            parent_owner: this.deployable.owner,
           }
           let config = standardStuff.axiosConfig(this.$loginservice.jwt)
           await axios.post(url, record, config)
@@ -1262,14 +1290,15 @@ console.log(`record is`, record);
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW DEPENDENCY
     async reloadDependencies() {
       const url = standardStuff.apiURL('/deployable/${this.deployableOwner}:${this.deployableName}/dependancies')
-      // const params = {
-      //     params: { 
-      //       deployableName: this.deployableName
-      //     }
-      // }
+      const params = {
+          params: { 
+            deployableName: this.deployableName,
+            deployableOwner: this.deployableOwner,
+          }
+      }
       const config = standardStuff.axiosConfig(this.$loginservice.jwt)
       // let res4 = await axios.get(url, params, config)
-      let res4 = await axios.get(url, config)
+      let res4 = await axios.get(url, params, config)
       console.log(`Dependencies have been reloaded on the browser`);
       this.dependencies = res4.data.dependencies
       return {
@@ -1641,7 +1670,7 @@ console.log(`record is`, record);
       // Select dependencies for this deployable
       // const url4 = standardStuff.apiURL('/dependencies1')
       const url4 = standardStuff.apiURL('/deployable/${deployableOwner}:${deployableName}/dependancies')
-      let res4 = await axios.get(url4, config)
+      let res4 = await axios.get(url4, params, config)
       // let res4 = await axios.get(url4, params, config)
       console.log(`API4 returned dependencies:`, res4.data);
       const dependencies = res4.data.dependencies

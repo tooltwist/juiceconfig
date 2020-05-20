@@ -46,10 +46,11 @@ section.section
                 label.label Description:
                     input.input(v-model="form.new_description", type="text", placeholder="Description")
             .field
-                label.label Is this a project?
-                    b-select(v-model="form.is_project", placeholder="Is this a project?") Is this a project?
-                        option(value="1") Yes
-                        option(value="0") No
+                label.label Type:
+                    b-select(v-model="form.type", placeholder="Type") 
+                        option(value="project") Project
+                        option(value="api") API
+                        option(value="database") Database
             .field
                 label.label Product owner:
                     input.input(v-model="form.new_product_owner", type="text", placeholder="Product Owner")
@@ -75,7 +76,7 @@ export default {
                 new_deployable: '',
                 new_product_owner: '',
                 new_description: '',
-                is_project: 0
+                type: '',
             },
             global: false,
             // mode: false,
@@ -175,7 +176,7 @@ export default {
                     name: this.form.new_deployable,
                     product_owner: this.form.new_product_owner,
                     description: this.form.new_description,
-                    is_project: this.form.is_project,
+                    type: this.form.type,
                 }
                 console.log(`record = `, record);
                 let url = standardStuff.apiURL('/newDeployable')

@@ -29,6 +29,32 @@ section.section
                         //- a.my-not-input-a(v-else-if="validUrl(environment.description)", :href="deployment.description", target="_blank") &nbsp;{{deployment.description}}
                         //- p.my-not-input-p(v-else) &nbsp;{{environment.description}}
         .field.is-horizontal
+          .field-label.is-normal
+            label.label(style="width:200px;") Universal: 
+          .field-body
+            .field
+              .control
+                select.select(v-model="environment.is_universal", :disabled="!editingDetails", @input="saveDetails")
+                  option(value="1") Yes
+                  option(value="0") No
+        .field.is-horizontal
+          .field-label.is-normal
+            label.label(style="width:200px;") Secure: 
+          .field-body
+            .field
+              .control
+                select.select(v-model="environment.is_secure_environment", :disabled="!editingDetails", @input="saveDetails")
+                  option(value="1") Yes
+                  option(value="0") No
+        .field.is-horizontal
+          .field-label.is-normal
+            label.label(style="width:200px;") Group: 
+          .field-body
+            .field
+              .control
+                select.select(v-model="environment.group_name", :disabled="!editingDetails", @input="saveDetails")
+                  option(v-for="group in groups", :value="group.group_name") {{group.group_name}}
+        .field.is-horizontal
             .field-label.is-normal
                 label.label(style="width:200px;") Description: 
             .field-body
@@ -354,6 +380,7 @@ export default {
       users: [],
       allUsers: [],
       currentUser: [],
+      groups: [],
 
       noData: false,
       environmentOwner: '',
@@ -699,6 +726,12 @@ console.log(`environment=> ${environmentOwner}, ${environmentName}`);
       console.log(`API8 returned`, res8.data);
       const currentUser = res8.data.user
       console.log('currentUser: ', currentUser)
+
+      // Import all groups to be used when editing environment
+      const url9 = standardStuff.apiURL('/groups')
+      let res9 = await axios.get(url9, config)
+      console.log(`API9 returned`, res9.data);
+      const groups = res9.data.groups
     
       return {
         environmentOwner: environmentOwner,
@@ -709,6 +742,7 @@ console.log(`environment=> ${environmentOwner}, ${environmentName}`);
         users: users,
         allUsers: allUsers,
         currentUser: currentUser,
+        groups: groups,
       }
     } catch (e) {
       console.log(`Could not fetch project:`, e)

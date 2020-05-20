@@ -13,10 +13,11 @@ export default {
 
             const product_owner = req.params.product_owner;
             const description = req.params.description;
-            const is_project = req.params.is_project;
+            const type = req.params.type;
+            const is_global = req.params.is_global;
             const name = req.params.name;
-            const sql = `UPDATE deployable SET product_owner =?, description =?, is_project =? WHERE name =?`
-            const params = [ product_owner, description, is_project, name ]
+            const sql = `UPDATE deployable SET product_owner =?, description =?, is_global =?, type =? WHERE name =?`
+            const params = [ product_owner, description, is_global, type, name ]
             
             con.query( sql, params, (err, result) => {
                 if (err) throw err;
@@ -98,13 +99,18 @@ export default {
         server.get('/api/deployable/:deployable/dependancies', async (req, res, next) => {
             console.log(`GET /deployable/:deployable/dependancies`);
         
+            //let { owner:parentOwner, name:parentName } = misc.splitOwnerName(req.params.deployable)  
+            //console.log(`owner=`, owner);
+            //console.log(`name=`, name);
+            
             console.log(`query=`, req.query);
             console.log(`params=`, req.params);
-            let { owner:parentOwner, name:parentName } = misc.splitOwnerName(req.params.deployable)
-            // let deployableName = req.query.deployableName
+
+            let deployableName = req.query.deployableName;
+            let ownerName = req.query.deployableOwner;
             let con = await db.checkConnection()
             const sql = `SELECT * FROM dependency WHERE parent_owner=? AND parent_name=?`
-            const params = [ parentOwner, parentName ]
+            const params = [ ownerName, deployableName ]
         
             con.query(sql, params, function (err, result) {
                 if (err) throw err;
@@ -469,8 +475,8 @@ console.log(`yarp 7`);
                 type: req.params.type,
                 mandatory: req.params.mandatory,
                 is_external: req.params.external,
-                is_sensitive: req.params.is_sensitive,
-                example: req.params.example,
+                is_sensitive: req.params.sensitive,
+                // example: req.params.example,
             }
             let sql = `INSERT INTO variable SET ?`
             let params = [ variableValues ]
@@ -537,7 +543,7 @@ console.log(`yarp 7`);
             console.log(`POST /newDependency`)
         
             let con = await db.checkConnection()
-            const dependencyValues = {parent: req.params.deployable, child: req.params.child, prefix: req.params.prefix, version: req.params.version}
+            const dependencyValues = {parent_name: req.params.deployable, parent_owner: req.params.parent_owner, child_name: req.params.child_name, child_owner: req.params.child_owner, prefix: req.params.prefix, version: req.params.version}
             let sql = `INSERT INTO dependency SET ?`
             let params = [ dependencyValues ]
         

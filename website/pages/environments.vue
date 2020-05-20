@@ -2,8 +2,9 @@
   section.section
     h1.title Environments
       div(style="float:right; display: flex;")
-        b-select.is-primary(v-model="group")
-          option(value="") 
+        b-select(placeholder="Sort by:", v-model="group")
+          option(disabled selected) Sort by:
+          option(value="") Show all
           option(:value="group", v-for="group in groups") {{ group.group_name }}
   
         div.buttons.has-text-weight-normal(style="padding: 0px 5px;")

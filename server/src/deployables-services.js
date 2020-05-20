@@ -54,7 +54,7 @@ export default {
             const newDeployable = {
                 owner: me,
                 name: req.params.name,
-                is_project: req.params.is_project,
+                type: req.params.type,
                 product_owner: req.params.product_owner,
                 description: req.params.description
             }
@@ -66,6 +66,25 @@ export default {
                 res.send({ ok: 'ok'})
                 return next();
             })
+        }); // End of section
+
+        // Dynamically select the PROJECTS for /_userName from MySQL database
+        server.get('/api/projectAccess', async (req, res, next) => {
+            console.log(`GET /projectAccess`);
+        
+            let userName = req.query.username
+            console.log('userName === ', userName)
+            let con = await db.checkConnection()
+            const sql = `SELECT * from project_user where username=?`
+            const params = [ userName ]
+
+        
+            con.query(sql, params, function (err, result) {
+                if (err) throw err;
+                console.log("Result: " + result);
+                res.send({ records: result })
+                next()
+            });
         }); // End of section
     }
 }
