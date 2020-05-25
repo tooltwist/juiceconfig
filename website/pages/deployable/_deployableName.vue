@@ -130,9 +130,6 @@ div
       b-tab-item(label="Deployments")
         // Deployments
         h1.is-title.is-size-4(style="text-align:left;") Deployments
-          div.buttons(style="float:right;")
-            div(v-if="isEditable")
-              button.button.is-primary(@click.prevent="newDeployment(deployments)",  type="is-light")  + Add New Deployment
         br 
         div(v-if="this.deployments.length === 0")
           br
@@ -141,11 +138,11 @@ div
         div(v-else)
           b-table(:data="deployments", focusable)
             template(slot-scope="props")
-              b-table-column(field="environment", label="Environment")
-                nuxt-link(:to="`/environment/${props.row.environment}`")
-                  span(v-html="std_toQualifiedDisplay(props.row.environmentOwner, props.row.environment)")
-              b-table-column(field="deployable", label="Application")
+              b-table-column(field="application_name", label="Application Name")
                 | {{ props.row.application_name }}
+              b-table-column(field="environment", label="Environment")
+                nuxt-link(:to="`/environment/${std_toQualifiedName(props.row.environmentOwner,props.row.environment)}`")
+                  span(v-html="std_toQualifiedDisplay(props.row.environmentOwner, props.row.environment)")
               b-table-column(field="notes", label="Notes")
                 | {{ props.row.notes }}
               b-table-column(field="", label="")
@@ -198,8 +195,7 @@ div
               b-table-column(field="user_id", labe="Users ID")
                 | {{ props.row.user_id }}
             b-table-column(field="access", label="Access", style="display:flex")    
-              div(v-if="props.row.access === 'collab'") Collaborator  
-              div(v-else-if="props.row.access === 'prod_owner'") Product Owner  
+              div(v-if="props.row.access === 'collab'") Collaborator   
               div(v-else-if="props.row.access === 'owner'") Owner  
               div(v-else) {{ props.row.access }}  
               a(href="", @click.prevent="editUser(props.row)") 
@@ -458,42 +454,6 @@ div
               div.control
                 b-button(@click.stop="saveNewVariable",  type="is-primary is-light", size="is-small")  Save    
                 b-button(@click="newVariableModal=false", type="is-danger is-outlined", size="is-small") Cancel
-  
-  // New Deployment Modal starts below:
-  div(v-show="newDeploymentModal")
-    transition(name="modal")
-      div.modal-mask
-        div.modal-wrapper
-          div.modal-card
-            header.modal-card-head
-              p.modal-card-title Add New Deployment for 
-                b {{ deployableName }}
-            section.modal-card-body
-              div(v-if="errormode === 'inputError'")
-                article.message.is-danger.is-small
-                  div.message-header
-                    p Form Error
-                  div.message-body Please ensure that all fields have values before saving.
-              div.modal-body(:data="deployments")
-                slot(name="body")
-                    form
-                      div.form-group
-                        div.formStyle Environment:
-                          div.control
-                            div(v-if="deploymentError === null")
-                              b-select(placeholder="Environment", v-model="form.new_environment") Environment:
-                                option(v-for="environment in environments") {{ environment.name }}
-                            div(v-else="deploymentError === `Deployment already exists`")
-                              b-select.is-danger(placeholder="Environment", v-model="form.new_environment") Environment:
-                                option(v-for="environment in environments") {{ environment.name }}
-                              p.help.is-danger {{ deployableName }} is already deployed on this environment.
-                        div.formStyle Notes:
-                          div.control
-                            input.input(name="new_notes", v-model="form.new_notes", type="text", placeholder="Notes")
-            footer.modal-card-foot 
-              div.control
-                b-button(@click.stop="saveNewDeployment",  type="is-primary is-light", size="is-small")  Save    
-                b-button(@click="newDeploymentModal=false", type="is-danger is-outlined", size="is-small") Cancel
 
   // New Dependency Modal starts below:
   div(v-show="newDependencyModal")
@@ -565,7 +525,6 @@ div
                           b-select(placeholder="Access", v-model="form.new_user_access") Type:
                             option(value="collab") Collaborator
                             option(value="owner") Owner
-                            option(value="prod_owner") Product Owner
             footer.modal-card-foot 
               div.control
                 b-button(@click.stop="saveNewUser",  type="is-primary is-light", size="is-small")  Save
@@ -588,7 +547,6 @@ div
                       b-select(placeholder="Accessibility", v-model="form.edit_useraccess", value="accessibility") 
                         option(value="collab") Collaborator
                         option(value="owner") Owner
-                        option(value="prod_owner") Product Owner
             footer.modal-card-foot 
               div.control
                 b-button(@click.stop="saveEditedUser", type="is-primary is-light", size="is-small")  Save    
@@ -631,11 +589,6 @@ export default {
         variable_mandatory: '',
         variable_is_external: '',
         variable_is_sensitive: '',
-
-        // Adding a new deployment
-        new_notes: '',
-        new_environment: '',
-        new_environment_owner: '',
 
         // Adding a dependency
         new_child: '',
@@ -717,10 +670,6 @@ export default {
       // Modal data for adding dependency
       newDependencyModal: false,
       dependencyError: null,
-
-      // Modal data for adding deployment
-      newDeploymentModal: false,
-      deploymentError: null,
 
       // Modal data for editing variables
       showModal: false,
@@ -1040,64 +989,7 @@ console.log(`record is`, record);
         console.log(`Error whilst updating browser with edited user:`, e)
       } 
     }, // - saveEditedUser
-
-    // ADD A NEW DEPLOYMENT TO THE DATABASE - FROM MODAL 
-    async saveNewDeployment() {
-      //Check that form is filled correctly
-      if (this.form.new_notes && this.form.new_environment) {
         
-        // Check for existing deployment using selected environment:
-        let found = false
-        this.deployments.forEach(deployment => {
-          if (deployment.environment === this.form.new_environment && deployment.deployable === this.deployableName) {
-            console.log(`There is already an existing deployable with these values!`)
-            found = true
-          }
-        })
-
-        // If matching deployment is found, send error 
-        if (found) {
-          console.log(`There is already a deployment with these values... Error message shown!`)
-          this.deploymentError = `Deployment already exists`
-          return 
-        }
-        this.deploymentError = null
-
-        // Find environment owner for db table
-        this.environments.forEach(environment => {
-          if (environment.name === this.form.new_environment) {
-            this.form.new_environment_owner = environment.username;
-          }
-        })
-
-        // If no error, send post request to server
-        try {
-          let url = standardStuff.apiURL('/newDeployment')
-          let record = {
-            environment: this.form.new_environment,
-            notes: this.form.new_notes,
-            deployable: this.deployableName,
-            environment_owner: this.new_environment_owner,
-          }
-          let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-          await axios.post(url, record, config)
-          this.newDeploymentModal = false
-          console.log(`New deployment successfully sent to database`);
-        } catch (e) {
-          console.log(`Error while sending new deployment to the database: `, e)
-        }
-
-        // Once data sent, reload with the new deployment
-        try {
-          this.reloadDeployments(); 
-          console.log(`Reloading...`)
-        } catch (e) {
-          console.log(`Error while reloading deployments on the browser: `, e)
-        }
-      } else {
-        this.errormode = 'inputError'
-      }
-    }, // - saveNewDeployment
 
     // ADD A NEW DEPENDENCY TO THE DATABASE - FROM MODAL 
     async saveNewDependency() {
@@ -1270,23 +1162,6 @@ console.log(`record is`, record);
       };
     },  // -reloadVersions 
 
-    // RELOAD THE DATABASE TABLE AFTER SAVING NEW DEPLOYMENT
-    async reloadDeployments() {
-      const url = standardStuff.apiURL('/envDeployments')
-      const params = { 
-        params: {
-          deployableName: this.deployableName
-        }
-      }
-      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-      let res3 = await axios.get(url, params, config)
-      console.log(`Deployments have been reloaded on the browser`);
-      this.deployments = res3.data.deployments
-      return {
-        deployments: this.deployments
-      };
-    },  // -reloadDeployments
-
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW DEPENDENCY
     async reloadDependencies() {
       const url = standardStuff.apiURL('/deployable/${this.deployableOwner}:${this.deployableName}/dependancies')
@@ -1391,12 +1266,6 @@ console.log(`record is`, record);
       this.newDependencyModal = true;
       return false
     }, // -newVariable
-
-    // OPEN MODAL AND ENTER NEW VALUES FOR CREATING NEW DEPLOYMENT 
-    newDeployment(deployments) {
-      this.newDeploymentModal = true;
-      return false
-    }, // -newDeployment
 
     showLearnVariablesDialog() {
       this.importJSON = ''

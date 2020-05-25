@@ -97,8 +97,6 @@ export default {
       }
       console.log(`will save this:`, obj);
 
-
-
       let con = await db.checkConnection()
       // const deploymentValues = {notes: req.params.notes, deployable: req.params.deployable, environment: req.params.environment}
       let sql = `INSERT INTO deployments SET ?`

@@ -11,14 +11,11 @@ export default {
             // Check if owner matches the username for private accounts
             let me = req.identity.username
 
-            // Show global (public) deployables
-            let global = 1;
-
             console.log(`I am ${me}`);
             
-            const sql = `SELECT * FROM deployable WHERE owner =? OR is_global =? OR name IN (SELECT project FROM project_user WHERE username =?)`
+            const sql = `SELECT * FROM deployable WHERE owner =? OR name IN (SELECT project FROM project_user WHERE username =?)`
 
-            const params = [ me, global, me ] //owner, name, type, is_project, product_owner, description, is_global
+            const params = [ me, me ] 
         
             let con = await db.checkConnection()
             con.query(sql, params, function (err, result) {

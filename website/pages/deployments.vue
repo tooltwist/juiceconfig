@@ -566,12 +566,12 @@ async function checkHealth(deployment) {
 }
 
 async function loadDeployments (axiosConfig) {
+  // add params 
   let url = standardStuff.apiURL('/deployments')
   let reply = await axios.get(url, axiosConfig)
   const deployments = reply.data.deployments
   return deployments
 }
-
 </script>
 
 <style lang="scss">
