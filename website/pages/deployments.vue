@@ -47,6 +47,7 @@
                   b-tooltip(:label="deployment._healthcheck.text", position="is-right", multilined, :type="healthcheckColor(deployment._healthcheck.status)")
                     b-icon(:icon="healthcheckIcon(deployment._healthcheck.status)", size="is-small", :type="healthcheckColor(deployment._healthcheck.status)")
 
+    // Modal for New Deployment
     .modal(:class="{ 'is-active': showDialog }")
       .modal-background
       .modal-content
@@ -68,42 +69,37 @@
                               | &nbsp;- {{env.description}}
 
                 .field.is-horizontal
-                    .field-label.is-normal
-                        label.label(style="width:200px;") Deployable: 
-                    .field-body
-                      .field
-                        .control
-                          select.select(v-model="deployableId")
-                            option(v-for="dep in deployables", :value="`${dep.owner}:${dep.name}`")
-                              | {{dep.name}}
-                              | &nbsp;- {{dep.description}}
+                  .field-label.is-normal
+                    label.label(style="width:200px;") Deployable: 
+                  .field-body
+                    .field
+                      .control
+                        select.select(v-model="deployableId")
+                          option(v-for="dep in deployables", :value="`${dep.owner}:${dep.name}`")
+                            | {{dep.name}}
+                            | &nbsp;- {{dep.description}}
 
                 .field.is-horizontal
-                    .field-label.is-normal
-                        label.label(style="width:200px;") New application name: 
-                    .field-body
-                      .field
-                          .control
-                              input.input(v-model.trim="applicationName", :placeholder="defaultApplicationName")
+                  .field-label.is-normal
+                    label.label(style="width:200px;") New application name: 
+                  .field-body
+                    .field
+                      .control
+                        input.input(v-model.trim="applicationName", :placeholder="defaultApplicationName")
 
-                          p.has-text-danger.is-size-7(v-show="nameIsUsed")
-                            | &nbsp;&nbsp;&nbsp;Name is already used
+                      p.has-text-danger.is-size-7(v-show="nameIsUsed")
+                      | &nbsp;&nbsp;&nbsp;Name is already used
 
                 .field.is-horizontal
-                    .field-label.is-normal
-                        label.label(style="width:200px;") Notes: 
-                    .field-body
-                      .field
-                        .control
-                          textarea.textarea(v-model="notes")
-
+                  .field-label.is-normal
+                    label.label(style="width:200px;") Notes: 
+                  .field-body
+                    .field
+                      .control
+                        textarea.textarea(v-model="notes")
 
             b-message(:active.sync="showSaveErrorMsg", title="Notice", type="is-danger", aria-close-label="Close message")
               | An error occurred, and the new deployment was not saved. Please try again.
-
-            //article.message.is-danger
-              .message-body.is-danger
-              | An error occurred, and the new deployment record was not saved. Please try again.
 
           .modal-card-foot
             button.button.is-success(:disabled="!readyToSave", @click="createDeployment") Save
@@ -123,7 +119,7 @@ export default {
       environments: [ ],
       deployables: [ ],
 
-      // Modal to add a deployment
+      // Modal to add new deployment
       showDialog: false,
       environment: '',
       environmentOwner: '',
@@ -155,10 +151,6 @@ export default {
       let reply = await axios.get(url, config)
       const environments = reply.data.environments
 
-      // console.log(`BEFORE loading deployables`);
-      // let deployables = await loadDeployables(jwt)
-      // console.log(`AFTER loading deployables`, deployables);
-
       // Get all the deployables, for the new dialog
       url = standardStuff.apiURL('/deployables')
       reply = await axios.get(url, config)
@@ -173,11 +165,6 @@ export default {
         checkHealth(d)
       })
 
-
-// console.log(`deployments=`, deployments);
-// console.log(`environments=`, environments);
-// console.log(`deployables=`, deployables);
-
       return {
         deployments,
         environments,
@@ -190,7 +177,6 @@ export default {
 
   computed: {
     defaultApplicationName: function () {
-
       // See if a deployable has been selected.
       let pos = this.deployableId.indexOf(':')
       if (pos < 0) { return '' } // Nope, none selected
@@ -337,7 +323,6 @@ export default {
       // Prepare the object
       
       try {
-        
         let url = standardStuff.apiURL('/newDeployment')
         let record = {
           environment_owner: envOwner,
@@ -566,7 +551,7 @@ async function checkHealth(deployment) {
 }
 
 async function loadDeployments (axiosConfig) {
-  // add params 
+  // add params
   let url = standardStuff.apiURL('/deployments')
   let reply = await axios.get(url, axiosConfig)
   const deployments = reply.data.deployments
