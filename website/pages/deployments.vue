@@ -141,18 +141,25 @@ export default {
    *  See https://nuxtjs.org/guide/async-data#handling-errors
    */
   async asyncData ({ app, params, error }) {
+    let currentUser = app.$nuxtLoginservice.user.username
+
     try {
+      const params = {
+        params: { 
+          username: currentUser,
+        }
+      }
       // Get the deployments
       const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
-      const deployments = await loadDeployments(config)
+      const deployments = await loadDeployments(config, params)
 
       // Get all the environments, for the new dialog
-      let url = standardStuff.apiURL('/environments')
+      let url = standardStuff.apiURL('/showEnvironments')
       let reply = await axios.get(url, config)
       const environments = reply.data.environments
 
       // Get all the deployables, for the new dialog
-      url = standardStuff.apiURL('/deployables')
+      url = standardStuff.apiURL('/allDeployables')
       reply = await axios.get(url, config)
       const deployables = reply.data.deployables
 
@@ -550,11 +557,12 @@ async function checkHealth(deployment) {
   } //- catch
 }
 
-async function loadDeployments (axiosConfig) {
-  // add params
-  let url = standardStuff.apiURL('/deployments')
-  let reply = await axios.get(url, axiosConfig)
-  const deployments = reply.data.deployments
+async function loadDeployments (axiosConfig, params) {
+  console.log('params: ', params)
+  let url = standardStuff.apiURL('/applications')
+  let reply = await axios.get(url, params, axiosConfig)
+  const deployments = reply.data.applications
+  console.log('deployments', deployments)
   return deployments
 }
 </script>

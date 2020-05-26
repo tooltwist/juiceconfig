@@ -10,6 +10,8 @@ export default {
             
             // Check if owner matches the username for private accounts 
             let me = req.identity.username
+            //let me = req.query.username
+
 
             console.log(`I am ${me}`);
 

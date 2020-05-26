@@ -4,6 +4,26 @@ import auth from './auth'
 
 export default {
 	register (server) {
+    // Select DEPLOYMENTS for /applications 
+    server.get('/api/applications', async (req, res, next) => {
+      console.log(' GET /applications');
+
+      // Check if owner matches the username for private accounts
+      let me = req.query.username
+
+      console.log(`I am ${me}`);
+      
+      const sql = `SELECT * FROM deployments WHERE environment_owner =? AND deployable_owner =? OR deployable_owner IN (SELECT project FROM project_user WHERE username =?)`
+      const params = [ me, me, me ] 
+  
+      let con = await db.checkConnection()
+      con.query(sql, params, function (err, result) {
+          if (err) throw err;
+          res.send({ applications: result })
+          next()
+      });
+    });
+
     // Select DEPLOYMENTS for /_environmentNAME on MySQL database
     server.get('/api/deployments', async (req, res, next) => {
       console.log(`GET /deployments`);
@@ -61,7 +81,7 @@ export default {
         res.send({ deployments: result })
         next()
       });
-    })//- GET /deployment
+    });//- GET /deployment
 
   // server.put('/api/deployment', auth, async (req, res, next) => {
 
@@ -110,7 +130,7 @@ export default {
         res.send({ status: 'ok' })
         return next();
       }) 
-    })//- POST /deployment
+    });//- POST /deployment
 
     server.put('/api/deployment', async (req, res, next) => {
       console.log(`PUT /deployment`)
@@ -158,7 +178,7 @@ export default {
         res.send({ status: 'ok' })
         return next();
       }) 
-    })//- PUT /deployment
+    });//- PUT /deployment
   }//- register
 };
   

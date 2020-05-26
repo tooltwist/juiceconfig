@@ -14,9 +14,28 @@ export default {
             console.log(`I am ${me}`);
             
             const sql = `SELECT * FROM deployable WHERE owner =? OR name IN (SELECT project FROM project_user WHERE username =?)`
+            const params = [ me, me ]
+            
+            let con = await db.checkConnection()
+            con.query(sql, params, function (err, result) {
+                if (err) throw err;
+                res.send({ deployables: result })
+                next()
+            });
+        }); // End of section
 
-            const params = [ me, me ] 
+        // Selects the all deployables that are owned or global from MySQL db
+        server.get('/api/allDeployables', auth, async (req, res, next) => {
+            console.log(`GET /allDeployables`);
         
+            // Check if owner matches the username for private accounts
+            let me = req.identity.username
+
+            console.log(`I am ${me}`);
+            
+            const sql = `SELECT * FROM deployable WHERE owner =? OR name IN (SELECT project FROM project_user WHERE username =?) OR is_global =?`
+            const params = [ me, me, '1' ]
+            
             let con = await db.checkConnection()
             con.query(sql, params, function (err, result) {
                 if (err) throw err;

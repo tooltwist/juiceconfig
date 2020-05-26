@@ -219,7 +219,7 @@ section.section
     b-tab-item(v-if="isOwner()", label="Users")
       // Users
       h1.is-title.is-size-4(style="text-align:left;") Users
-        div(v-if="isOwner()").buttons(style="float:right;")
+        div.buttons(v-if="isOwner()", style="float:right;")
           button.button.is-primary(@click.prevent="newUser", type="is-light")  + Add New User
       br
       div(v-if="this.users.length === 0")

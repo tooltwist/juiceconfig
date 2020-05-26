@@ -2,14 +2,14 @@
 div
   nav.headerStyle.navbar.mobileStyle(role="navigation" aria-label="main navigation")
     div.navbar-brand.juiceHeaderLogo.mobile
-      a.navbar-item.linkStyle(href="/")
+      //a.navbar-item.linkStyle(href="/")
         img.juiceHeadStyle(src="../assets/header-logo.png") 
-    //- v-if(class="mobile")
-      br
-    // New logo will need to be properly sized 
+        //- v-if(class="mobile")
+          br
+          // New logo will need to be properly sized 
     
-    //a(class="navbar-item", href="/")
-        .juiceLogo Juice.
+      a(class="navbar-item", href="/")
+          .juiceLogo Juice.
 
     div.navbar-end.mobileStyle
       b-navbar-item(href="https://juiceconfig.io", target="_blank") Docs
