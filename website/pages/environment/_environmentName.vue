@@ -177,10 +177,6 @@ section.section
                 span(v-html="std_toQualifiedDisplay(props.row.deployable_owner,props.row.deployable,true)")
             b-table-column(field="notes", label="Notes")
               | {{ props.row.notes }}
-            b-table-column(field="", label="")
-              div(v-if="isOwner()")
-                b-button.button.is-small.is-primary.is-outlined(tag="nuxt-link", :to="`../config/${props.row.environment}/${props.row.deployable}`") Configure
-            //- | {{props.row.environment}}
     
 
     b-tab-item(label="Commands", v-if="environment.type==='aws'")
@@ -238,8 +234,9 @@ section.section
             b-table-column(field="user_id", label="User ID")
               | {{ props.row.user_id }}
           b-table-column(field="access", label="Access")  
-            div(v-if="props.row.access === 'collab'") Collaborator
-            div(v-else-if="props.row.access === 'owner'") Owner
+            div(v-if="props.row.access === 'owner'") Admin
+            div(v-else-if="props.row.access === 'read'") Read
+            div(v-else-if="props.row.access === 'write'") Write
             div(v-else) {{ props.row.access }}
           b-table-column(field="", label="")
             div(v-if="isOwner()")
@@ -277,8 +274,9 @@ section.section
                       div.formStyle Access:
                         div.control
                           b-select(placeholder="Access", v-model="form.new_user_access") Type:
-                            option(value="collab") Collaborator
-                            option(value="owner") Owner
+                            option(value="owner") Admin
+                            option(value="read") Read
+                            option(value="write") Write 
             footer.modal-card-foot
               div.control
                 b-button(@click.stop="saveNewUser",  type="is-primary is-light", size="is-small")  Save
@@ -301,8 +299,9 @@ section.section
                       div.formStyle
                         b-field.control Change accessibility:
                           b-select(placeholder="Accessibility", v-model="form.edit_useraccess", value="accessibility") 
-                            option(value="collab") Collaborator
-                            option(value="owner") Owner
+                            option(value="owner") Admin
+                            option(value="read") Read
+                            option(value="write") Write
             footer.modal-card-foot 
               div.control
                 b-button(@click.stop="saveEditedUser", type="is-primary is-light", size="is-small")  Save    

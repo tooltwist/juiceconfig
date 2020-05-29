@@ -88,11 +88,11 @@ export default {
           icon: 'rocket',
           to: { name: 'deployments' }
         },
-        {
+        /*{
           title: 'Users',
           icon: 'account-multiple-outline',
           to: { name: 'users' }
-        }
+        }*/ // Used only for organisations, implementing later.
       ],
       isActive: true,
     }

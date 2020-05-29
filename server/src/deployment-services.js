@@ -13,7 +13,7 @@ export default {
 
       console.log(`I am ${me}`);
       
-      const sql = `SELECT * FROM deployments WHERE environment_owner =? AND deployable_owner =? OR deployable_owner IN (SELECT project FROM project_user WHERE username =?)`
+      const sql = `SELECT * FROM deployments WHERE environment_owner =?` 
       const params = [ me, me, me ] 
   
       let con = await db.checkConnection()

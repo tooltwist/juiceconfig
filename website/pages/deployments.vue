@@ -26,8 +26,9 @@
             b-table-column(field="application_name", label="Name")
               | {{ props.row.application_name }}
             b-table-column(field="deployable", label="Deployable")
-              nuxt-link(:to="`/deployable/${std_toQualifiedName(props.row.deployable_owner,props.row.deployable)}`")
+              nuxt-link(v-if="props.row.deployable_owner === currentUser", :to="`/deployable/${std_toQualifiedName(props.row.deployable_owner,props.row.deployable)}`")
                 span(v-html="std_toQualifiedDisplay(props.row.deployable_owner,props.row.deployable,true)")
+              span(v-else, v-html="std_toQualifiedDisplay(props.row.deployable_owner,props.row.deployable,true)") 
             b-table-column(field="", label="")
               b-button.button.is-small.is-primary.is-outlined(tag="nuxt-link", :to="`../deployment/${props.row.environment_owner}:${props.row.environment}/${props.row.application_name}`") Configure
       
@@ -128,6 +129,7 @@ export default {
       applicationName: '',
       notes: '',
 
+      currentUser: '',
       environmentId: '', // owner:name
       deployableId: '', // owner:name
 
@@ -176,6 +178,7 @@ export default {
         deployments,
         environments,
         deployables,
+        currentUser,
       }
     } catch (e) {
       console.log(`Error while fetching deployments: `, e)

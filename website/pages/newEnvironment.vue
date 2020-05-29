@@ -21,7 +21,7 @@ section.section
         
         form
             .field
-                label.label Owner:
+                label.label Admin:
                     input.input(v-model="form.new_owner", type="text", :disabled="true")
             .field
                 label.label New environment name

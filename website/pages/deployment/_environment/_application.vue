@@ -60,10 +60,9 @@ section.section
             .control
                 button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
 
-
         b-tab-item(label="AWS", v-if="environment.type === 'aws'")
             form.formStyle
-                .field.is-horizontal
+                .field.is-horizontal    
                     .field-label.is-normal
                         label.label(style="width:200px;") ECS Service: 
                     .field-body

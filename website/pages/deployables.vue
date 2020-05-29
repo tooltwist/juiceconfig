@@ -21,7 +21,7 @@ section.section
         b-icon(v-else, icon="webpack", size="is-small")
         div(v-if="props.row.is_global != '0'") 
           nuxt-link(:to="`/deployable/${std_toQualifiedName(props.row.owner,props.row.name)}`") 
-            span(v-html="std_toQualifiedDisplay('global',props.row.name,true)")
+            span(v-html="std_toQualifiedDisplay('public',props.row.name,true)")
         div(v-else)
           nuxt-link(:to="`/deployable/${std_toQualifiedName(props.row.owner,props.row.name)}`")
             span(v-html="std_toQualifiedDisplay(props.row.owner,props.row.name,true)")
