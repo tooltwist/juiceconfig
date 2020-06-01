@@ -89,7 +89,7 @@
                         input.input(v-model.trim="applicationName", :placeholder="defaultApplicationName")
 
                       p.has-text-danger.is-size-7(v-show="nameIsUsed")
-                      | &nbsp;&nbsp;&nbsp;Name is already used
+                        | &nbsp;&nbsp;&nbsp;Name is already used
 
                 .field.is-horizontal
                   .field-label.is-normal
@@ -204,6 +204,10 @@ export default {
       // Find a non-duplicate deployable name.
       let newApplicationName = name
       for (let cnt = 1; ; cnt++) {
+        if (cnt > 1000) {
+          alert(`We appear to be in an infinite loop!`)
+          return
+        }
         // create a name
         if (cnt > 1) {
           newApplicationName = `${name}_${cnt}`
@@ -211,14 +215,13 @@ export default {
         console.log(`Check ${newApplicationName}`);
 
         // See if it's already used
-        for (let i = 0; i < this.deployments.length; i++) {
-          let deployment = this.deployments[i]
-          // console.log(` => `, deployment);
-          // console.log(` - ${deployment.environment_owner}:${deployment.environment}:${deployment.application_name}`);
-          if (!this.applicationExists(envOwner, envName, newApplicationName)) {
+          if (this.applicationExists(envOwner, envName, newApplicationName)) {
+            // Name is already used
+            // console.log(`Name ${newApplicationName} is already used.`);
+          } else {
+            // console.log(`Name ${newApplicationName} is available.`);
             return newApplicationName
           }
-        } //- for
       }
     },//- defaultApplicationName
 
