@@ -911,7 +911,7 @@ export default {
             record.target_environment_name = this.form.new_token_deployment.environment_name
             record.target_application_name = this.form.new_token_deployment.application_name
           }
-console.log(`record is`, record);
+          console.log(`record is`, record);
           let url = standardStuff.apiURL('/token')
           let config = standardStuff.axiosConfig(this.$loginservice.jwt)
           await axios.post(url, record, config)

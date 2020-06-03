@@ -19,10 +19,10 @@ section.section
         b-icon(v-else-if="props.row.type==='api'", icon="run", size="is-small")
         b-icon(v-else-if="props.row.type==='project'", icon="android-studio", size="is-small")
         b-icon(v-else, icon="webpack", size="is-small")
-        div(v-if="props.row.is_global != '0'") 
+        div.iconTable(v-if="props.row.is_global != '0'") 
           nuxt-link(:to="`/deployable/${std_toQualifiedName(props.row.owner,props.row.name)}`") 
             span(v-html="std_toQualifiedDisplay('public',props.row.name,true)")
-        div(v-else)
+        div.iconTable(v-else)
           nuxt-link(:to="`/deployable/${std_toQualifiedName(props.row.owner,props.row.name)}`")
             span(v-html="std_toQualifiedDisplay(props.row.owner,props.row.name,true)")
       b-table-column(field="description", label="Description")
@@ -147,6 +147,10 @@ export default {
 <style lang="scss">
 .hover tr:hover {
   background-color: green;
+}
+
+.iconTable {
+  display: inline-block;
 }
 
 </style>

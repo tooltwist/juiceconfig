@@ -351,12 +351,28 @@ export default {
         let reply = await axios.post(url, record, config)
         console.log(`reply is `, reply);
 
-        let reloadedDeployments = await loadDeployments(config)
+        const params = {
+          params: { 
+            username: this.currentUser,
+          }
+        }
+        let reloadedDeployments = await loadDeployments(config, params)
         // this.deployables = loadDeployables(jwt)
         console.log(`reloaded deployments: `, reloadedDeployments);
         this.deployments = reloadedDeployments
+
+        // Set the initial healthcheck status for each deployment
+        this.deployments.forEach(d => {
+          d._healthcheck = {
+            status: 'scanning',
+            text: 'attempting to contact...',
+          }
+          checkHealth(d)
+        })
+
         this.showSaveErrorMsg = false
         this.showDialog = false
+
         return
       } catch (e) {
         console.log(`Error:`, e);
@@ -367,6 +383,7 @@ export default {
     },//- createDeployment
 
     healthcheckIcon: function(mode) {
+
       switch (mode) {
         case 'scanning':
           return 'radar'
@@ -388,7 +405,6 @@ export default {
           return 'minus'
       }
     }, //- healthcheckIcon
-
 
     healthcheckColor: function(status) {
       switch (status) {
@@ -412,7 +428,6 @@ export default {
           return 'is-light'
       }
     },//- healthcheckColor
-
   }//- methods
 }
 
@@ -454,68 +469,65 @@ async function checkHealth(deployment) {
   
   // Call health check to determine status
   // console.log(`Checking health of `, deployment);
-
-    const healthcheckUrl = deployment.website_url + deployment.healthcheck
-    let result
-    const USE_PROXY = true
-    if (USE_PROXY) {
-      try {
-
-        let url = standardStuff.apiURL('/proxyHealthcheck')
-        // console.log(`checkHealth(${deployment.environment}.${deployment.application_name}): ${url}`);
-        result = await axios.get(url, {
-          params: {
-            url: healthcheckUrl
-          }
-        });
-        // console.log(`Proxy returned:`, result);
-        deployment._healthcheck.status = result.data.status
-        // deployment._healthcheck.text = result.data.text
-        switch (deployment._healthcheck.status) {
-          // case 'scanning':
-          //   break
-          case 'OK':
-            deployment._healthcheck.text = result.data.body
-            break
-          // case 'error':
-          //   return 'is-danger'
-          // case 'network':
-          //   return 'is-danger'
-          case 'ENOENT':
-            deployment._healthcheck.text = `ENOENT: healthcheck path was not found on the server (${deployment.healthcheck})`
-            break
-          case 'ENOTFOUND': // url not defined
-            deployment._healthcheck.text = `ENOTFOUND: incorrect server url? (${deployment.website_url})`
-            break
-          case 'ECONNABORTED':
-            deployment._healthcheck.text = 'ECONNABORTED: timeout?'
-            break
-          // case 'skip':
-          // case 'unknown':
-          default:
-            deployment._healthcheck.text = `status: ${deployment._healthcheck.status}`
-            break
+  const healthcheckUrl = deployment.website_url + deployment.healthcheck
+  let result
+  const USE_PROXY = true
+  if (USE_PROXY) {
+    try {
+      let url = standardStuff.apiURL('/proxyHealthcheck')
+      // console.log(`checkHealth(${deployment.environment}.${deployment.application_name}): ${url}`);
+      result = await axios.get(url, {
+        params: {
+          url: healthcheckUrl
         }
-      } catch (error) {
-        // Unable to ask our server to do the healthcheck for us. I wonder why?
-        deployment._healthcheck.status = 'error'
-        deployment._healthcheck.text = 'Error in juice server.'
-        console.log(`Healthcheck proxy failed:`, error);
+      });
+      // console.log(`Proxy returned:`, result);
+      deployment._healthcheck.status = result.data.status
+      // deployment._healthcheck.text = result.data.text
+      switch (deployment._healthcheck.status) {
+        // case 'scanning':
+        //   break
+        case 'OK':
+          deployment._healthcheck.text = result.data.body
+          break
+        // case 'error':
+        //   return 'is-danger'
+        // case 'network':
+        //   return 'is-danger'
+        case 'ENOENT':
+          deployment._healthcheck.text = `ENOENT: healthcheck path was not found on the server (${deployment.healthcheck})`
+          break
+        case 'ENOTFOUND': // url not defined
+          deployment._healthcheck.text = `ENOTFOUND: incorrect server url? (${deployment.website_url})`
+          break
+        case 'ECONNABORTED':
+          deployment._healthcheck.text = 'ECONNABORTED: timeout?'
+          break
+        // case 'skip':
+        // case 'unknown':
+        default:
+          deployment._healthcheck.text = `status: ${deployment._healthcheck.status}`
+          break
       }
-      return
+    } catch (error) {
+      // Unable to ask our server to do the healthcheck for us. I wonder why?
+      deployment._healthcheck.status = 'error'
+      deployment._healthcheck.text = 'Error in juice server.'
+      console.log(`Healthcheck proxy failed:`, error);
     }
+    return
+  }
 
   /*
    *  We'll run the healthchecks directly from the browser. This is faster, but CORS checking by the
    *  browser will cause some healthchecks to fail (Cross Site Resource Scripting is a hack technique).
    */
   try {
-
-      console.log(`checkHealth(${deployment.environment}.${deployment.application_name}): ${healthcheckUrl}`);
-      let result = await axios.get(healthcheckUrl, {
-        timeout: 4000,
-        // crossdomain: true
-      });
+    console.log(`checkHealth(${deployment.environment}.${deployment.application_name}): ${healthcheckUrl}`);
+    let result = await axios.get(healthcheckUrl, {
+      timeout: 4000,
+      // crossdomain: true
+    });
 
     let status = result.status
     console.log(`status is`, status);
@@ -539,9 +551,9 @@ async function checkHealth(deployment) {
         deployment._healthcheck.text = `ENOENT: healthcheck path was not found on the server (${deployment.healthcheck})`
         return
       }
-    // } else if (error.message === 'Network Error') {
-    //   deployment._healthcheck.status = 'network'
-    //   return
+      // } else if (error.message === 'Network Error') {
+      //   deployment._healthcheck.status = 'network'
+      //   return
     } else if (error.code === 'ECONNABORTED') {
       // See https://medium.com/@masnun/handling-timeout-in-axios-479269d83c68
       deployment._healthcheck.status = 'ECONNABORTED'
