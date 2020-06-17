@@ -192,13 +192,16 @@ div
             div(v-if="access === 'admin'")
               b-table-column(field="user_id", labe="Users ID")
                 | {{ props.row.user_id }}
-            b-table-column(field="access", label="Access", style="display:flex")    
+            b-table-column(field="access", label="Access")    
               div(v-if="props.row.access === 'owner'") Admin   
               div(v-else-if="props.row.access === 'read'") Read  
               div(v-else-if="props.row.access === 'write'") Write 
               div(v-else) {{ props.row.access }}  
+            b-table-column(field="edit/delete", label="")
               a(href="", @click.prevent="editUser(props.row)") 
                 b-icon(icon="circle-edit-outline")
+              a(href="",  @click.prevent="deleteUser(props.row)")
+                b-icon(icon="delete")
 
       b-tab-item(label="Versions")     
         b-button.is-success(@click.prevent="newVersion()", style="float:right;") Create new version
@@ -552,6 +555,21 @@ div
               div.control
                 b-button(@click.stop="saveEditedUser", type="is-primary is-light", size="is-small")  Save    
                 b-button(@click="showUserEditModal=false", type="is-danger is-outlined", size="is-small") Cancel
+
+  // Remove User Modal starts below:
+  div(v-show="deleteUserModal")
+    transition(name="modal")
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Remove user    
+            section.modal-card-body
+              p Are you sure you want to remove {{ users.first_name }} {{ users.last_name }} from {{deployableName}}?
+            footer.modal-card-foot 
+              div.control
+                b-button(@click.stop="removeUser", type="is-danger is-outlined", size="is-small") Remove    
+                b-button(@click="deleteUserModal=false", type="is-gray is-outlined", size="is-small") Cancel
 </template>
 
 <script>
@@ -648,8 +666,9 @@ export default {
       // Show environments option in token modal
       showEnvironmentToken: false,
 
-      // Modal data for editing existing user
+      // Modal data for user funcs
       showUserEditModal: false,
+      deleteUserModal: false,
 
       // Modal data for new user
       newUserModal: false,
@@ -991,6 +1010,21 @@ export default {
       } 
     }, // - saveEditedUser
         
+    // REMOVE USER
+    async removeUser() {
+      try {
+        let url = standardStuff.apiURL(`/removeUser/${this.deployableName}/${this.users.username}`)
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+        await axios.delete(url, config) 
+
+        // Display new users details
+        this.deleteUserModal = false;
+        this.reloadUsers();
+        console.log('User has been removed from the project_users db table.')
+      } catch (e) {
+        console.log(`Error whilst removing user:`, e)
+      } 
+    }, // - removeUser
 
     // ADD A NEW DEPENDENCY TO THE DATABASE - FROM MODAL 
     async saveNewDependency() {
@@ -1215,13 +1249,23 @@ export default {
 
     // OPEN MODAL AND CHANGE VALUES FOR EDITING USER - receives props.row (i.e. user record)
     editUser(users) {  
-      this.showUserEditModal = true,
-      this.users.first_name = users.first_name,
-      this.users.last_name = users.last_name,
-      this.users.user_id = users.user_id,
-      this.form.edit_useraccess = users.access
-      return false
+      this.showUserEditModal = true;
+      this.users.first_name = users.first_name;
+      this.users.last_name = users.last_name;
+      this.users.user_id = users.user_id;
+      this.form.edit_useraccess = users.access;
+      return false;
     }, // -editUser
+
+    deleteUser(user) {
+      this.deleteUserModal = true;
+      this.users.first_name = user.first_name;
+      this.users.last_name = user.last_name;
+      this.users.username = user.username;
+      this.users.user_id = user.user_id;
+      return false;
+    }, // -deleteUser
+
 
     // OPEN MODAL AND CREATE NEW USER
     newUser() {

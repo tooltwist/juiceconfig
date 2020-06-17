@@ -5,6 +5,31 @@ import misc from './misc'
 
 export default {
 	register (server) {
+        // Remove user of selected deployable from project_user db table
+        server.del('/api/removeUser/:deployable/:username', async (req, res, next) => {
+            console.log(`DELETE /removeUser`);
+
+            let con = await db.checkConnection();
+            const project = req.params.deployable;
+            const username = req.params.username;
+
+            console.log('project =', project);
+            console.log('username =', username);
+
+            const sql = `DELETE FROM project_user WHERE project =? AND username =?`
+            const params = [project, username]
+
+            console.log('params = ', params)
+
+            con.query( sql, params, (err, result) => {
+                if (err) throw err;
+            
+                // Send reply
+                res.send({ status: 'ok' })
+                return next();
+            }) 
+        });
+
         // Update edited DEPLOYABLE details
         server.put('/api/deployable', async (req, res, next) => {
             console.log(`PUT /deployable`)
