@@ -30,6 +30,28 @@ export default {
             }) 
         });
 
+        // Remove dependency of selected deployable from dependency db table
+        server.del('/api/removeDependency/:deployable/:child_name', async (req, res, next) => {
+            console.log(`DELETE /removeDependency`);
+
+            let con = await db.checkConnection();
+            const parent_name = req.params.deployable;
+            const child_name = req.params.child_name;
+
+            const sql = `DELETE FROM dependency WHERE parent_name =? AND child_name =?`
+            const params = [parent_name, child_name]
+
+            console.log('params = ', params)
+
+            con.query( sql, params, (err, result) => {
+                if (err) throw err;
+            
+                // Send reply
+                res.send({ status: 'ok' })
+                return next();
+            }) 
+        });
+
         // Update edited DEPLOYABLE details
         server.put('/api/deployable', async (req, res, next) => {
             console.log(`PUT /deployable`)

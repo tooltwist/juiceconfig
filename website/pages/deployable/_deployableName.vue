@@ -169,6 +169,9 @@ div
               | {{ props.row.prefix }}
             b-table-column(field="version", label="Version")
               | {{ props.row.version }}
+            b-table-column(field="remove", label="")
+              a(href="",  @click.prevent="removeDependency(props.row)")
+                b-icon(icon="delete")
 
       b-tab-item(v-if="isOwner()", label="Users")
         // Users
@@ -570,6 +573,21 @@ div
               div.control
                 b-button(@click.stop="removeUser", type="is-danger is-outlined", size="is-small") Remove    
                 b-button(@click="deleteUserModal=false", type="is-gray is-outlined", size="is-small") Cancel
+
+  // Remove dependency modal:
+  div(v-show="removeDependencyModal")
+    transition(name="modal")
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Remove dependency    
+            section.modal-card-body
+              p Are you sure you want to remove {{dependencies.child_name}} as a dependency for {{deployableName}}?
+            footer.modal-card-foot 
+              div.control
+                b-button(@click.stop="removeDependencyFunc", type="is-danger is-outlined", size="is-small") Remove    
+                b-button(@click="removeDependencyModal=false", type="is-gray is-outlined", size="is-small") Cancel
 </template>
 
 <script>
@@ -650,6 +668,7 @@ export default {
       allUsers: [ ],
       versions: [ ],
       tokens: [ ],
+      dependencies: [ ],
       currentUser: [ ],
       deployable: '',
       deployables: [ ],
@@ -689,6 +708,7 @@ export default {
 
       // Modal data for adding dependency
       newDependencyModal: false,
+      removeDependencyModal: false,
       dependencyError: null,
 
       // Modal data for editing variables
@@ -1017,7 +1037,6 @@ export default {
         let config = standardStuff.axiosConfig(this.$loginservice.jwt)
         await axios.delete(url, config) 
 
-        // Display new users details
         this.deleteUserModal = false;
         this.reloadUsers();
         console.log('User has been removed from the project_users db table.')
@@ -1025,6 +1044,21 @@ export default {
         console.log(`Error whilst removing user:`, e)
       } 
     }, // - removeUser
+
+    // REMOVE DEPENDENCY
+    async removeDependencyFunc() {
+      try {
+        let url = standardStuff.apiURL(`/removeDependency/${this.deployableName}/${this.dependencies.child_name}`)
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+        await axios.delete(url, config) 
+
+        this.removeDependencyModal = false;
+        this.reloadDependencies();
+        console.log('Dependency has been removed from the dependency db table.')
+      } catch (e) {
+        console.log(`Error whilst removing dependency:`, e)
+      } 
+    }, // - removeDependencyFunc
 
     // ADD A NEW DEPENDENCY TO THE DATABASE - FROM MODAL 
     async saveNewDependency() {
@@ -1266,6 +1300,11 @@ export default {
       return false;
     }, // -deleteUser
 
+    removeDependency(dependency) {
+      this.removeDependencyModal = true;
+      this.dependencies.child_name = dependency.child_name;
+      return false;
+    }, // -removeDependency
 
     // OPEN MODAL AND CREATE NEW USER
     newUser() {
