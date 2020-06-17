@@ -131,20 +131,18 @@ div
         // Deployments
         h1.is-title.is-size-4(style="text-align:left;") Deployments
         br 
+        b-table(:data="deployments", focusable)
+          template(slot-scope="props")
+            b-table-column(field="application_name", label="Application Name")
+              | {{ props.row.application_name }}
+            b-table-column(field="environment", label="Environment")
+              nuxt-link(:to="`/environment/${std_toQualifiedName(props.row.environmentOwner,props.row.environment)}`")
+                span(v-html="std_toQualifiedDisplay(props.row.environmentOwner, props.row.environment)")
+            b-table-column(field="notes", label="Notes")
+              | {{ props.row.notes }}
         div(v-if="this.deployments.length === 0")
-          br
           article.message.is-success.is-small
             div.message-body There are no deployments for this deployable yet. Would you like to add a new deployment?
-        div(v-else)
-          b-table(:data="deployments", focusable)
-            template(slot-scope="props")
-              b-table-column(field="application_name", label="Application Name")
-                | {{ props.row.application_name }}
-              b-table-column(field="environment", label="Environment")
-                nuxt-link(:to="`/environment/${std_toQualifiedName(props.row.environmentOwner,props.row.environment)}`")
-                  span(v-html="std_toQualifiedDisplay(props.row.environmentOwner, props.row.environment)")
-              b-table-column(field="notes", label="Notes")
-                | {{ props.row.notes }}
 
       b-tab-item(label="Dependencies")
         // Dependencies
@@ -153,10 +151,6 @@ div
             div(v-if="isEditable")
               button.button.is-primary(@click.prevent="newDependency(dependencies)", type="is-light")  + Add New Dependency
         br
-        div(v-if="this.dependencies.length === 0")
-          br
-          article.message.is-success.is-small
-            div.message-body There are no dependencies for this deployable yet. Would you like to add a new dependency?
         b-table(:data="dependencies", focusable)
           template(slot-scope="props")
             b-table-column(field="parent", label="Parent")
@@ -172,6 +166,9 @@ div
             b-table-column(field="remove", label="")
               a(href="",  @click.prevent="removeDependency(props.row)")
                 b-icon(icon="delete")
+        div(v-if="this.dependencies.length === 0")
+          article.message.is-success.is-small
+            div.message-body There are no dependencies for this deployable yet. Would you like to add a new dependency?
 
       b-tab-item(v-if="isOwner()", label="Users")
         // Users
