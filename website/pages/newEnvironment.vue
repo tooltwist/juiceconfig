@@ -61,18 +61,36 @@ section.section
             .field
                 label.label Is this a universal environment? (all-accessible)
                 b-select(placeholder="Universal", v-model="form.is_universal")
-                    option(value="true") Yes
-                    option(value="false") No
+                    option(value="1") Yes
+                    option(value="0") No
             .field
                 label.label Is this a secure environment?
                 b-select(placeholder="Secure", v-model="form.is_secure_environment")
                     option(value="1") Yes
                     option(value="0") No
             .field
-                label.label Group name: 
-                b-select(placeholder="Group name", v-model="form.group_name")
+                label.label Group: 
+                form(v-if="newGroup")
+                    p Group name: 
+                        input.input(name="new_group", v-model="form.new_group", placeholder="Group Name")
+                    p Description:
+                        input.input(name="new_group_description", v-model="form.group_description", placeholder="Description")
+                    p Tag colour:
+                        .control 
+                            .select
+                                select(v-model="form.group_colour")
+                                    option(value="red") Red
+                                    option(value="blue") Blue
+                                    option(value="green") Green
+                                    option(value="orange") Orange
+                                    option(value="yellow") Yellow
+
+                b-select(v-if="!newGroup", style="display:inline-block;" placeholder="Group name", v-model="form.group_name")
                     option(value="") None
                     option(v-for="group in groups", :value="`${group.group_name}`") {{group.group_name}}
+                
+                div(style="float:right;") New group?  
+                    input.is-small(type="checkbox", @click="addNewGroup()")
             .field
                 label.label Notes
                 textarea.textarea(name="new_notes", v-model="form.new_notes", type="text", placeholder="Notes")
@@ -106,7 +124,13 @@ export default {
                 aws_cluster_url: '',
                 aws_vpc_url: '',
                 is_secure_environment: '',
+
+                // Creating a new group
+                new_group: '',
+                group_colour: '',
+                group_description: '',
             },
+            newGroup: '',
             saveMode: false,
             environments: '',
             groups: '',
@@ -144,10 +168,41 @@ export default {
     },
 
     methods: {
+        addNewGroup() { 
+            if (this.newGroup) {
+                this.newGroup = false;
+            } else {
+                this.newGroup = true;
+            }
+        },
+
         async newEnvironment(e) {
             // Check that form is correctly filled out
             if (!this.readyToSave) {
                 return
+            }
+
+            // Check if using existing group or creating new group
+            if (this.newGroup) {
+                try {
+                    e.preventDefault();
+
+                    // send record for new group
+                    const url = standardStuff.apiURL('/newGroup');
+                    const record = { 
+                        group_name: this.form.new_group,
+                        description: this.form.group_description,
+                        colour: this.form.group_colour,
+                    };
+                    const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+                    await axios.post(url, record, config)
+                    console.log('New group sent to the database.');
+
+                    // set this.form.group_name as new group name
+                    this.form.group_name = this.form.new_group;
+                } catch (e) {
+                    console.log(`Error while sending new group to the database: `, e)
+                }
             }
 
             try {

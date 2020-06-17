@@ -4,6 +4,25 @@ import restify from 'restify';
 
 export default {
 	register (server) {
+        // Add a new group to the group db table
+        server.post('/api/newGroup', auth, async (req, res, next) => {
+            console.log(`GET /newGroup`);
+
+            const sql = `INSERT INTO environment_group SET ?`
+            const newGroup = {
+                group_name: req.params.group_name,
+                description: req.params.description,
+                colour: req.params.colour
+            }
+            
+            let con = await db.checkConnection()
+            con.query(sql, newGroup, function (err, result) {
+                if (err) throw err;
+                res.send({ ok: 'ok'});
+                return next();
+            });
+        }); // End of section
+
         // Select ALL ENVIRONMENTS from MySQL database
         server.get('/api/showEnvironments', auth, async (req, res, next) => {
             console.log(`GET /showEnvironments`);

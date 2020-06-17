@@ -576,12 +576,19 @@ async function checkHealth(deployment) {
 }
 
 async function loadDeployments (axiosConfig, params) {
+  // Returns deployments with environments that are owned by user, 
+  // or collaborated on by user
   console.log('params: ', params)
   let url = standardStuff.apiURL('/applications')
   let reply = await axios.get(url, params, axiosConfig)
   const deployments = reply.data.applications
   console.log('deployments', deployments)
   return deployments
+
+  // on website control diff bt collab, public and owned
+  // highlight: both env and dep owned; public dep, owned env;
+  // non-highlight, remove configure: only env owned; collab envs; anything not owned/collab **check this** by user;
+  // can users deploy on env that they collab w?
 }
 </script>
 
