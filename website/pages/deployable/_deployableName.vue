@@ -110,7 +110,9 @@ div
                   input(v-if="editingDetails", v-model="variable.description", @input="updateVariable(variable)")
                   span(v-else) {{ variable.description }}
                 td
-                  | X
+                  a(v-if="editingDetails", href="", @click.prevent="removeVariable(variable)")
+                    b-tooltip(label="Delete Variable")
+                      b-icon(icon="close")
                 //- b-table-column(field="example", label="Example")
                 //- b-table-column(field="type", label="Type")
                 //- b-table-column(field="", label="")
@@ -482,7 +484,7 @@ div
                               option(v-for="deployable in deployables") {{ deployable.name }} 
                             div(v-if="dependencyError === `Dependency already exists`")
                               p.help.is-danger {{ deployableName }} already has a dependency with this child.
-                        div.formStyle Prefix: 
+                        div.formStyle Prefix:
                           div.control
                             div(v-if="dependencyError === null")
                               input.input(name="new_prefix", v-model="form.new_prefix", type="text", placeholder="Prefix")
@@ -565,7 +567,7 @@ div
             header.modal-card-head
               p.modal-card-title Remove user    
             section.modal-card-body
-              p Are you sure you want to remove {{ users.first_name }} {{ users.last_name }} from {{deployableName}}?
+              p Are you sure you want to remove <b>{{ users.first_name }} {{ users.last_name }}</b> from <b>{{deployableName}}</b>?
             footer.modal-card-foot 
               div.control
                 b-button(@click.stop="removeUser", type="is-danger is-outlined", size="is-small") Remove    
@@ -580,11 +582,26 @@ div
             header.modal-card-head
               p.modal-card-title Remove dependency    
             section.modal-card-body
-              p Are you sure you want to remove {{dependencies.child_name}} as a dependency for {{deployableName}}?
+              p Are you sure you want to remove <b>{{dependencies.child_name}}</b> as a dependency for <b>{{deployableName}}</b>?
             footer.modal-card-foot 
               div.control
                 b-button(@click.stop="removeDependencyFunc", type="is-danger is-outlined", size="is-small") Remove    
                 b-button(@click="removeDependencyModal=false", type="is-gray is-outlined", size="is-small") Cancel
+
+  // Remove variable modal:
+  div(v-show="removeVariableModal")
+    transition(name="modal")
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Remove variable    
+            section.modal-card-body
+              p Are you sure you want to remove <b>{{variables.name}}</b> from <b>{{deployableName}}</b>?
+            footer.modal-card-foot 
+              div.control
+                b-button(@click.stop="removeVariableFunc", type="is-danger is-outlined", size="is-small") Remove    
+                b-button(@click="removeVariableModal=false", type="is-gray is-outlined", size="is-small") Cancel
 </template>
 
 <script>
@@ -715,6 +732,7 @@ export default {
       variable_description: '',
       variable_type: '',
       variable_mandatory: '',
+      removeVariableModal: false,
 
       // Variables waiting to be saved, with setTimeout delay
       // variableName => { timer, variable }
@@ -1057,6 +1075,21 @@ export default {
       } 
     }, // - removeDependencyFunc
 
+    // REMOVE VARIABLE
+    async removeVariableFunc() {
+      try {
+        let url = standardStuff.apiURL(`/removeVariable/${this.deployableName}/${this.variables.name}`)
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+        await axios.delete(url, config) 
+
+        this.removeVariableModal = false;
+        this.reloadVariables();
+        console.log('Variable has been removed from the variables db table.')
+      } catch (e) {
+        console.log(`Error whilst removing variable:`, e)
+      } 
+    }, // - removeVariableFunc
+
     // ADD A NEW DEPENDENCY TO THE DATABASE - FROM MODAL 
     async saveNewDependency() {
       //Check that form is filled correctly
@@ -1302,6 +1335,12 @@ export default {
       this.dependencies.child_name = dependency.child_name;
       return false;
     }, // -removeDependency
+
+      removeVariable(variable) {
+      this.removeVariableModal = true;
+      this.variables.name= variable.name;
+      return false;
+    }, // -removeVariable
 
     // OPEN MODAL AND CREATE NEW USER
     newUser() {
