@@ -10,11 +10,11 @@ export default {
             console.log(`DELETE /removeVariable`);
 
             let con = await db.checkConnection();
-            const deployable_name = req.params.deployable;
-            const name = req.params.variable;
+            const { owner:deployableOwner, name:deployableName } = misc.splitOwnerName(req.params.deployable)
+            const variable = req.params.variable;
 
-            const sql = `DELETE FROM variable WHERE deployable_name =? AND name =?`
-            const params = [deployable_name, name]
+            const sql = `DELETE FROM variable WHERE deployable_name =? AND deployable_owner =? AND name =?`
+            const params = [deployableName, deployableOwner, variable]
 
             console.log('params = ', params)
 
@@ -57,11 +57,11 @@ export default {
             console.log(`DELETE /removeDependency`);
 
             let con = await db.checkConnection();
-            const parent_name = req.params.deployable;
+            const { owner:deployableOwner, name:deployableName } = misc.splitOwnerName(req.params.deployable)
             const child_name = req.params.child_name;
 
-            const sql = `DELETE FROM dependency WHERE parent_name =? AND child_name =?`
-            const params = [parent_name, child_name]
+            const sql = `DELETE FROM dependency WHERE parent_name =? AND parent_owner =? AND child_name =?`
+            const params = [deployableName, deployableOwner, child_name]
 
             console.log('params = ', params)
 

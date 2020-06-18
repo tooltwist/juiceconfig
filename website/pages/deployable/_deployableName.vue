@@ -673,6 +673,7 @@ export default {
       description: '',
       is_project: '',
       deployableName: '',
+      deployableOwner: '',
 
       activeTab: 0,
       deployments: [ ],
@@ -1063,7 +1064,7 @@ export default {
     // REMOVE DEPENDENCY
     async removeDependencyFunc() {
       try {
-        let url = standardStuff.apiURL(`/removeDependency/${this.deployableName}/${this.dependencies.child_name}`)
+        let url = standardStuff.apiURL(`/removeDependency/${this.deployableOwner}:${this.deployableName}/${this.dependencies.child_name}`)
         let config = standardStuff.axiosConfig(this.$loginservice.jwt)
         await axios.delete(url, config) 
 
@@ -1078,9 +1079,10 @@ export default {
     // REMOVE VARIABLE
     async removeVariableFunc() {
       try {
-        let url = standardStuff.apiURL(`/removeVariable/${this.deployableName}/${this.variables.name}`)
+        let url = standardStuff.apiURL(`/removeVariable/${this.deployableOwner}:${this.deployableName}/${this.variables.name}`)
         let config = standardStuff.axiosConfig(this.$loginservice.jwt)
         await axios.delete(url, config) 
+        console.log('DeployableOwner: ', this.deployableOwner)
 
         this.removeVariableModal = false;
         this.reloadVariables();
