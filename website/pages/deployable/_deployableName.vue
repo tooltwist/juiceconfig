@@ -172,7 +172,7 @@ div
           article.message.is-success.is-small
             div.message-body There are no dependencies for this deployable yet. Would you like to add a new dependency?
 
-      b-tab-item(v-if="isOwner()", label="Users")
+      //b-tab-item(v-if="isOwner()", label="Users")
         // Users
         h1.is-title.is-size-4 Users
           div.buttons(style="float:right;")

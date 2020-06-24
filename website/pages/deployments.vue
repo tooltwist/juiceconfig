@@ -21,12 +21,13 @@
             b-table-column(field="environment", label="Environment")
               b-tooltip(:label="props.row._healthcheck.text", position="is-right", multilined, :type="healthcheckColor(props.row._healthcheck.status)")
                 b-icon(:icon="healthcheckIcon(props.row._healthcheck.status)", size="is-small", :type="healthcheckColor(props.row._healthcheck.status)")
-              nuxt-link(:to="`/environment/${std_toQualifiedName(props.row.environment_owner,props.row.environment)}`")
+              nuxt-link(v-if="accessEnv(props.row.environment)", :to="`/environment/${std_toQualifiedName(props.row.environment_owner,props.row.environment)}`")
                 span(v-html="std_toQualifiedDisplay(props.row.environment_owner,props.row.environment,true)")
+              span(v-else, v-html="std_toQualifiedDisplay(props.row.environment_owner,props.row.environment,true)") 
             b-table-column(field="application_name", label="Name")
               | {{ props.row.application_name }}
             b-table-column(field="deployable", label="Deployable")
-              nuxt-link(v-if="props.row.deployable_owner === currentUser", :to="`/deployable/${std_toQualifiedName(props.row.deployable_owner,props.row.deployable)}`")
+              nuxt-link(v-if="accessProject(props.row.deployable)", :to="`/deployable/${std_toQualifiedName(props.row.deployable_owner,props.row.deployable)}`")
                 span(v-html="std_toQualifiedDisplay(props.row.deployable_owner,props.row.deployable,true)")
               span(v-else, v-html="std_toQualifiedDisplay(props.row.deployable_owner,props.row.deployable,true)") 
             b-table-column(field="", label="")
@@ -128,6 +129,8 @@ export default {
       deployableOwner: '',
       applicationName: '',
       notes: '',
+      projectUsers: '',
+      environmentUsers: '',
 
       currentUser: '',
       environmentId: '', // owner:name
@@ -165,6 +168,17 @@ export default {
       reply = await axios.get(url, config)
       const deployables = reply.data.deployables
 
+      // Get all projectUsers from project_user db
+      let url3 = standardStuff.apiURL('/thisUsersProjects')
+      reply = await axios.get(url3, params, config)
+      const projectUsers = reply.data.projectUsers
+
+      // Get all environmentUsers from environment_user db
+      let url4 = standardStuff.apiURL('/thisUsersEnvironments')
+      reply = await axios.get(url4, params, config)
+      const environmentUsers = reply.data.environmentUsers
+      console.log('environment users: ', environmentUsers)
+
       // Set the initial healthcheck status for each deployment
       deployments.forEach(d => {
         d._healthcheck = {
@@ -179,6 +193,8 @@ export default {
         environments,
         deployables,
         currentUser,
+        projectUsers, // all records in project_users db with this username
+        environmentUsers, // "" "" "" from environment_users db
       }
     } catch (e) {
       console.log(`Error while fetching deployments: `, e)
@@ -259,11 +275,53 @@ export default {
       }
       return true
     },//- readyToSave
-
   },
+
+ 
 
   methods: {
     ...standardStuff.methods,
+
+    // Check if environment is owned
+    accessEnv (environment) {
+      for (let i = 0; i < this.environments.length; i++) {
+        if (this.environments[i].name ==  environment && this.environments[i].owner == this.currentUser) {
+          return 1;
+        }
+      }
+
+      for (let i = 0; i < this.environmentUsers.length; i++) { // check if user is a collaborator
+        if (environment == this.environmentUsers[i].environment) {
+          return 1;
+        } 
+      }
+
+      return 0; // user is neither collaborator or owner of environment
+    },
+
+    // Check if project is owned
+    accessProject (deployable) {
+
+      for (let i = 0; i < this.deployables.length; i++) {
+        if (this.deployables[i].name ==  deployable && this.deployables[i].owner == this.currentUser) {
+          return 1;
+        }
+
+        /*if (this.deployables[i].is_global == '1') {
+          return 1;
+        }*/
+      }
+
+      for (let i = 0; i < this.projectUsers.length; i++) { // check if user is a collaborator
+        if (deployable == this.projectUsers[i].project) {
+          return 1;
+        } 
+      }
+
+      return 0; // user is neither collaborator or owner of deployable
+
+    },
+
 
     isDeployed (environmentName, deployableName) {
       let arr = [];

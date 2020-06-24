@@ -24,6 +24,46 @@ export default {
       });
     });
 
+    // Select environment_user records for current user
+    server.get('/api/thisUsersEnvironments', async (req, res, next) => {
+      console.log(' GET /thisUsersEnvironments');
+
+      // Check if owner matches the username for private accounts
+      let me = req.query.username
+
+      console.log(`I am ${me}`);
+      
+      const sql = `SELECT * FROM environment_user WHERE username =?`
+      const params = [ me ] 
+  
+      let con = await db.checkConnection()
+      con.query(sql, params, function (err, result) {
+          if (err) throw err;
+          res.send({ environmentUsers: result })
+          next()
+      });
+    });
+
+    // Select project_user records for current user
+    server.get('/api/thisUsersProjects', async (req, res, next) => {
+      console.log(' GET /thisUsersProjects');
+
+      // Check if owner matches the username for private accounts
+      let me = req.query.username
+
+      console.log(`I am ${me}`);
+      
+      const sql = `SELECT * FROM project_user WHERE username =?`
+      const params = [ me ] 
+  
+      let con = await db.checkConnection()
+      con.query(sql, params, function (err, result) {
+          if (err) throw err;
+          res.send({ projectUsers: result })
+          next()
+      });
+    });
+
     // Select DEPLOYMENTS for /_environmentNAME on MySQL database
     server.get('/api/deployments', async (req, res, next) => {
       console.log(`GET /deployments`);
