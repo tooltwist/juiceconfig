@@ -32,19 +32,19 @@ section.section
         form
             .field
                 label.label Owner:
-                    input.input(v-model="form.new_owner", type="text", :disabled="true")
+                    input.input(v-model="form.new_owner", maxlength="50", type="text", :disabled="true")
             .field 
                 p.is-small Public deployable 
                     input(type="checkbox", @click="globalDeployable") 
             .field
                 label.label New deployable name:
-                    input.input(v-model="form.new_deployable", type="text", placeholder="Deployable Name")
+                    input.input(v-model="form.new_deployable", maxlength="16", type="text", placeholder="Deployable Name")
                     //- div(v-else="variableError === `Deployable already exists`")
                     //- input(class="input is-danger", v-model="form.new_deployable", type="text", placeholder="Deployable Name")
                     p.help.is-danger(v-if="deployableExists") This deployable name already exists.
             .field
                 label.label Description:
-                    input.input(v-model="form.new_description", type="text", placeholder="Description")
+                    input.input(v-model="form.new_description", maxlength="50", type="text", placeholder="Description")
             .field
                 label.label Type:
                     b-select(v-model="form.type", placeholder="Type") 
@@ -53,7 +53,7 @@ section.section
                         option(value="database") Database
             .field
                 label.label Product owner:
-                    input.input(v-model="form.new_product_owner", type="text", placeholder="Product Owner")
+                    input.input(v-model="form.new_product_owner", maxlength="50", type="text", placeholder="Product Owner")
             .field
                 .control
                     b-button.buttonStyle(@click.prevent="newDeployable", value="save", type="is-primary is-light", :disabled="!readyToSave")  Save

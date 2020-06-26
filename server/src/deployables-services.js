@@ -33,7 +33,7 @@ export default {
 
             console.log(`I am ${me}`);
             
-            const sql = `SELECT * FROM deployable WHERE owner =? OR name IN (SELECT project FROM project_user WHERE username =?) OR is_global =?`
+            const sql = `SELECT * FROM deployable WHERE owner =? OR name IN (SELECT project FROM project_user WHERE username =?)` // OR is_global =?
             const params = [ me, me, '1' ]
             
             let con = await db.checkConnection()

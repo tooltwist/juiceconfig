@@ -87,7 +87,7 @@
                   .field-body
                     .field
                       .control
-                        input.input(v-model.trim="applicationName", :placeholder="defaultApplicationName")
+                        input.input(v-model.trim="applicationName", maxlength="128", :placeholder="defaultApplicationName")
 
                       p.has-text-danger.is-size-7(v-show="nameIsUsed")
                         | &nbsp;&nbsp;&nbsp;Name is already used

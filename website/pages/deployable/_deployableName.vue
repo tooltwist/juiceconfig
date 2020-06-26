@@ -31,7 +31,7 @@ div
               .field-body 
                 .field  
                   .control  
-                    input.input(v-if="editingDetails", v-model.trim="deployable.product_owner", @input="saveDetails")
+                    input.input(v-if="editingDetails", maxlength="50", v-model.trim="deployable.product_owner", @input="saveDetails")
                     a.my-not-input-a(v-else-if="validUrl(deployable.product_owner)", :href="deployable.product_owner", target="_blank") &nbsp;{{deployable.product_owner}}
                     p.my-not-input-p(v-else) &nbsp;{{deployable.product_owner}}
             .field.is-horizontal
@@ -40,7 +40,7 @@ div
               .field-body
                 .field
                   .control
-                    textarea.textarea(v-model.trim="deployable.description", placeholder="Description", :disabled="!editingDetails", @input="saveDetails")
+                    textarea.textarea(v-model.trim="deployable.description", maxlength="50", placeholder="Description", :disabled="!editingDetails", @input="saveDetails")
             .field.is-horizontal
               .field-label.is-normal
                 label.label(style="width:200px;") Public:
@@ -172,7 +172,7 @@ div
           article.message.is-success.is-small
             div.message-body There are no dependencies for this deployable yet. Would you like to add a new dependency?
 
-      //b-tab-item(v-if="isOwner()", label="Users")
+      b-tab-item(v-if="isOwner()", label="Users")
         // Users
         h1.is-title.is-size-4 Users
           div.buttons(style="float:right;")
@@ -430,13 +430,13 @@ div
                         div.formStyle Variable name:
                           div.control
                             div(v-if="variableError === null")
-                              input.input(name="variable_name", v-model="form.variable_name", type="text", placeholder="Variable name")
+                              input.input(name="variable_name", maxlength="128", v-model="form.variable_name", type="text", placeholder="Variable name")
                             div(v-else="variableError === `Variable already exists`")   
-                              input.input.is-danger(v-model="form.variable_name", type="text", placeholder="Variable Name")
+                              input.input.is-danger(v-model="form.variable_name", maxlength="128", type="text", placeholder="Variable Name")
                               p.help.is-danger This variable name already exists. Try again.
                         div.formStyle Description:
                           div.control
-                            input.input(name="new_description", v-model="form.variable_description", type="text", placeholder="Description")
+                            input.input(name="new_description", maxlength="50", v-model="form.variable_description", type="text", placeholder="Description")
                         div.formPlacement
                           div.formStyle Type:
                             b-select(placeholder="Type", v-model="form.variable_type") Type:
@@ -487,13 +487,13 @@ div
                         div.formStyle Prefix:
                           div.control
                             div(v-if="dependencyError === null")
-                              input.input(name="new_prefix", v-model="form.new_prefix", type="text", placeholder="Prefix")
+                              input.input(name="new_prefix", maxlength="15", v-model="form.new_prefix", type="text", placeholder="Prefix")
                             div(v-else="dependencyError === `Prefix already exists`")
                               input.input(name="new_prefix", v-model="form.new_prefix", type="text", placeholder="Prefix")
                               p.help.is-danger {{ deployableName }} already has a dependency with this prefix.
                         div.formStyle Version:
                           div.control
-                            input.input(name="new_version", v-model="form.new_version", type="text", placeholder="Version")
+                            input.input(name="new_version", maxlength="10", v-model="form.new_version", type="text", placeholder="Version")
             footer.modal-card-foot
               div.control
                 b-button(@click.stop="saveNewDependency",  type="is-primary is-light", size="is-small")  Save    

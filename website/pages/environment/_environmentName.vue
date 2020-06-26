@@ -60,7 +60,7 @@ div
               .field-body
                   .field
                       .control
-                          input.input(v-if="editingDetails", v-model.trim="environment.description", placeholder="Description", @input="saveDetails")
+                          input.input(v-if="editingDetails", maxlength="128", v-model.trim="environment.description", placeholder="Description", @input="saveDetails")
                           a.my-not-input-a(v-else-if="validUrl(environment.description)", :href="deployment.description", target="_blank") &nbsp;{{deployment.description}}
                           p.my-not-input-p(v-else) &nbsp;{{environment.description}}
           .field.is-horizontal
@@ -85,7 +85,7 @@ div
               .field-body
                   .field
                       .control
-                          input.input(v-if="editingDetails", v-model.trim="environment.aws_account", placeholder="eg. 270011112222", @input="saveDetails")
+                          input.input(v-if="editingDetails", maxlength="32", v-model.trim="environment.aws_account", placeholder="eg. 270011112222", @input="saveDetails")
                           p.my-not-input-p(v-else) &nbsp;{{environment.aws_account}}
           .field.is-horizontal()
               .field-label.is-normal
@@ -93,7 +93,7 @@ div
               .field-body
                   .field
                       .control
-                          input.input(v-if="editingDetails", v-model.trim="environment.aws_profile", placeholder="eg. development", @input="saveDetails")
+                          input.input(v-if="editingDetails", maxlength="128", v-model.trim="environment.aws_profile", placeholder="eg. development", @input="saveDetails")
                           p.my-not-input-p(v-else) &nbsp;{{environment.aws_profile}}
           .field.is-horizontal()
               .field-label.is-normal
@@ -134,7 +134,7 @@ div
               .field-body
                   .field
                       .control
-                          input.input(v-if="editingDetails", v-model.trim="environment.aws_cf_stack", placeholder="URL to Cloudformation stack", @input="saveDetails")
+                          input.input(v-if="editingDetails", maxlength="512", v-model.trim="environment.aws_cf_stack", placeholder="URL to Cloudformation stack", @input="saveDetails")
                           a.my-not-input-a(v-else-if="validUrl(environment.aws_cf_stack)", :href="environment.aws_cf_stack", target="_blank") &nbsp;{{environment.aws_cf_stack}}
                           p.my-not-input-p(v-else) &nbsp;{{environment.aws_cf_stack}}
           .field.is-horizontal(v-if="environment.type==='aws'")
@@ -143,7 +143,7 @@ div
               .field-body
                   .field
                       .control
-                          input.input(v-if="editingDetails", v-model.trim="environment.aws_cluster_url", placeholder="URL to ECS Service", @input="saveDetails")
+                          input.input(v-if="editingDetails", maxlength="512", v-model.trim="environment.aws_cluster_url", placeholder="URL to ECS Service", @input="saveDetails")
                           a.my-not-input-a(v-else-if="validUrl(environment.aws_cluster_url)", :href="environment.aws_cluster_url", target="_blank") &nbsp;{{environment.aws_cluster_url}}
                           p.my-not-input-p(v-else) &nbsp;{{environment.aws_cluster_url}}
           .field.is-horizontal(v-if="environment.type==='aws'")
@@ -152,7 +152,7 @@ div
               .field-body
                   .field
                       .control
-                          input.input(v-if="editingDetails", v-model.trim="environment.aws_vpc_url", placeholder="URL to VPC dashboard", @input="saveDetails")
+                          input.input(v-if="editingDetails", maxlength="512", v-model.trim="environment.aws_vpc_url", placeholder="URL to VPC dashboard", @input="saveDetails")
                           a.my-not-input-a(v-else-if="validUrl(environment.aws_vpc_url)", :href="environment.aws_vpc_url", target="_blank") &nbsp;{{environment.aws_vpc_url}}
                           p.my-not-input-p(v-else) &nbsp;{{environment.aws_vpc_url}}
         div(v-if="isOwner()").control

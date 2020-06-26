@@ -45,7 +45,7 @@ section.section
                     .field-body
                         .field
                             .control
-                                input.input(v-if="editingDetails", v-model.trim="deployment.website_url", placeholder="https://my-domain.com", @input="saveDetails")
+                                input.input(v-if="editingDetails", maxlength="256", v-model.trim="deployment.website_url", placeholder="https://my-domain.com", @input="saveDetails")
                                 a.my-not-input-a(v-else-if="validUrl(deployment.website_url)", :href="deployment.website_url", target="_blank") &nbsp;{{trimUrl(deployment.website_url)}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.website_url}}
                 .field.is-horizontal
@@ -54,7 +54,7 @@ section.section
                     .field-body
                         .field
                             .control
-                                input.input(v-if="editingDetails", v-model.trim="deployment.healthcheck", placeholder="/api/healthcheck", @input="saveDetails")
+                                input.input(v-if="editingDetails", maxlength="256", v-model.trim="deployment.healthcheck", placeholder="/api/healthcheck", @input="saveDetails")
                                 a.my-not-input-a(v-else-if="validUrl(deployment.website_url)", :href="deployment.website_url+deployment.healthcheck", target="_blank") &nbsp;{{deployment.healthcheck}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.healthcheck}}
             .control
@@ -68,7 +68,7 @@ section.section
                     .field-body
                         .field
                             .control
-                                input.input(v-if="editingDetails", v-model.trim="deployment.aws_service", placeholder="URL to ECS Service", @input="saveDetails")
+                                input.input(v-if="editingDetails", maxlength="256", v-model.trim="deployment.aws_service", placeholder="URL to ECS Service", @input="saveDetails")
                                 a.my-not-input-a(v-else-if="validUrl(deployment.aws_service)", :href="deployment.aws_service", target="_blank") &nbsp;{{trimUrl(deployment.aws_service)}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.aws_service}}
                 .field.is-horizontal
@@ -78,7 +78,7 @@ section.section
                         .field
                             .control
                                 //- input.input(type="text", :class="{ myEditing: !editingDetails } ", v-model="deployment.aws_targetGroup", placeholder="URL to target group")
-                                input.input(v-if="editingDetails", v-model.trim="deployment.aws_targetgroup", placeholder="URL to ECS Service", @input="saveDetails")
+                                input.input(v-if="editingDetails", maxlength="256", v-model.trim="deployment.aws_targetgroup", placeholder="URL to ECS Service", @input="saveDetails")
                                 a.my-not-input-a(v-else-if="validUrl(deployment.aws_targetgroup)", :href="deployment.aws_targetgroup", target="_blank") &nbsp;{{trimUrl(deployment.aws_targetgroup)}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.aws_targetgroup}}
                 .field.is-horizontal
@@ -87,7 +87,7 @@ section.section
                     .field-body
                         .field
                             .control
-                                input.input(v-if="editingDetails", v-model.trim="deployment.aws_loadbalancer", placeholder="URL to ECS Service", @input="saveDetails")
+                                input.input(v-if="editingDetails", maxlength="256", v-model.trim="deployment.aws_loadbalancer", placeholder="URL to ECS Service", @input="saveDetails")
                                 a.my-not-input-a(v-else-if="validUrl(deployment.aws_loadbalancer)", :href="deployment.aws_loadbalancer", target="_blank") &nbsp;{{trimUrl(deployment.aws_loadbalancer)}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.aws_loadbalancer}}
                 .field.is-horizontal
@@ -97,7 +97,7 @@ section.section
                         .field
                             .control
                                 //- input.input(type="text", :class="{ myEditing: !editingDetails } ", v-model="deployment.aws_logfile_url", placeholder="URL to Cloudwatch logs")
-                                input.input(v-if="editingDetails", v-model.trim="deployment.aws_logfile_url", placeholder="URL to ECS Service", @input="saveDetails")
+                                input.input(v-if="editingDetails", maxlength="256", v-model.trim="deployment.aws_logfile_url", placeholder="URL to ECS Service", @input="saveDetails")
                                 a.my-not-input-a(v-else-if="validUrl(deployment.aws_logfile_url)", :href="deployment.aws_logfile_url", target="_blank") &nbsp;{{trimUrl(deployment.aws_logfile_url)}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.aws_logfile_url}}
                 .field.is-horizontal
@@ -107,7 +107,7 @@ section.section
                         .field
                             .control
                                 //- input.input(type="text", :class="{ myEditing: !editingDetails } ", v-model="deployment.aws_secretsmanager_secret", placeholder="Secret name")
-                                input.input(v-if="editingDetails", v-model.trim="deployment.aws_secretsmanager_secret", placeholder="URL to ECS Service", @input="saveDetails")
+                                input.input(v-if="editingDetails", maxlength="256", v-model.trim="deployment.aws_secretsmanager_secret", placeholder="URL to ECS Service", @input="saveDetails")
                                 //- a.my-not-input-a(v-else-if="validUrl(deployment.aws_secretsmanager_secret)", :href="deployment.aws_secretsmanager_secret", target="_blank") &nbsp;{{deployment.aws_secretsmanager_secret}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.aws_secretsmanager_secret}}
 

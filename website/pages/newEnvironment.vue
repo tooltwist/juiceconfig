@@ -22,10 +22,10 @@ section.section
         form
             .field
                 label.label Admin:
-                    input.input(v-model="form.new_owner", type="text", :disabled="true")
+                    input.input(v-model="form.new_owner", maxlength="50", type="text", :disabled="true")
             .field
                 label.label New environment name
-                input.input(name="new_environment", v-model="form.new_environment", type="text", placeholder="Environment name")
+                input.input(name="new_environment", maxlength="16", v-model="form.new_environment", type="text", placeholder="Environment name")
                 p.help.is-danger(v-if="environmentExists") This environment name already exists.
             .field
                 label.label Type
@@ -38,26 +38,26 @@ section.section
             div(v-if="form.type === 'aws'", style="position:relative; left:50px; width:900px") 
                 .field 
                     label.label AWS account:
-                    input.input(name="aws_account", v-model="form.aws_account", type="text", placeholder="Account ID")
+                    input.input(name="aws_account", v-model="form.aws_account", maxlength="32", type="text", placeholder="Account ID")
                 .field 
                     label.label AWS profile:
-                    input.input(name="aws_profile", v-model="form.aws_profile", type="text", placeholder="Profile name")
+                    input.input(name="aws_profile", v-model="form.aws_profile", maxlength="128", type="text", placeholder="Profile name")
                 .field  
                     label.label AWS region:
-                    input.input(name="aws_region", v-model="form.aws_region", type="text", placeholder="Region")
+                    input.input(name="aws_region", v-model="form.aws_region", maxlength="32", type="text", placeholder="Region")
                 .field 
                     label.label AWS cf stack:
-                    input.input(name="aws_cf_stack", v-model="form.aws_cf_stack", type="text", placeholder="Cloudformation Stack")
+                    input.input(name="aws_cf_stack", v-model="form.aws_cf_stack", maxlength="512", type="text", placeholder="Cloudformation Stack")
                 .field 
                     label.label AWS cluster url:
-                    input.input(name="aws_cluster_url", v-model="form.aws_cluster_url", type="text", placeholder="ECS Cluster URL")
+                    input.input(name="aws_cluster_url", v-model="form.aws_cluster_url", maxlength="512", type="text", placeholder="ECS Cluster URL")
                 .field 
                     label.label AWS VPC url:
-                    input.input(name="aws_upc_vrl", v-model="form.aws_vpc_url", type="text", placeholder="UPC URL")
+                    input.input(name="aws_upc_vrl", v-model="form.aws_vpc_url", maxlength="512", type="text", placeholder="UPC URL")
                 br
             .field
                 label.label Description
-                input.input(name="new_description", v-model="form.new_description", type="text", placeholder="Description")
+                input.input(name="new_description", v-model="form.new_description", maxlength="128", type="text", placeholder="Description")
             .field
                 label.label Is this a universal environment? (all-accessible)
                 b-select(placeholder="Universal", v-model="form.is_universal")
@@ -72,9 +72,9 @@ section.section
                 label.label Group: 
                 form(v-if="newGroup")
                     p Group name: 
-                        input.input(name="new_group", v-model="form.new_group", placeholder="Group Name")
+                        input.input(name="new_group", v-model="form.new_group", maxlength="16", placeholder="Group Name")
                     p Description:
-                        input.input(name="new_group_description", v-model="form.group_description", placeholder="Description")
+                        input.input(name="new_group_description", v-model="form.group_description", maxlength="16", placeholder="Description")
                     p Tag colour:
                         .control 
                             .select
