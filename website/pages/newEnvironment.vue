@@ -73,6 +73,7 @@ section.section
                 form(v-if="newGroup")
                     p Group name: 
                         input.input(name="new_group", v-model="form.new_group", maxlength="16", placeholder="Group Name")
+                        p.help.is-danger(v-if="groupExists") This group name already exists.
                     p Description:
                         input.input(name="new_group_description", v-model="form.group_description", maxlength="16", placeholder="Description")
                     p Tag colour:
@@ -152,6 +153,21 @@ export default {
             }
             return false
         },//- environmentExists
+
+        // Check for existing group name
+        groupExists () {
+            if (this.form.new_group) {
+                let found = false
+                this.groups.forEach(group => {
+                    if (group.group_name === this.form.new_group) {
+                        console.log(`There is already an existing group with this value!`)
+                        found = true
+                    }
+                })
+                return found
+            }
+            return false
+        },//- groupExists
 
         readyToSave () {
             if (!this.form.new_environment) {

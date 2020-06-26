@@ -46,13 +46,16 @@ export default {
         }); // End of section
 
         // Select ALL GROUPS from MySQL database
-        server.get('/api/groups', async (req, res, next) => {
+        server.get('/api/groups', auth, async (req, res, next) => {
             console.log(`GET /groups`);
         
+            let me = req.identity.username
+
             let con = await db.checkConnection()
-            const sql = `SELECT * FROM environment_group`
+            const sql = `SELECT * FROM environment_group WHERE group_owner =?`
+            const params = [ me ];
             
-            con.query(sql, function (err, result) {
+            con.query(sql, params, function (err, result) {
                 if (err) throw err;
                 res.send({ groups: result })
                 next()
