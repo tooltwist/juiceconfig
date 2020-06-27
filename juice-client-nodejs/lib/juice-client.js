@@ -1,30 +1,24 @@
 
-// const path = require('path');
 const fs = require('fs');
-// const path = require('path');
-// // const detectCharacterEncoding = require('detect-character-encoding');
-// const { isText, isBinary, getEncoding } = require('istextorbinary');
 const AWS = require('aws-sdk')
-//     region = "ap-southeast-1",
-//     secretName = "PHILTEST",
-//     secret,
-//     decodedBinarySecret;
 
 
 exports.flattenConfig = flattenConfig
 exports.value = getStringValue
 exports.stringValue = getStringValue
 exports.intValue = getIntegerValue
+exports.booleanValue = getBooleanValue
 exports.string = getStringValue
 exports.int = getIntegerValue
+exports.boolean = getBooleanValue
 exports.integer = getIntegerValue
 exports.forceReload = getIntegerValue
 exports.MANDATORY = 'juice-client-mandatory-value-8q568w657x515'
 exports.OPTIONAL = 'juice-client-optional-value-8q568w657x515'
+exports.NOT_FOUND = 'juice-client-not-found-8q568w657x515'
 
 let configuration = null
 let configLoadTime = 0
-//const CACHE_INTERVAL = (1000 * 60 * 10) // 10 minutes
 const CACHE_INTERVAL = (1000 * 60 * 60 * 24 * 1000) // 1000 days
 
 async function getConfigFromConfigFile(path) {
@@ -253,7 +247,6 @@ function findValue(object, name) {
   }
 }
 
-
 async function getStringValue(name, dflt) {
   if (!dflt) {
     dflt = exports.MANDATORY
@@ -288,7 +281,9 @@ async function getStringValue(name, dflt) {
 }
 
 async function getIntegerValue(name, dflt) {
-  if (!dflt) {
+  if (dflt !== exports.MANDATORY
+    && dflt !== exports.OPTIONAL
+    && typeof(dflt) !== 'number') {
     dflt = exports.MANDATORY
   }
 
@@ -319,4 +314,61 @@ async function getIntegerValue(name, dflt) {
   } catch (e) {
     throw new Error(`Non-integer value for config variable '${name}' (${value})`)
   }
+}
+
+
+async function getBooleanValue(name, dflt) {
+  if (dflt !== exports.MANDATORY
+    && dflt !== exports.OPTIONAL
+    && typeof(dflt) !== 'boolean'
+  )
+  {
+    dflt = exports.MANDATORY
+  }
+
+  // Check we have the configuration loaded
+  await checkConfigLoaded()
+
+  // Get the value from the config.
+  let value = findValue(configuration, name)
+  // console.log(`findValue(${name}) => ${value} (${typeof(value)})`);
+  // if (typeof(value) !== 'undefined') {
+  //   return value
+  // }
+
+  if (typeof(value) === 'undefined' || value === null || value === '') {
+    // Value not found. Do we have a default?
+    if (dflt === exports.MANDATORY) {
+      throw new Error(`Missing mandatory config variable '${name}'`)
+    } else if (dflt === exports.OPTIONAL) {
+      return exports.NOT_FOUND
+    } else {
+      value = dflt
+    }
+  }
+
+  if (typeof(value) === 'boolean') {
+    return value
+  }
+
+  if (typeof(value) === 'number') {
+    if (value === 1) {
+      return true
+    } else if (value === 0) {
+      return false
+    }
+  }
+
+  if (typeof(value) === 'string') {
+    // console.log(`is string`);
+    const s = value.toLowerCase()
+    if (s==='yes' || s==='y' || s==='true' || s==='t') {
+      return true
+    }
+    if (s==='no' || s==='n' || s==='false' || s==='f') {
+      return false
+    }
+  }
+
+  throw new Error(`Non-boolean value for config variable '${name}' (${value}).`)
 }

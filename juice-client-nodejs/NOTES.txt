@@ -3,7 +3,7 @@
 
 Steps:
 
-export JUICE_CONFIG='file:::/opt/Development/Projects/juice/juice-config/local-server/volumes/juice/config/config-for-juice.json'
+export JUICE_CONFIG='file:::/opt/Development/Projects/juice/juiceconfig-config/local-server/volumes/juice/config/config-for-juice.json'
 
 export JUICE_CONFIG='secrets_manager:::ap-southeast-1:::PHILTEST'
 
