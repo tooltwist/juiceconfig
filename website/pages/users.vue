@@ -38,13 +38,13 @@
                         div.form-group
                           div.formStyle First Name:
                             div.control
-                              input.input(name="user_firstname", v-model="form.user_firstname", type="text", placeholder="First Name")
+                              input.input(name="user_firstname", maxlength="35", v-model="form.user_firstname", type="text", placeholder="First Name")
                           div.formStyle Last Name:
                             div.control
-                              input.input(name="user_lastname", v-model="form.user_lastname", type="text", placeholder="Last Name")
+                              input.input(name="user_lastname", maxlength="35", v-model="form.user_lastname", type="text", placeholder="Last Name")
                           div.formStyle Role:
                             div.control
-                              input.input(name="user_role", v-model="form.user_role", type="text", placeholder="Users Role")
+                              input.input(name="user_role", maxlength="16", v-model="form.user_role", type="text", placeholder="Users Role")
                           div.formStyle Accessibility type:
                             b-select(placeholder="Type", v-model="form.user_accesstype") Type:
                               option(value="limited") Limited
@@ -53,7 +53,7 @@
                           div.formStyle Email address (for account verification):
                             div.control
                               div(v-if="userError === null")
-                                input.input(name="user_email", v-model="form.user_email", type="email", placeholder="example@tooltwist.com")
+                                input.input(name="user_email", v-model="form.user_email", maxlength="60", type="email", placeholder="example@tooltwist.com")
                               div(v-else="userError === `User already exists`")   
                                 input.input.is-danger(v-model="form.user_email", type="email", placeholder="example@tooltwist.com")
                                 p.help.is-danger A user with this email already exists. 

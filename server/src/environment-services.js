@@ -4,6 +4,25 @@ import restify from 'restify';
 
 export default {
 	register (server) {
+        // Add a new group to the group db table
+        server.post('/api/newGroup', auth, async (req, res, next) => {
+            console.log(`GET /newGroup`);
+
+            const sql = `INSERT INTO environment_group SET ?`
+            const newGroup = {
+                group_name: req.params.group_name,
+                description: req.params.description,
+                colour: req.params.colour
+            }
+            
+            let con = await db.checkConnection()
+            con.query(sql, newGroup, function (err, result) {
+                if (err) throw err;
+                res.send({ ok: 'ok'});
+                return next();
+            });
+        }); // End of section
+
         // Select ALL ENVIRONMENTS from MySQL database
         server.get('/api/showEnvironments', auth, async (req, res, next) => {
             console.log(`GET /showEnvironments`);
@@ -27,13 +46,16 @@ export default {
         }); // End of section
 
         // Select ALL GROUPS from MySQL database
-        server.get('/api/groups', async (req, res, next) => {
+        server.get('/api/groups', auth, async (req, res, next) => {
             console.log(`GET /groups`);
         
+            let me = req.identity.username
+
             let con = await db.checkConnection()
-            const sql = `SELECT * FROM environment_group`
+            const sql = `SELECT * FROM environment_group WHERE group_owner =?`
+            const params = [ me ];
             
-            con.query(sql, function (err, result) {
+            con.query(sql, params, function (err, result) {
                 if (err) throw err;
                 res.send({ groups: result })
                 next()

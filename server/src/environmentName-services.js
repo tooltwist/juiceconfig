@@ -2,6 +2,31 @@ import db from './database-mysql';
 
 export default {
 	register (server) {
+        // Remove user of selected environment from environment_user db table
+        server.del('/api/removeEnvUser/:environment/:username', async (req, res, next) => {
+            console.log(`DELETE /removeUser`);
+
+            let con = await db.checkConnection();
+            const environment = req.params.environment;
+            const username = req.params.username;
+
+            console.log('environment =', environment);
+            console.log('username =', username);
+
+            const sql = `DELETE FROM environment_user WHERE environment =? AND username =?`
+            const params = [environment, username]
+
+            console.log('params = ', params)
+
+            con.query( sql, params, (err, result) => {
+                if (err) throw err;
+            
+                // Send reply
+                res.send({ status: 'ok' })
+                return next();
+            }) 
+        });
+        
         // Select ENVIRONMENT values for /_environmentNAME on MySQL database
         server.get('/api/environment', async (req, res, next) => {
             console.log(`GET /environment`);

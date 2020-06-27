@@ -1,247 +1,249 @@
 <template lang="pug">
-
-section.section
-  h1.title Environment&nbsp;
-    span(v-html="std_environmentDisplay(environment)")
-  
-  b-tabs(v-model="activeTab", :animated="false")
-    b-tab-item(label="Information")
-      form.formStyle
-        .field.is-horizontal
-            .field-label.is-normal
-                label.label(style="width:200px;") Name: 
-            .field-body
-                .field
-                    .control
-                        p.my-not-input-p() &nbsp;{{environment.name}}
-        .field.is-horizontal
-            .field-label.is-normal
-              label.label(style="width:200px;") Type: 
-            .field-body
-                .field
-                    .control
-                        select.select(v-model="environment.type", :disabled="!editingDetails")
-                          option(value="aws") Amazon Web Services (AWS)
-                          option(value="local") Local development machine
-                          option(value="other") Other
-                        //- | &nbsp;{{environment.type}}
-                        //- input.input(v-if="editingDetails", v-model.trim="environment.description", placeholder="URL to ECS Service", @input="saveDetails")
-                        //- a.my-not-input-a(v-else-if="validUrl(environment.description)", :href="deployment.description", target="_blank") &nbsp;{{deployment.description}}
-                        //- p.my-not-input-p(v-else) &nbsp;{{environment.description}}
-        .field.is-horizontal
-          .field-label.is-normal
-            label.label(style="width:200px;") Universal: 
-          .field-body
-            .field
-              .control
-                select.select(v-model="environment.is_universal", :disabled="!editingDetails", @input="saveDetails")
-                  option(value="1") Yes
-                  option(value="0") No
-        .field.is-horizontal
-          .field-label.is-normal
-            label.label(style="width:200px;") Secure: 
-          .field-body
-            .field
-              .control
-                select.select(v-model="environment.is_secure_environment", :disabled="!editingDetails", @input="saveDetails")
-                  option(value="1") Yes
-                  option(value="0") No
-        .field.is-horizontal
-          .field-label.is-normal
-            label.label(style="width:200px;") Group: 
-          .field-body
-            .field
-              .control
-                select.select(v-model="environment.group_name", :disabled="!editingDetails", @input="saveDetails")
-                  option(v-for="group in groups", :value="group.group_name") {{group.group_name}}
-        .field.is-horizontal
-            .field-label.is-normal
-                label.label(style="width:200px;") Description: 
-            .field-body
-                .field
-                    .control
-                        input.input(v-if="editingDetails", v-model.trim="environment.description", placeholder="Description", @input="saveDetails")
-                        a.my-not-input-a(v-else-if="validUrl(environment.description)", :href="deployment.description", target="_blank") &nbsp;{{deployment.description}}
-                        p.my-not-input-p(v-else) &nbsp;{{environment.description}}
-        .field.is-horizontal
-            .field-label.is-normal
-                label.label(style="width:200px;") Notes: 
-            .field-body
-                .field
-                    .control
-                        textarea.textarea(v-model.trim="environment.notes", placeholder="Notes", :disabled="!editingDetails", @input="saveDetails")
-                        //- input.input(v-if="editingDetails", v-model.trim="environment.notes", placeholder="URL to ECS Service", @input="saveDetails")
-                        //- a.my-not-input-a(v-else-if="validUrl(environment.notes)", :href="environment.notes", target="_blank") &nbsp;{{environment.notes}}
-                        //- p.my-not-input-p(v-else) &nbsp;{{environment.notes}}
-      div(v-if="isOwner()").control
-          button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
-
-    b-tab-item(label="AWS", v-if="environment.type==='aws'")
-      form.formStyle
-        //- hr(v-if="environment.type==='aws'")
-        .field.is-horizontal()
-            .field-label.is-normal
-                label.label(style="width:200px;") Account no: 
-            .field-body
-                .field
-                    .control
-                        input.input(v-if="editingDetails", v-model.trim="environment.aws_account", placeholder="eg. 270011112222", @input="saveDetails")
-                        p.my-not-input-p(v-else) &nbsp;{{environment.aws_account}}
-        .field.is-horizontal()
-            .field-label.is-normal
-                label.label(style="width:200px;") Profile: 
-            .field-body
-                .field
-                    .control
-                        input.input(v-if="editingDetails", v-model.trim="environment.aws_profile", placeholder="eg. development", @input="saveDetails")
-                        p.my-not-input-p(v-else) &nbsp;{{environment.aws_profile}}
-        .field.is-horizontal()
-            .field-label.is-normal
-                label.label(style="width:200px;") Region: 
-            .field-body
-                .field
-                    .control
-                        select.select(v-model="environment.aws_region", :disabled="!editingDetails")
-                          option(value="us-east-2") US East (Ohio)	
-                          option(value="us-east-1") US East (N. Virginia)	
-                          option(value="us-west-1") US West (N. California)	
-                          option(value="us-west-2") US West (Oregon)	
-                          option(value="ap-east-1") Asia Pacific (Hong Kong)	
-                          option(value="ap-south-1") Asia Pacific (Mumbai)	
-                          option(value="ap-northeast-3") Asia Pacific (Osaka-Local)	
-                          option(value="ap-northeast-2") Asia Pacific (Seoul)	
-                          option(value="ap-southeast-1") Asia Pacific (Singapore)	
-                          option(value="ap-southeast-2") Asia Pacific (Sydney)	
-                          option(value="ap-northeast-1") Asia Pacific (Tokyo)	
-                          option(value="ca-central-1") Canada (Central)	
-                          option(value="cn-north-1") China (Beijing)	
-                          option(value="cn-northwest-1") China (Ningxia)	
-                          option(value="eu-central-1") Europe (Frankfurt)	
-                          option(value="eu-west-1") Europe (Ireland)	
-                          option(value="eu-west-2") Europe (London)	
-                          option(value="eu-west-3") Europe (Paris)	
-                          option(value="eu-north-1") Europe (Stockholm)	
-                          option(value="me-south-1") Middle East (Bahrain)	
-                          option(value="sa-east-1") South America (Sao Paulo)	
-                          option(value="us-gov-east-1") AWS GovCloud (US-East)	
-                          option(value="us-gov-west-1") AWS GovCloud (US-West)	
-
-                        //- a.my-not-input-a(v-else-if="validUrl(environment.aws_region)", :href="environment.aws_region", target="_blank") &nbsp;{{environment.aws_region}}
-                        //- p.my-not-input-p(v-else) &nbsp;{{environment.aws_region}}
-        .field.is-horizontal(v-if="environment.type==='aws'")
-            .field-label.is-normal
-                label.label(style="width:200px;") Stack: 
-            .field-body
-                .field
-                    .control
-                        input.input(v-if="editingDetails", v-model.trim="environment.aws_cf_stack", placeholder="URL to Cloudformation stack", @input="saveDetails")
-                        a.my-not-input-a(v-else-if="validUrl(environment.aws_cf_stack)", :href="environment.aws_cf_stack", target="_blank") &nbsp;{{environment.aws_cf_stack}}
-                        p.my-not-input-p(v-else) &nbsp;{{environment.aws_cf_stack}}
-        .field.is-horizontal(v-if="environment.type==='aws'")
-            .field-label.is-normal
-                label.label(style="width:200px;") Cluster: 
-            .field-body
-                .field
-                    .control
-                        input.input(v-if="editingDetails", v-model.trim="environment.aws_cluster_url", placeholder="URL to ECS Service", @input="saveDetails")
-                        a.my-not-input-a(v-else-if="validUrl(environment.aws_cluster_url)", :href="environment.aws_cluster_url", target="_blank") &nbsp;{{environment.aws_cluster_url}}
-                        p.my-not-input-p(v-else) &nbsp;{{environment.aws_cluster_url}}
-        .field.is-horizontal(v-if="environment.type==='aws'")
-            .field-label.is-normal
-                label.label(style="width:200px;") VPC URL: 
-            .field-body
-                .field
-                    .control
-                        input.input(v-if="editingDetails", v-model.trim="environment.aws_vpc_url", placeholder="URL to VPC dashboard", @input="saveDetails")
-                        a.my-not-input-a(v-else-if="validUrl(environment.aws_vpc_url)", :href="environment.aws_vpc_url", target="_blank") &nbsp;{{environment.aws_vpc_url}}
-                        p.my-not-input-p(v-else) &nbsp;{{environment.aws_vpc_url}}
-      div(v-if="isOwner()").control
-          button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
-
-    b-tab-item(label="Deployments")
-      // Deployments
-      h1.is-title.is-size-4(style="text-align:left;") Deployments
-      br
-      div(v-if="this.deployments.length === 0") 
-        br
-        article.message.is-success.is-small
-          div(v-if="isOwner()").message-body There are no deployments for this environment yet. Would you like to add one?
-          div(v-else).message-body Nothing to show.
-      div(v-else)
-        b-table(:data="deployments", focusable)
-          template(slot-scope="props")
-            b-table-column(field="application_name", label="Application Name")
-              | {{ props.row.application_name }}
-            b-table-column(field="deployable" ,label="Deployable")
-              nuxt-link(:to="`/deployable/${std_toQualifiedName(props.row.deployable_owner,props.row.deployable)}`")
-                span(v-html="std_toQualifiedDisplay(props.row.deployable_owner,props.row.deployable,true)")
-            b-table-column(field="notes", label="Notes")
-              | {{ props.row.notes }}
+div
+  section.section
+    h1.title Environment&nbsp;
+      span(v-html="std_environmentDisplay(environment)")
     
+    b-tabs(v-model="activeTab", :animated="false")
+      b-tab-item(label="Information")
+        form.formStyle
+          .field.is-horizontal
+              .field-label.is-normal
+                  label.label(style="width:200px;") Name: 
+              .field-body
+                  .field
+                      .control
+                          p.my-not-input-p() &nbsp;{{environment.name}}
+          .field.is-horizontal
+              .field-label.is-normal
+                label.label(style="width:200px;") Type: 
+              .field-body
+                  .field
+                      .control
+                          select.select(v-model="environment.type", :disabled="!editingDetails")
+                            option(value="aws") Amazon Web Services (AWS)
+                            option(value="local") Local development machine
+                            option(value="other") Other
+                          //- | &nbsp;{{environment.type}}
+                          //- input.input(v-if="editingDetails", v-model.trim="environment.description", placeholder="URL to ECS Service", @input="saveDetails")
+                          //- a.my-not-input-a(v-else-if="validUrl(environment.description)", :href="deployment.description", target="_blank") &nbsp;{{deployment.description}}
+                          //- p.my-not-input-p(v-else) &nbsp;{{environment.description}}
+          .field.is-horizontal
+            .field-label.is-normal
+              label.label(style="width:200px;") Universal: 
+            .field-body
+              .field
+                .control
+                  select.select(v-model="environment.is_universal", :disabled="!editingDetails", @input="saveDetails")
+                    option(value="1") Yes
+                    option(value="0") No
+          .field.is-horizontal
+            .field-label.is-normal
+              label.label(style="width:200px;") Secure: 
+            .field-body
+              .field
+                .control
+                  select.select(v-model="environment.is_secure_environment", :disabled="!editingDetails", @input="saveDetails")
+                    option(value="1") Yes
+                    option(value="0") No
+          .field.is-horizontal
+            .field-label.is-normal
+              label.label(style="width:200px;") Group: 
+            .field-body
+              .field
+                .control
+                  select.select(v-model="environment.group_name", :disabled="!editingDetails", @input="saveDetails")
+                    option(v-for="group in groups", :value="group.group_name") {{group.group_name}}
+          .field.is-horizontal
+              .field-label.is-normal
+                  label.label(style="width:200px;") Description: 
+              .field-body
+                  .field
+                      .control
+                          input.input(v-if="editingDetails", maxlength="128", v-model.trim="environment.description", placeholder="Description", @input="saveDetails")
+                          a.my-not-input-a(v-else-if="validUrl(environment.description)", :href="deployment.description", target="_blank") &nbsp;{{deployment.description}}
+                          p.my-not-input-p(v-else) &nbsp;{{environment.description}}
+          .field.is-horizontal
+              .field-label.is-normal
+                  label.label(style="width:200px;") Notes: 
+              .field-body
+                  .field
+                      .control
+                          textarea.textarea(v-model.trim="environment.notes", placeholder="Notes", :disabled="!editingDetails", @input="saveDetails")
+                          //- input.input(v-if="editingDetails", v-model.trim="environment.notes", placeholder="URL to ECS Service", @input="saveDetails")
+                          //- a.my-not-input-a(v-else-if="validUrl(environment.notes)", :href="environment.notes", target="_blank") &nbsp;{{environment.notes}}
+                          //- p.my-not-input-p(v-else) &nbsp;{{environment.notes}}
+        div(v-if="isOwner()").control
+            button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
 
-    b-tab-item(label="Commands", v-if="environment.type==='aws'")
-      .notification
-          h1.title.is-size-5 Provisioning
-          p.is-size-6(v-if="deployments.length === 0")
-            | Nothing appears to be deployed to this environment - has it been provisioned?
-            br
-            | 
-            | If you wish to set it up now, and you would like to use the Tooltwist conventions and
-            | Cloudformation templates, the following command will guide you through the process.
-          p.is-size-6(v-else)
-            | This environment appears to be already set up.
-          br
-          code.is-size-7
-            | $ AWS_PROFILE={{std_myProfile(environment)}} aws-explorer -r {{environment.aws_region}} provision
-          br
-          br
-          p.is-size-6
-              | Select 'Application' and then complete the prompts.
-      .notification
-          h1.title.is-size-5 Connecting
-          p.is-size-6
-            | If this environment was set up using aws-exploere (as above), the following command can assist you to log
-            | in to your ECS host servers, or to connect to the database:
-          br
-          code.is-size-7
-            | $ AWS_PROFILE={{std_myProfile(environment)}} aws-explorer \
-            br
-            | &nbsp;&nbsp;&nbsp;&nbsp; -r {{environment.aws_region}} \
-            br
-            | &nbsp;&nbsp;&nbsp;&nbsp; -e {{environment.name}} \
-            br
-            | &nbsp;&nbsp;&nbsp;&nbsp; remote
+      b-tab-item(label="AWS", v-if="environment.type==='aws'")
+        form.formStyle
+          //- hr(v-if="environment.type==='aws'")
+          .field.is-horizontal()
+              .field-label.is-normal
+                  label.label(style="width:200px;") Account no: 
+              .field-body
+                  .field
+                      .control
+                          input.input(v-if="editingDetails", maxlength="32", v-model.trim="environment.aws_account", placeholder="eg. 270011112222", @input="saveDetails")
+                          p.my-not-input-p(v-else) &nbsp;{{environment.aws_account}}
+          .field.is-horizontal()
+              .field-label.is-normal
+                  label.label(style="width:200px;") Profile: 
+              .field-body
+                  .field
+                      .control
+                          input.input(v-if="editingDetails", maxlength="128", v-model.trim="environment.aws_profile", placeholder="eg. development", @input="saveDetails")
+                          p.my-not-input-p(v-else) &nbsp;{{environment.aws_profile}}
+          .field.is-horizontal()
+              .field-label.is-normal
+                  label.label(style="width:200px;") Region: 
+              .field-body
+                  .field
+                      .control
+                          select.select(v-model="environment.aws_region", :disabled="!editingDetails")
+                            option(value="us-east-2") US East (Ohio)	
+                            option(value="us-east-1") US East (N. Virginia)	
+                            option(value="us-west-1") US West (N. California)	
+                            option(value="us-west-2") US West (Oregon)	
+                            option(value="ap-east-1") Asia Pacific (Hong Kong)	
+                            option(value="ap-south-1") Asia Pacific (Mumbai)	
+                            option(value="ap-northeast-3") Asia Pacific (Osaka-Local)	
+                            option(value="ap-northeast-2") Asia Pacific (Seoul)	
+                            option(value="ap-southeast-1") Asia Pacific (Singapore)	
+                            option(value="ap-southeast-2") Asia Pacific (Sydney)	
+                            option(value="ap-northeast-1") Asia Pacific (Tokyo)	
+                            option(value="ca-central-1") Canada (Central)	
+                            option(value="cn-north-1") China (Beijing)	
+                            option(value="cn-northwest-1") China (Ningxia)	
+                            option(value="eu-central-1") Europe (Frankfurt)	
+                            option(value="eu-west-1") Europe (Ireland)	
+                            option(value="eu-west-2") Europe (London)	
+                            option(value="eu-west-3") Europe (Paris)	
+                            option(value="eu-north-1") Europe (Stockholm)	
+                            option(value="me-south-1") Middle East (Bahrain)	
+                            option(value="sa-east-1") South America (Sao Paulo)	
+                            option(value="us-gov-east-1") AWS GovCloud (US-East)	
+                            option(value="us-gov-west-1") AWS GovCloud (US-West)	
 
-    b-tab-item(v-if="isOwner()", label="Users")
-      // Users
-      h1.is-title.is-size-4(style="text-align:left;") Users
-        div.buttons(v-if="isOwner()", style="float:right;")
-          button.button.is-primary(@click.prevent="newUser", type="is-light")  + Add New User
-      br
-      div(v-if="this.users.length === 0")
+                          //- a.my-not-input-a(v-else-if="validUrl(environment.aws_region)", :href="environment.aws_region", target="_blank") &nbsp;{{environment.aws_region}}
+                          //- p.my-not-input-p(v-else) &nbsp;{{environment.aws_region}}
+          .field.is-horizontal(v-if="environment.type==='aws'")
+              .field-label.is-normal
+                  label.label(style="width:200px;") Stack: 
+              .field-body
+                  .field
+                      .control
+                          input.input(v-if="editingDetails", maxlength="512", v-model.trim="environment.aws_cf_stack", placeholder="URL to Cloudformation stack", @input="saveDetails")
+                          a.my-not-input-a(v-else-if="validUrl(environment.aws_cf_stack)", :href="environment.aws_cf_stack", target="_blank") &nbsp;{{environment.aws_cf_stack}}
+                          p.my-not-input-p(v-else) &nbsp;{{environment.aws_cf_stack}}
+          .field.is-horizontal(v-if="environment.type==='aws'")
+              .field-label.is-normal
+                  label.label(style="width:200px;") Cluster: 
+              .field-body
+                  .field
+                      .control
+                          input.input(v-if="editingDetails", maxlength="512", v-model.trim="environment.aws_cluster_url", placeholder="URL to ECS Service", @input="saveDetails")
+                          a.my-not-input-a(v-else-if="validUrl(environment.aws_cluster_url)", :href="environment.aws_cluster_url", target="_blank") &nbsp;{{environment.aws_cluster_url}}
+                          p.my-not-input-p(v-else) &nbsp;{{environment.aws_cluster_url}}
+          .field.is-horizontal(v-if="environment.type==='aws'")
+              .field-label.is-normal
+                  label.label(style="width:200px;") VPC URL: 
+              .field-body
+                  .field
+                      .control
+                          input.input(v-if="editingDetails", maxlength="512", v-model.trim="environment.aws_vpc_url", placeholder="URL to VPC dashboard", @input="saveDetails")
+                          a.my-not-input-a(v-else-if="validUrl(environment.aws_vpc_url)", :href="environment.aws_vpc_url", target="_blank") &nbsp;{{environment.aws_vpc_url}}
+                          p.my-not-input-p(v-else) &nbsp;{{environment.aws_vpc_url}}
+        div(v-if="isOwner()").control
+            button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
+
+      b-tab-item(label="Deployments")
+        // Deployments
+        h1.is-title.is-size-4(style="text-align:left;") Deployments
         br
-        article.message.is-success.is-small
-          div.message-body There are no users for this environment yet. Would you like to add a new user?
-      b-table(:data="users", focusable)
-        template(slot-scope="props")
-          b-table-column(field="username", label="Username")
-            | {{ props.row.username }}
-          b-table-column(field="first_name", label="First Name")
-            | {{ props.row.first_name }}
-          b-table-column(field="last_name", label="Last Name")
-            | {{ props.row.last_name }}
-          div(v-if="access === 'admin'")
-            b-table-column(field="user_id", label="User ID")
-              | {{ props.row.user_id }}
-          b-table-column(field="access", label="Access")  
-            div(v-if="props.row.access === 'owner'") Admin
-            div(v-else-if="props.row.access === 'read'") Read
-            div(v-else-if="props.row.access === 'write'") Write
-            div(v-else) {{ props.row.access }}
-          b-table-column(field="", label="")
-            div(v-if="isOwner()")
-              a(href="", @click.prevent="editUser(props.row)")
-                b-icon(icon="circle-edit-outline")
+        div(v-if="this.deployments.length === 0") 
+          br
+          article.message.is-success.is-small
+            div(v-if="isOwner()").message-body There are no deployments for this environment yet. Would you like to add one?
+            div(v-else).message-body Nothing to show.
+        div(v-else)
+          b-table(:data="deployments", focusable)
+            template(slot-scope="props")
+              b-table-column(field="application_name", label="Application Name")
+                | {{ props.row.application_name }}
+              b-table-column(field="deployable" ,label="Deployable")
+                nuxt-link(:to="`/deployable/${std_toQualifiedName(props.row.deployable_owner,props.row.deployable)}`")
+                  span(v-html="std_toQualifiedDisplay(props.row.deployable_owner,props.row.deployable,true)")
+              b-table-column(field="notes", label="Notes")
+                | {{ props.row.notes }}
+      
+
+      b-tab-item(label="Commands", v-if="environment.type==='aws'")
+        .notification
+            h1.title.is-size-5 Provisioning
+            p.is-size-6(v-if="deployments.length === 0")
+              | Nothing appears to be deployed to this environment - has it been provisioned?
+              br
+              | 
+              | If you wish to set it up now, and you would like to use the Tooltwist conventions and
+              | Cloudformation templates, the following command will guide you through the process.
+            p.is-size-6(v-else)
+              | This environment appears to be already set up.
+            br
+            code.is-size-7
+              | $ AWS_PROFILE={{std_myProfile(environment)}} aws-explorer -r {{environment.aws_region}} provision
+            br
+            br
+            p.is-size-6
+                | Select 'Application' and then complete the prompts.
+        .notification
+            h1.title.is-size-5 Connecting
+            p.is-size-6
+              | If this environment was set up using aws-exploere (as above), the following command can assist you to log
+              | in to your ECS host servers, or to connect to the database:
+            br
+            code.is-size-7
+              | $ AWS_PROFILE={{std_myProfile(environment)}} aws-explorer \
+              br
+              | &nbsp;&nbsp;&nbsp;&nbsp; -r {{environment.aws_region}} \
+              br
+              | &nbsp;&nbsp;&nbsp;&nbsp; -e {{environment.name}} \
+              br
+              | &nbsp;&nbsp;&nbsp;&nbsp; remote
+
+      b-tab-item(v-if="isOwner()", label="Users")
+        // Users
+        h1.is-title.is-size-4(style="text-align:left;") Users
+          div.buttons(v-if="isOwner()", style="float:right;")
+            button.button.is-primary(@click.prevent="newUser", type="is-light")  + Add New User
+        br
+        div(v-if="this.users.length === 0")
+          br
+          article.message.is-success.is-small
+            div.message-body There are no users for this environment yet. Would you like to add a new user?
+        b-table(:data="users", focusable)
+          template(slot-scope="props")
+            b-table-column(field="username", label="Username")
+              | {{ props.row.username }}
+            b-table-column(field="first_name", label="First Name")
+              | {{ props.row.first_name }}
+            b-table-column(field="last_name", label="Last Name")
+              | {{ props.row.last_name }}
+            div(v-if="access === 'admin'")
+              b-table-column(field="user_id", label="User ID")
+                | {{ props.row.user_id }}
+            b-table-column(field="access", label="Access")  
+              div(v-if="props.row.access === 'owner'") Admin
+              div(v-else-if="props.row.access === 'read'") Read
+              div(v-else-if="props.row.access === 'write'") Write
+              div(v-else) {{ props.row.access }}
+            b-table-column(field="", label="")
+              div(v-if="isOwner()")
+                a(href="", @click.prevent="editUser(props.row)")
+                  b-icon(icon="circle-edit-outline")
+                a(href="",  @click.prevent="deleteUser(props.row)")
+                  b-icon(icon="delete")
 
   // New User Modal starts below:
   div(v-show="newUserModal")
@@ -306,15 +308,36 @@ section.section
               div.control
                 b-button(@click.stop="saveEditedUser", type="is-primary is-light", size="is-small")  Save    
                 b-button(@click="showUserEditModal=false", type="is-danger is-outlined", size="is-small") Cancel
+  
+  // Remove User Modal starts below:
+  div(v-show="deleteUserModal")
+    transition(name="modal")
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Remove user    
+            section.modal-card-body
+              p Are you sure you want to remove {{ users.first_name }} {{ users.last_name }} from {{environmentName}}?
+            footer.modal-card-foot 
+              div.control
+                b-button(@click.stop="removeUser", type="is-danger is-outlined", size="is-small") Remove    
+                b-button(@click="deleteUserModal=false", type="is-gray is-outlined", size="is-small") Cancel
 </template>
 
 <script>
 import axios from 'axios'
 import standardStuff from '../../lib/standard-stuff'
 
-
 export default {
   name: 'Environment',
+
+  components: {
+      modal: {
+      template: '#modal-template'
+      }
+  },
+
   data () {
     return {
       form: {
@@ -347,8 +370,9 @@ export default {
       newUserError: null, 
       access: null,
 
-      // New User Modal
+      // User Modals
       newUserModal: false,
+      deleteUserModal: false,
 
       // Edit User Modal
       showUserEditModal: false,
@@ -507,6 +531,22 @@ export default {
       } 
     }, // - saveEditedUser
 
+    // REMOVE USER
+    async removeUser() {
+      try {
+        let url = standardStuff.apiURL(`/removeEnvUser/${this.environmentName}/${this.users.username}`)
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+        await axios.delete(url, config) 
+
+        // Display new users details
+        this.deleteUserModal = false;
+        this.reloadUsers();
+        console.log('User has been removed from the environment_users db table.')
+      } catch (e) {
+        console.log(`Error whilst removing user:`, e)
+      } 
+    }, // - removeUser
+
     async reloadUsers() {
       const url3 = standardStuff.apiURL('/environments_users')
       const params = {
@@ -547,6 +587,14 @@ export default {
       return false
     }, //- editUser
 
+    deleteUser(user) {
+      this.deleteUserModal = true;
+      this.users.first_name = user.first_name;
+      this.users.last_name = user.last_name;
+      this.users.username = user.username;
+      this.users.user_id = user.user_id;
+      return false;
+    }, // -deleteUser
 
     saveDetails: async function () {
         let self = this
@@ -650,6 +698,69 @@ console.log(`environment=> ${environmentOwner}, ${environmentName}`);
 </script>
 
 <style lang="scss">
+.modal-mask {
+  position: fixed;
+  z-index: 9998;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, .5);
+  display: table;
+  transition: opacity .3s ease;
+}
+
+.modal-wrapper {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.modal-container {
+  width: 300px;
+  margin: 0px auto;
+  padding: 20px 30px;
+  background-color: #fff;
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .33);
+  transition: all .3s ease;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+.modal-header h3 {
+  margin-top: 0;
+  color: #42b983;
+}
+
+.modal-body {
+  margin: 20px 0;
+}
+
+.modal-default-button {
+  float: right;
+}
+
+/*
+ * The following styles are auto-applied to elements with
+ * transition="modal" when their visibility is toggled
+ * by Vue.js.
+ *
+ * You can easily play with the modal transition by editing
+ * these styles.
+ */
+
+.modal-enter {
+  opacity: 0;
+}
+
+.modal-leave-active {
+  opacity: 0;
+}
+
+.modal-enter .modal-container,
+.modal-leave-active .modal-container {
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+}
 
 /* 
 FORM STYLING

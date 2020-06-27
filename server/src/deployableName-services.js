@@ -5,6 +5,75 @@ import misc from './misc'
 
 export default {
 	register (server) {
+        // Remove variable of selected deployable from variable db table
+        server.del('/api/removeVariable/:deployable/:variable', async (req, res, next) => {
+            console.log(`DELETE /removeVariable`);
+
+            let con = await db.checkConnection();
+            const { owner:deployableOwner, name:deployableName } = misc.splitOwnerName(req.params.deployable)
+            const variable = req.params.variable;
+
+            const sql = `DELETE FROM variable WHERE deployable_name =? AND deployable_owner =? AND name =?`
+            const params = [deployableName, deployableOwner, variable]
+
+            console.log('params = ', params)
+
+            con.query( sql, params, (err, result) => {
+                if (err) throw err;
+            
+                // Send reply
+                res.send({ status: 'ok' })
+                return next();
+            }) 
+        });
+
+        // Remove user of selected deployable from project_user db table
+        server.del('/api/removeUser/:deployable/:username', async (req, res, next) => {
+            console.log(`DELETE /removeUser`);
+
+            let con = await db.checkConnection();
+            const project = req.params.deployable;
+            const username = req.params.username;
+
+            console.log('project =', project);
+            console.log('username =', username);
+
+            const sql = `DELETE FROM project_user WHERE project =? AND username =?`
+            const params = [project, username]
+
+            console.log('params = ', params)
+
+            con.query( sql, params, (err, result) => {
+                if (err) throw err;
+            
+                // Send reply
+                res.send({ status: 'ok' })
+                return next();
+            }) 
+        });
+
+        // Remove dependency of selected deployable from dependency db table
+        server.del('/api/removeDependency/:deployable/:child_name', async (req, res, next) => {
+            console.log(`DELETE /removeDependency`);
+
+            let con = await db.checkConnection();
+            const { owner:deployableOwner, name:deployableName } = misc.splitOwnerName(req.params.deployable)
+            const child_name = req.params.child_name;
+
+            const sql = `DELETE FROM dependency WHERE parent_name =? AND parent_owner =? AND child_name =?`
+            const params = [deployableName, deployableOwner, child_name]
+
+            console.log('params = ', params)
+
+            con.query( sql, params, (err, result) => {
+                if (err) throw err;
+            
+                // Send reply
+                res.send({ status: 'ok' })
+                return next();
+            }) 
+        });
+
         // Update edited DEPLOYABLE details
         server.put('/api/deployable', async (req, res, next) => {
             console.log(`PUT /deployable`)

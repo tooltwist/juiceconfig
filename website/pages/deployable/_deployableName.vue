@@ -31,7 +31,7 @@ div
               .field-body 
                 .field  
                   .control  
-                    input.input(v-if="editingDetails", v-model.trim="deployable.product_owner", @input="saveDetails")
+                    input.input(v-if="editingDetails", maxlength="50", v-model.trim="deployable.product_owner", @input="saveDetails")
                     a.my-not-input-a(v-else-if="validUrl(deployable.product_owner)", :href="deployable.product_owner", target="_blank") &nbsp;{{deployable.product_owner}}
                     p.my-not-input-p(v-else) &nbsp;{{deployable.product_owner}}
             .field.is-horizontal
@@ -40,7 +40,7 @@ div
               .field-body
                 .field
                   .control
-                    textarea.textarea(v-model.trim="deployable.description", placeholder="Description", :disabled="!editingDetails", @input="saveDetails")
+                    textarea.textarea(v-model.trim="deployable.description", maxlength="50", placeholder="Description", :disabled="!editingDetails", @input="saveDetails")
             .field.is-horizontal
               .field-label.is-normal
                 label.label(style="width:200px;") Public:
@@ -110,7 +110,9 @@ div
                   input(v-if="editingDetails", v-model="variable.description", @input="updateVariable(variable)")
                   span(v-else) {{ variable.description }}
                 td
-                  | X
+                  a(v-if="editingDetails", href="", @click.prevent="removeVariable(variable)")
+                    b-tooltip(label="Delete Variable")
+                      b-icon(icon="close")
                 //- b-table-column(field="example", label="Example")
                 //- b-table-column(field="type", label="Type")
                 //- b-table-column(field="", label="")
@@ -131,20 +133,18 @@ div
         // Deployments
         h1.is-title.is-size-4(style="text-align:left;") Deployments
         br 
+        b-table(:data="deployments", focusable)
+          template(slot-scope="props")
+            b-table-column(field="application_name", label="Application Name")
+              | {{ props.row.application_name }}
+            b-table-column(field="environment", label="Environment")
+              nuxt-link(:to="`/environment/${std_toQualifiedName(props.row.environmentOwner,props.row.environment)}`")
+                span(v-html="std_toQualifiedDisplay(props.row.environmentOwner, props.row.environment)")
+            b-table-column(field="notes", label="Notes")
+              | {{ props.row.notes }}
         div(v-if="this.deployments.length === 0")
-          br
           article.message.is-success.is-small
             div.message-body There are no deployments for this deployable yet. Would you like to add a new deployment?
-        div(v-else)
-          b-table(:data="deployments", focusable)
-            template(slot-scope="props")
-              b-table-column(field="application_name", label="Application Name")
-                | {{ props.row.application_name }}
-              b-table-column(field="environment", label="Environment")
-                nuxt-link(:to="`/environment/${std_toQualifiedName(props.row.environmentOwner,props.row.environment)}`")
-                  span(v-html="std_toQualifiedDisplay(props.row.environmentOwner, props.row.environment)")
-              b-table-column(field="notes", label="Notes")
-                | {{ props.row.notes }}
 
       b-tab-item(label="Dependencies")
         // Dependencies
@@ -153,10 +153,6 @@ div
             div(v-if="isEditable")
               button.button.is-primary(@click.prevent="newDependency(dependencies)", type="is-light")  + Add New Dependency
         br
-        div(v-if="this.dependencies.length === 0")
-          br
-          article.message.is-success.is-small
-            div.message-body There are no dependencies for this deployable yet. Would you like to add a new dependency?
         b-table(:data="dependencies", focusable)
           template(slot-scope="props")
             b-table-column(field="parent", label="Parent")
@@ -169,6 +165,12 @@ div
               | {{ props.row.prefix }}
             b-table-column(field="version", label="Version")
               | {{ props.row.version }}
+            b-table-column(field="remove", label="")
+              a(href="",  @click.prevent="removeDependency(props.row)")
+                b-icon(icon="delete")
+        div(v-if="this.dependencies.length === 0")
+          article.message.is-success.is-small
+            div.message-body There are no dependencies for this deployable yet. Would you like to add a new dependency?
 
       b-tab-item(v-if="isOwner()", label="Users")
         // Users
@@ -192,13 +194,16 @@ div
             div(v-if="access === 'admin'")
               b-table-column(field="user_id", labe="Users ID")
                 | {{ props.row.user_id }}
-            b-table-column(field="access", label="Access", style="display:flex")    
+            b-table-column(field="access", label="Access")    
               div(v-if="props.row.access === 'owner'") Admin   
               div(v-else-if="props.row.access === 'read'") Read  
               div(v-else-if="props.row.access === 'write'") Write 
               div(v-else) {{ props.row.access }}  
+            b-table-column(field="edit/delete", label="")
               a(href="", @click.prevent="editUser(props.row)") 
                 b-icon(icon="circle-edit-outline")
+              a(href="",  @click.prevent="deleteUser(props.row)")
+                b-icon(icon="delete")
 
       b-tab-item(label="Versions")     
         b-button.is-success(@click.prevent="newVersion()", style="float:right;") Create new version
@@ -425,13 +430,13 @@ div
                         div.formStyle Variable name:
                           div.control
                             div(v-if="variableError === null")
-                              input.input(name="variable_name", v-model="form.variable_name", type="text", placeholder="Variable name")
+                              input.input(name="variable_name", maxlength="128", v-model="form.variable_name", type="text", placeholder="Variable name")
                             div(v-else="variableError === `Variable already exists`")   
-                              input.input.is-danger(v-model="form.variable_name", type="text", placeholder="Variable Name")
+                              input.input.is-danger(v-model="form.variable_name", maxlength="128", type="text", placeholder="Variable Name")
                               p.help.is-danger This variable name already exists. Try again.
                         div.formStyle Description:
                           div.control
-                            input.input(name="new_description", v-model="form.variable_description", type="text", placeholder="Description")
+                            input.input(name="new_description", maxlength="50", v-model="form.variable_description", type="text", placeholder="Description")
                         div.formPlacement
                           div.formStyle Type:
                             b-select(placeholder="Type", v-model="form.variable_type") Type:
@@ -479,16 +484,16 @@ div
                               option(v-for="deployable in deployables") {{ deployable.name }} 
                             div(v-if="dependencyError === `Dependency already exists`")
                               p.help.is-danger {{ deployableName }} already has a dependency with this child.
-                        div.formStyle Prefix: 
+                        div.formStyle Prefix:
                           div.control
                             div(v-if="dependencyError === null")
-                              input.input(name="new_prefix", v-model="form.new_prefix", type="text", placeholder="Prefix")
+                              input.input(name="new_prefix", maxlength="15", v-model="form.new_prefix", type="text", placeholder="Prefix")
                             div(v-else="dependencyError === `Prefix already exists`")
                               input.input(name="new_prefix", v-model="form.new_prefix", type="text", placeholder="Prefix")
                               p.help.is-danger {{ deployableName }} already has a dependency with this prefix.
                         div.formStyle Version:
                           div.control
-                            input.input(name="new_version", v-model="form.new_version", type="text", placeholder="Version")
+                            input.input(name="new_version", maxlength="10", v-model="form.new_version", type="text", placeholder="Version")
             footer.modal-card-foot
               div.control
                 b-button(@click.stop="saveNewDependency",  type="is-primary is-light", size="is-small")  Save    
@@ -552,6 +557,51 @@ div
               div.control
                 b-button(@click.stop="saveEditedUser", type="is-primary is-light", size="is-small")  Save    
                 b-button(@click="showUserEditModal=false", type="is-danger is-outlined", size="is-small") Cancel
+
+  // Remove User Modal starts below:
+  div(v-show="deleteUserModal")
+    transition(name="modal")
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Remove user    
+            section.modal-card-body
+              p Are you sure you want to remove <b>{{ users.first_name }} {{ users.last_name }}</b> from <b>{{deployableName}}</b>?
+            footer.modal-card-foot 
+              div.control
+                b-button(@click.stop="removeUser", type="is-danger is-outlined", size="is-small") Remove    
+                b-button(@click="deleteUserModal=false", type="is-gray is-outlined", size="is-small") Cancel
+
+  // Remove dependency modal:
+  div(v-show="removeDependencyModal")
+    transition(name="modal")
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Remove dependency    
+            section.modal-card-body
+              p Are you sure you want to remove <b>{{dependencies.child_name}}</b> as a dependency for <b>{{deployableName}}</b>?
+            footer.modal-card-foot 
+              div.control
+                b-button(@click.stop="removeDependencyFunc", type="is-danger is-outlined", size="is-small") Remove    
+                b-button(@click="removeDependencyModal=false", type="is-gray is-outlined", size="is-small") Cancel
+
+  // Remove variable modal:
+  div(v-show="removeVariableModal")
+    transition(name="modal")
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Remove variable    
+            section.modal-card-body
+              p Are you sure you want to remove <b>{{variables.name}}</b> from <b>{{deployableName}}</b>?
+            footer.modal-card-foot 
+              div.control
+                b-button(@click.stop="removeVariableFunc", type="is-danger is-outlined", size="is-small") Remove    
+                b-button(@click="removeVariableModal=false", type="is-gray is-outlined", size="is-small") Cancel
 </template>
 
 <script>
@@ -623,6 +673,7 @@ export default {
       description: '',
       is_project: '',
       deployableName: '',
+      deployableOwner: '',
 
       activeTab: 0,
       deployments: [ ],
@@ -632,6 +683,7 @@ export default {
       allUsers: [ ],
       versions: [ ],
       tokens: [ ],
+      dependencies: [ ],
       currentUser: [ ],
       deployable: '',
       deployables: [ ],
@@ -648,8 +700,9 @@ export default {
       // Show environments option in token modal
       showEnvironmentToken: false,
 
-      // Modal data for editing existing user
+      // Modal data for user funcs
       showUserEditModal: false,
+      deleteUserModal: false,
 
       // Modal data for new user
       newUserModal: false,
@@ -670,6 +723,7 @@ export default {
 
       // Modal data for adding dependency
       newDependencyModal: false,
+      removeDependencyModal: false,
       dependencyError: null,
 
       // Modal data for editing variables
@@ -679,6 +733,7 @@ export default {
       variable_description: '',
       variable_type: '',
       variable_mandatory: '',
+      removeVariableModal: false,
 
       // Variables waiting to be saved, with setTimeout delay
       // variableName => { timer, variable }
@@ -911,7 +966,7 @@ export default {
             record.target_environment_name = this.form.new_token_deployment.environment_name
             record.target_application_name = this.form.new_token_deployment.application_name
           }
-console.log(`record is`, record);
+          console.log(`record is`, record);
           let url = standardStuff.apiURL('/token')
           let config = standardStuff.axiosConfig(this.$loginservice.jwt)
           await axios.post(url, record, config)
@@ -991,6 +1046,51 @@ console.log(`record is`, record);
       } 
     }, // - saveEditedUser
         
+    // REMOVE USER
+    async removeUser() {
+      try {
+        let url = standardStuff.apiURL(`/removeUser/${this.deployableName}/${this.users.username}`)
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+        await axios.delete(url, config) 
+
+        this.deleteUserModal = false;
+        this.reloadUsers();
+        console.log('User has been removed from the project_users db table.')
+      } catch (e) {
+        console.log(`Error whilst removing user:`, e)
+      } 
+    }, // - removeUser
+
+    // REMOVE DEPENDENCY
+    async removeDependencyFunc() {
+      try {
+        let url = standardStuff.apiURL(`/removeDependency/${this.deployableOwner}:${this.deployableName}/${this.dependencies.child_name}`)
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+        await axios.delete(url, config) 
+
+        this.removeDependencyModal = false;
+        this.reloadDependencies();
+        console.log('Dependency has been removed from the dependency db table.')
+      } catch (e) {
+        console.log(`Error whilst removing dependency:`, e)
+      } 
+    }, // - removeDependencyFunc
+
+    // REMOVE VARIABLE
+    async removeVariableFunc() {
+      try {
+        let url = standardStuff.apiURL(`/removeVariable/${this.deployableOwner}:${this.deployableName}/${this.variables.name}`)
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+        await axios.delete(url, config) 
+        console.log('DeployableOwner: ', this.deployableOwner)
+
+        this.removeVariableModal = false;
+        this.reloadVariables();
+        console.log('Variable has been removed from the variables db table.')
+      } catch (e) {
+        console.log(`Error whilst removing variable:`, e)
+      } 
+    }, // - removeVariableFunc
 
     // ADD A NEW DEPENDENCY TO THE DATABASE - FROM MODAL 
     async saveNewDependency() {
@@ -1215,13 +1315,34 @@ console.log(`record is`, record);
 
     // OPEN MODAL AND CHANGE VALUES FOR EDITING USER - receives props.row (i.e. user record)
     editUser(users) {  
-      this.showUserEditModal = true,
-      this.users.first_name = users.first_name,
-      this.users.last_name = users.last_name,
-      this.users.user_id = users.user_id,
-      this.form.edit_useraccess = users.access
-      return false
+      this.showUserEditModal = true;
+      this.users.first_name = users.first_name;
+      this.users.last_name = users.last_name;
+      this.users.user_id = users.user_id;
+      this.form.edit_useraccess = users.access;
+      return false;
     }, // -editUser
+
+    deleteUser(user) {
+      this.deleteUserModal = true;
+      this.users.first_name = user.first_name;
+      this.users.last_name = user.last_name;
+      this.users.username = user.username;
+      this.users.user_id = user.user_id;
+      return false;
+    }, // -deleteUser
+
+    removeDependency(dependency) {
+      this.removeDependencyModal = true;
+      this.dependencies.child_name = dependency.child_name;
+      return false;
+    }, // -removeDependency
+
+      removeVariable(variable) {
+      this.removeVariableModal = true;
+      this.variables.name= variable.name;
+      return false;
+    }, // -removeVariable
 
     // OPEN MODAL AND CREATE NEW USER
     newUser() {

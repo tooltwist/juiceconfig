@@ -59,16 +59,16 @@
                                     form
                                         div.formStyle First name:
                                             div.control
-                                                input.input(v-model="form.new_first_name", type="text", value="first_name") 
+                                                input.input(v-model="form.new_first_name", maxlength="35", type="text", value="first_name") 
                                         div.formStyle Last name:
                                             div.control
-                                                input.input(v-model="form.new_last_name", type="text", value="last_name") 
+                                                input.input(v-model="form.new_last_name", maxlength="35", type="text", value="last_name") 
                                         div.formStyle Email:
                                             div.control
-                                                input.input(v-model="form.new_email", type="email", value="last_name") 
+                                                input.input(v-model="form.new_email", maxlength="60", type="email", value="last_name") 
                                         div.formStyle Role:
                                             div.control
-                                                input.input(v-model="form.new_role", type="role", value="role") 
+                                                input.input(v-model="form.new_role", maxlength="16", type="role", value="role") 
                             footer.modal-card-foot 
                                 div.control
                                     b-button(@click.stop="saveEditedAccount", type="is-primary is-light", size="is-small")  Save    

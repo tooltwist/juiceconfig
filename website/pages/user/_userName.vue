@@ -67,10 +67,10 @@ section.section
                                         div.form-group
                                             div.formStyle Email:
                                                 div.control
-                                                    input.input(v-model="form.new_accountemail", type="text", value="email", placeholder="Email")  
+                                                    input.input(v-model="form.new_accountemail", maxlength="60", type="text", value="email", placeholder="Email")  
                                             div.formStyle Account Role:
                                                 div.control
-                                                    input.input(v-model="form.new_accountrole", type="text", value="role", placeholder="Role")  
+                                                    input.input(v-model="form.new_accountrole", maxlength="16", type="text", value="role", placeholder="Role")  
                                             b-field.formStyle.control Edit accessibility:
                                                 b-select(placeholder="Accessibility", v-model="form.new_accountaccess", value="access") 
                                                     option(value="limited") limited

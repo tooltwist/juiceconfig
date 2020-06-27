@@ -13,13 +13,53 @@ export default {
 
       console.log(`I am ${me}`);
       
-      const sql = `SELECT * FROM deployments WHERE environment_owner =?` 
-      const params = [ me, me, me ] 
+      const sql = `SELECT * FROM deployments WHERE environment_owner =? OR environment IN (SELECT environment FROM environment_user WHERE username =?)`
+      const params = [ me, me ] 
   
       let con = await db.checkConnection()
       con.query(sql, params, function (err, result) {
           if (err) throw err;
           res.send({ applications: result })
+          next()
+      });
+    });
+
+    // Select environment_user records for current user
+    server.get('/api/thisUsersEnvironments', async (req, res, next) => {
+      console.log(' GET /thisUsersEnvironments');
+
+      // Check if owner matches the username for private accounts
+      let me = req.query.username
+
+      console.log(`I am ${me}`);
+      
+      const sql = `SELECT * FROM environment_user WHERE username =?`
+      const params = [ me ] 
+  
+      let con = await db.checkConnection()
+      con.query(sql, params, function (err, result) {
+          if (err) throw err;
+          res.send({ environmentUsers: result })
+          next()
+      });
+    });
+
+    // Select project_user records for current user
+    server.get('/api/thisUsersProjects', async (req, res, next) => {
+      console.log(' GET /thisUsersProjects');
+
+      // Check if owner matches the username for private accounts
+      let me = req.query.username
+
+      console.log(`I am ${me}`);
+      
+      const sql = `SELECT * FROM project_user WHERE username =?`
+      const params = [ me ] 
+  
+      let con = await db.checkConnection()
+      con.query(sql, params, function (err, result) {
+          if (err) throw err;
+          res.send({ projectUsers: result })
           next()
       });
     });

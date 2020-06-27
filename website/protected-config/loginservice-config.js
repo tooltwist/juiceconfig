@@ -23,14 +23,14 @@ export default {
       firstname: true,
       middlename: false,
       lastname: true,
-      // resumeURL: 'http://localhost:3000/',
-      resumeURL: 'https://test-juiceconfig-457805544.ap-southeast-1.elb.amazonaws.com/',
+      resumeURL: 'http://localhost:3000/',
+      // resumeURL: 'https://test-juiceconfig-457805544.ap-southeast-1.elb.amazonaws.com/',
       termsMessage: 'Agree to our terms?',
       termsRoute: '/terms-and-conditions',
     },
     forgot: {
-      // resumeURL: 'http://localhost:3000/',
-      resumeURL: 'https://test-juiceconfig-457805544.ap-southeast-1.elb.amazonaws.com/'
+      resumeURL: 'http://localhost:3000/',
+      // resumeURL: 'https://test-juiceconfig-457805544.ap-southeast-1.elb.amazonaws.com/'
     },
     usernames: true,
     login: {

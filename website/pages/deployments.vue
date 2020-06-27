@@ -21,12 +21,13 @@
             b-table-column(field="environment", label="Environment")
               b-tooltip(:label="props.row._healthcheck.text", position="is-right", multilined, :type="healthcheckColor(props.row._healthcheck.status)")
                 b-icon(:icon="healthcheckIcon(props.row._healthcheck.status)", size="is-small", :type="healthcheckColor(props.row._healthcheck.status)")
-              nuxt-link(:to="`/environment/${std_toQualifiedName(props.row.environment_owner,props.row.environment)}`")
+              nuxt-link(v-if="accessEnv(props.row.environment)", :to="`/environment/${std_toQualifiedName(props.row.environment_owner,props.row.environment)}`")
                 span(v-html="std_toQualifiedDisplay(props.row.environment_owner,props.row.environment,true)")
+              span(v-else, v-html="std_toQualifiedDisplay(props.row.environment_owner,props.row.environment,true)") 
             b-table-column(field="application_name", label="Name")
               | {{ props.row.application_name }}
             b-table-column(field="deployable", label="Deployable")
-              nuxt-link(v-if="props.row.deployable_owner === currentUser", :to="`/deployable/${std_toQualifiedName(props.row.deployable_owner,props.row.deployable)}`")
+              nuxt-link(v-if="accessProject(props.row.deployable)", :to="`/deployable/${std_toQualifiedName(props.row.deployable_owner,props.row.deployable)}`")
                 span(v-html="std_toQualifiedDisplay(props.row.deployable_owner,props.row.deployable,true)")
               span(v-else, v-html="std_toQualifiedDisplay(props.row.deployable_owner,props.row.deployable,true)") 
             b-table-column(field="", label="")
@@ -86,7 +87,7 @@
                   .field-body
                     .field
                       .control
-                        input.input(v-model.trim="applicationName", :placeholder="defaultApplicationName")
+                        input.input(v-model.trim="applicationName", maxlength="128", :placeholder="defaultApplicationName")
 
                       p.has-text-danger.is-size-7(v-show="nameIsUsed")
                         | &nbsp;&nbsp;&nbsp;Name is already used
@@ -128,6 +129,8 @@ export default {
       deployableOwner: '',
       applicationName: '',
       notes: '',
+      projectUsers: '',
+      environmentUsers: '',
 
       currentUser: '',
       environmentId: '', // owner:name
@@ -165,6 +168,17 @@ export default {
       reply = await axios.get(url, config)
       const deployables = reply.data.deployables
 
+      // Get all projectUsers from project_user db
+      let url3 = standardStuff.apiURL('/thisUsersProjects')
+      reply = await axios.get(url3, params, config)
+      const projectUsers = reply.data.projectUsers
+
+      // Get all environmentUsers from environment_user db
+      let url4 = standardStuff.apiURL('/thisUsersEnvironments')
+      reply = await axios.get(url4, params, config)
+      const environmentUsers = reply.data.environmentUsers
+      console.log('environment users: ', environmentUsers)
+
       // Set the initial healthcheck status for each deployment
       deployments.forEach(d => {
         d._healthcheck = {
@@ -179,6 +193,8 @@ export default {
         environments,
         deployables,
         currentUser,
+        projectUsers, // all records in project_users db with this username
+        environmentUsers, // "" "" "" from environment_users db
       }
     } catch (e) {
       console.log(`Error while fetching deployments: `, e)
@@ -259,11 +275,53 @@ export default {
       }
       return true
     },//- readyToSave
-
   },
+
+ 
 
   methods: {
     ...standardStuff.methods,
+
+    // Check if environment is owned
+    accessEnv (environment) {
+      for (let i = 0; i < this.environments.length; i++) {
+        if (this.environments[i].name ==  environment && this.environments[i].owner == this.currentUser) {
+          return 1;
+        }
+      }
+
+      for (let i = 0; i < this.environmentUsers.length; i++) { // check if user is a collaborator
+        if (environment == this.environmentUsers[i].environment) {
+          return 1;
+        } 
+      }
+
+      return 0; // user is neither collaborator or owner of environment
+    },
+
+    // Check if project is owned
+    accessProject (deployable) {
+
+      for (let i = 0; i < this.deployables.length; i++) {
+        if (this.deployables[i].name ==  deployable && this.deployables[i].owner == this.currentUser) {
+          return 1;
+        }
+
+        /*if (this.deployables[i].is_global == '1') {
+          return 1;
+        }*/
+      }
+
+      for (let i = 0; i < this.projectUsers.length; i++) { // check if user is a collaborator
+        if (deployable == this.projectUsers[i].project) {
+          return 1;
+        } 
+      }
+
+      return 0; // user is neither collaborator or owner of deployable
+
+    },
+
 
     isDeployed (environmentName, deployableName) {
       let arr = [];
@@ -351,12 +409,28 @@ export default {
         let reply = await axios.post(url, record, config)
         console.log(`reply is `, reply);
 
-        let reloadedDeployments = await loadDeployments(config)
+        const params = {
+          params: { 
+            username: this.currentUser,
+          }
+        }
+        let reloadedDeployments = await loadDeployments(config, params)
         // this.deployables = loadDeployables(jwt)
         console.log(`reloaded deployments: `, reloadedDeployments);
         this.deployments = reloadedDeployments
+
+        // Set the initial healthcheck status for each deployment
+        this.deployments.forEach(d => {
+          d._healthcheck = {
+            status: 'scanning',
+            text: 'attempting to contact...',
+          }
+          checkHealth(d)
+        })
+
         this.showSaveErrorMsg = false
         this.showDialog = false
+
         return
       } catch (e) {
         console.log(`Error:`, e);
@@ -367,6 +441,7 @@ export default {
     },//- createDeployment
 
     healthcheckIcon: function(mode) {
+
       switch (mode) {
         case 'scanning':
           return 'radar'
@@ -388,7 +463,6 @@ export default {
           return 'minus'
       }
     }, //- healthcheckIcon
-
 
     healthcheckColor: function(status) {
       switch (status) {
@@ -412,7 +486,6 @@ export default {
           return 'is-light'
       }
     },//- healthcheckColor
-
   }//- methods
 }
 
@@ -454,68 +527,65 @@ async function checkHealth(deployment) {
   
   // Call health check to determine status
   // console.log(`Checking health of `, deployment);
-
-    const healthcheckUrl = deployment.website_url + deployment.healthcheck
-    let result
-    const USE_PROXY = true
-    if (USE_PROXY) {
-      try {
-
-        let url = standardStuff.apiURL('/proxyHealthcheck')
-        // console.log(`checkHealth(${deployment.environment}.${deployment.application_name}): ${url}`);
-        result = await axios.get(url, {
-          params: {
-            url: healthcheckUrl
-          }
-        });
-        // console.log(`Proxy returned:`, result);
-        deployment._healthcheck.status = result.data.status
-        // deployment._healthcheck.text = result.data.text
-        switch (deployment._healthcheck.status) {
-          // case 'scanning':
-          //   break
-          case 'OK':
-            deployment._healthcheck.text = result.data.body
-            break
-          // case 'error':
-          //   return 'is-danger'
-          // case 'network':
-          //   return 'is-danger'
-          case 'ENOENT':
-            deployment._healthcheck.text = `ENOENT: healthcheck path was not found on the server (${deployment.healthcheck})`
-            break
-          case 'ENOTFOUND': // url not defined
-            deployment._healthcheck.text = `ENOTFOUND: incorrect server url? (${deployment.website_url})`
-            break
-          case 'ECONNABORTED':
-            deployment._healthcheck.text = 'ECONNABORTED: timeout?'
-            break
-          // case 'skip':
-          // case 'unknown':
-          default:
-            deployment._healthcheck.text = `status: ${deployment._healthcheck.status}`
-            break
+  const healthcheckUrl = deployment.website_url + deployment.healthcheck
+  let result
+  const USE_PROXY = true
+  if (USE_PROXY) {
+    try {
+      let url = standardStuff.apiURL('/proxyHealthcheck')
+      // console.log(`checkHealth(${deployment.environment}.${deployment.application_name}): ${url}`);
+      result = await axios.get(url, {
+        params: {
+          url: healthcheckUrl
         }
-      } catch (error) {
-        // Unable to ask our server to do the healthcheck for us. I wonder why?
-        deployment._healthcheck.status = 'error'
-        deployment._healthcheck.text = 'Error in juice server.'
-        console.log(`Healthcheck proxy failed:`, error);
+      });
+      // console.log(`Proxy returned:`, result);
+      deployment._healthcheck.status = result.data.status
+      // deployment._healthcheck.text = result.data.text
+      switch (deployment._healthcheck.status) {
+        // case 'scanning':
+        //   break
+        case 'OK':
+          deployment._healthcheck.text = result.data.body
+          break
+        // case 'error':
+        //   return 'is-danger'
+        // case 'network':
+        //   return 'is-danger'
+        case 'ENOENT':
+          deployment._healthcheck.text = `ENOENT: healthcheck path was not found on the server (${deployment.healthcheck})`
+          break
+        case 'ENOTFOUND': // url not defined
+          deployment._healthcheck.text = `ENOTFOUND: incorrect server url? (${deployment.website_url})`
+          break
+        case 'ECONNABORTED':
+          deployment._healthcheck.text = 'ECONNABORTED: timeout?'
+          break
+        // case 'skip':
+        // case 'unknown':
+        default:
+          deployment._healthcheck.text = `status: ${deployment._healthcheck.status}`
+          break
       }
-      return
+    } catch (error) {
+      // Unable to ask our server to do the healthcheck for us. I wonder why?
+      deployment._healthcheck.status = 'error'
+      deployment._healthcheck.text = 'Error in juice server.'
+      console.log(`Healthcheck proxy failed:`, error);
     }
+    return
+  }
 
   /*
    *  We'll run the healthchecks directly from the browser. This is faster, but CORS checking by the
    *  browser will cause some healthchecks to fail (Cross Site Resource Scripting is a hack technique).
    */
   try {
-
-      console.log(`checkHealth(${deployment.environment}.${deployment.application_name}): ${healthcheckUrl}`);
-      let result = await axios.get(healthcheckUrl, {
-        timeout: 4000,
-        // crossdomain: true
-      });
+    console.log(`checkHealth(${deployment.environment}.${deployment.application_name}): ${healthcheckUrl}`);
+    let result = await axios.get(healthcheckUrl, {
+      timeout: 4000,
+      // crossdomain: true
+    });
 
     let status = result.status
     console.log(`status is`, status);
@@ -539,9 +609,9 @@ async function checkHealth(deployment) {
         deployment._healthcheck.text = `ENOENT: healthcheck path was not found on the server (${deployment.healthcheck})`
         return
       }
-    // } else if (error.message === 'Network Error') {
-    //   deployment._healthcheck.status = 'network'
-    //   return
+      // } else if (error.message === 'Network Error') {
+      //   deployment._healthcheck.status = 'network'
+      //   return
     } else if (error.code === 'ECONNABORTED') {
       // See https://medium.com/@masnun/handling-timeout-in-axios-479269d83c68
       deployment._healthcheck.status = 'ECONNABORTED'
@@ -564,12 +634,19 @@ async function checkHealth(deployment) {
 }
 
 async function loadDeployments (axiosConfig, params) {
+  // Returns deployments with environments that are owned by user, 
+  // or collaborated on by user
   console.log('params: ', params)
   let url = standardStuff.apiURL('/applications')
   let reply = await axios.get(url, params, axiosConfig)
   const deployments = reply.data.applications
   console.log('deployments', deployments)
   return deployments
+
+  // on website control diff bt collab, public and owned
+  // highlight: both env and dep owned; public dep, owned env;
+  // non-highlight, remove configure: only env owned; collab envs; anything not owned/collab **check this** by user;
+  // can users deploy on env that they collab w?
 }
 </script>
 
