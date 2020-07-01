@@ -18,7 +18,6 @@ section.section
                 a(href="/newEnvironment") create another environment?
     div(v-else)
         h1.title Add New Environment:
-        
         form
             .field
                 label.label Admin:

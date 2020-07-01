@@ -69,7 +69,7 @@ export default {
       console.log(`Response is: `, reply)
 
       // Load all groups for distinction
-      const url2 = standardStuff.apiURL('/groups')
+      const url2 = standardStuff.apiURL('/allgroups')
       console.log(`Calling ${url2}`);
       let reply2 = await axios.get(url2, config)
       console.log(`Response2 is: `, reply2)

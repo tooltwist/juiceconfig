@@ -45,7 +45,7 @@ export default {
             });
         }); // End of section
 
-        // Select ALL GROUPS from MySQL database
+        // Select users GROUPS from MySQL database
         server.get('/api/groups', auth, async (req, res, next) => {
             console.log(`GET /groups`);
         
@@ -56,6 +56,20 @@ export default {
             const params = [ me ];
             
             con.query(sql, params, function (err, result) {
+                if (err) throw err;
+                res.send({ groups: result })
+                next()
+            });
+        }); // End of section
+
+        // Select ALL GROUPS from MySQL database
+        server.get('/api/allgroups', async (req, res, next) => {
+            console.log(`GET /allgroups`);
+
+            let con = await db.checkConnection()
+            const sql = `SELECT * FROM environment_group`
+            
+            con.query(sql, function (err, result) {
                 if (err) throw err;
                 res.send({ groups: result })
                 next()

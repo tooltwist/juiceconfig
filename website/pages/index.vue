@@ -7,12 +7,13 @@
           .column.is-8
             h1.title Juice Config
             h2.subtitle A simple solution
-
+            
             ul(style='list-style-type:disc')
               li Check out the documentation <a href="http://juiceconfig.io">here</a>.
-              li This is to test the format. Blahb lah sdinve lorme ajns  eovine aldneinv. OInskkdm. knscinwe aoicnsjj. 
+              li Updates since you last logged in:  
+              li Updates on teams
+              li New deployments etc
               li Some helpful tips
-              li Maybe a noice shot of the docs or an infographic, how cute
             br
           
           .adBarStyle.column.is-4
@@ -20,6 +21,7 @@
             p.is-small Get started quickly with our easy-to-follow tutorial:
             br
             div
+              // When vid is ready, replace w - https://openbase.io/js/vue-video-player 
               youtube(:video-id="videoId", host="https://www.youtube.com", SameSite="None", Secure)
             br 
             br
@@ -29,32 +31,6 @@
               img.ttlogoSize(src="../assets/ttLogo.png") 
             a(href="https://www.twistresources.com/")
               img(src="../assets/trLogo.png")
-          
-        //div(class="tile is-ancestor")
-          div(class="tile is-vertical is-11")
-            div(class="tile")
-              div(class="tile is-parent is-vertical is-8")
-                article(class="tile is-child notification is-white")
-                  p(class="title") Juice Config 
-                  p(class="subtitle") A simple solution
-                  ul(style='list-style-type:disc')
-                    li Check out the documentation <a href="http://juiceconfig.io">here</a>.
-                    li This is to test the format. Blahb lah sdinve lorme ajns  eovine aldneinv. OInskkdm. knscinwe aoicnsjj. 
-                    li Some helpful tips
-                    li Maybe a noice shot of the docs or an infographic, how cute
-                  br
-              div(class="tile is-parent is-vertical is-5")
-                article(class="tile is-child notification is-white")
-                  p(class="is-small") Get started quickly with our easy-to-follow tutorial:
-                  br
-                  div
-                    youtube(:video-id="videoId")
-                article(class="tile is-child notification is-white")
-                  p(is-small) Powered by:
-                  a(href="https://tooltwist.com/")
-                    img.ttLogoStyle(src="../assets/ttLogo.png") 
-                  a(href="https://www.twistresources.com/")
-                    img.trLogoStyle(src="../assets/trLogo.png")
                 
       .columns(v-show="!loggedIn")
         // Not logged in
