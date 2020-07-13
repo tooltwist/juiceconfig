@@ -21,6 +21,7 @@ section.section
     // Payment details
     div(v-show="this.page === 1")
         h2.title.is-size-4 Add subscription payment method:
+        
         p I will pay 
             input(v-model="form.payment", type="checkbox") 
         br

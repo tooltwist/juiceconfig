@@ -37,6 +37,26 @@ export default {
                 next()
             });
         }); // End of section
+
+        // Select all orgs for /myAccount on MySQL database
+        server.get('/api/organisations', async (req, res, next) => {
+            console.log(`GET /organisations`);
+
+            let user_username = req.params.userName;
+
+            console.log('user_username', user_username)
+            
+            let con = await db.checkConnection()
+            const sql = `SELECT * from org_user WHERE user_username =?`
+            let params = [ user_username ]
+            
+            con.query(sql, params, function (err, result) {
+                if (err) throw err;
+                console.log(result)
+                res.send({ organisations: result })
+                next()
+            });
+        }); // End of section
          
         // Adding a new user to the DB       
         server.post('/api/newUser', async (req, res, next) => {
@@ -109,5 +129,7 @@ export default {
                 return next();
             }) 
         }); // End of section
+
+
     }
 }

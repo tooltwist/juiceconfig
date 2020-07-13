@@ -25,17 +25,20 @@
                         b-button.is-grey.is-small(@click.prevent="editMyAccount()") Edit
 
                 b-tab-item(label="Organisations")
+                    b-icon(icon="comment-warning-outline") // message-alert is another good icon
                     h1.is-title.is-size-4 My Organisations:
                         b-button.is-primary(tag="nuxt-link", to="/newOrganisation", type="is-light", style="float:right;") + Create new organisation
-                    //div(v-if="this.organisations.length === 0") 
-                        .message-body Nothing to show.
-                    //div(v-else)
-                        b-table(:data="organisations", focusable)
-                            template(slot-scope="props")
-                                b-table-column(field="organisation", label="Organisation Name")
-                                // Add a link to org page if owner/admin (i.e. show payment info, user info, etc) 
-                                b-table-column(field="role", label="Role") 
-                                // I.e. member or admin
+                    br
+                    b-table(:data="organisations", focusable)
+                        template(slot-scope="props")
+                            b-table-column(field="organisation", label="Organisation Name")
+                                nuxt-link(:to="`/organisation/${props.row.org_username}`")
+                                    span(v-show="props.row.role === 'owner'", v-html="props.row.org_username")
+                                span(v-show="props.row.role != 'owner'") {{props.row.org_username}}
+                            b-table-column(field="role", label="Role") 
+                                | {{props.row.role}}
+                            b-table-column(field="status", label="Status")
+                                | {{props.row.status}}
 
                 // Below is just filler - it doesn't actually make sense to have this here.
                 b-tab-item(label="Deployables")
@@ -106,6 +109,7 @@ export default {
             user: [ ],
             deployables: [ ],
             environments: [ ],
+            organisations: [ ],
             editAccountModal: false,
             activeTab: 0,
         }
@@ -126,6 +130,8 @@ export default {
     },
 
     methods: {
+        ...standardStuff.methods,
+
         // OPEN MODAL AND CHANGE VALUES FOR MY ACCOUNT
         editMyAccount() {  
         this.editAccountModal = true,
@@ -184,7 +190,8 @@ export default {
             const url = standardStuff.apiURL('/myaccount')
             const params = { 
                 params: {
-                    userName: userName.username
+                    userName: userName.username,
+                    //userID: user.id,
                 }
             }
             const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
@@ -195,31 +202,29 @@ export default {
 
             // Select deployables for this page
             const url2 = standardStuff.apiURL('/usersDeployables')
-            const params2 = {
-                params: { 
-                    userID: user.id
-                }
-            }
-            let res2 = await axios.get(url2, params2, config)
+            let res2 = await axios.get(url2, params, config)
             console.log(`API2 returned`, res2.data);
             const deployables = res2.data.deployables
 
             // Select environments for this page
             const url3 = standardStuff.apiURL('/accountEnvironments')
-            const params3 = {
-                params: { 
-                    userID: user.id
-                }
-            }
-            let res3 = await axios.get(url3, params3, config)
+            let res3 = await axios.get(url3, params, config)
             console.log(`API3 returned`, res3.data);
             const environments = res3.data.environments
+
+            // Import organisations 
+            const url4 = standardStuff.apiURL('/organisations')
+            let res4 = await axios.get(url4, params, config)
+            console.log(`API4 returned`, res4.data);
+            const organisations = res4.data.organisations
 
             return {
                 user: user,
                 deployables: deployables,
                 environments: environments,
+                organisations: organisations,
             }
+
         } catch (e) {
             console.log(`Could not fetch user details:`, e)
         }
@@ -229,5 +234,67 @@ export default {
 
 </script>
 <style scoped>
+.modal-mask {
+  position: fixed;
+  z-index: 9998;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, .5);
+  display: table;
+  transition: opacity .3s ease;
+}
 
+.modal-wrapper {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.modal-container {
+  width: 300px;
+  margin: 0px auto;
+  padding: 20px 30px;
+  background-color: #fff;
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .33);
+  transition: all .3s ease;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+.modal-header h3 {
+  margin-top: 0;
+  color: #42b983;
+}
+
+.modal-body {
+  margin: 20px 0;
+}
+
+.modal-default-button {
+  float: right;
+}
+
+/*
+ * The following styles are auto-applied to elements with
+ * transition="modal" when their visibility is toggled
+ * by Vue.js.
+ *
+ * You can easily play with the modal transition by editing
+ * these styles.
+ */
+
+.modal-enter {
+  opacity: 0;
+}
+
+.modal-leave-active {
+  opacity: 0;
+}
+
+.modal-enter .modal-container,
+.modal-leave-active .modal-container {
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+}
 </style>

@@ -12,7 +12,8 @@ import environmentServices from './environment-services';
 import environmentNameServices from './environmentName-services';
 import configServices from './config-services';
 import userServices from './user-services';
-import proxyHealthcheckServices from './proxyHealthcheck-services'
+import proxyHealthcheckServices from './proxyHealthcheck-services';
+import orgServices from './organisation-services';
 
 /*
  *  Initialise Restify.
@@ -85,6 +86,8 @@ configServices.register(server)
 userServices.register(server)
 
 proxyHealthcheckServices.register(server)
+
+orgServices.register(server)
 
 
 // Authentication: Select the user details/accessibility for the current user (logged in)
