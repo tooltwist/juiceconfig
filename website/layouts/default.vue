@@ -63,7 +63,6 @@ div
 export default {
   data () {
     return {
-
       /*
        *  Icons defined at https://materialdesignicons.com
        */
@@ -115,6 +114,8 @@ export default {
       this.$router.push('/');
     }
   }
+
+
 }
 </script>
 

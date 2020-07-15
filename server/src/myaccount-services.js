@@ -19,39 +19,30 @@ export default {
                 next()
             });
         }); // End of section
-        
-        // Select deployables for /myaccount on MySQL database
-        server.get('/api/usersDeployables', async (req, res, next) => {
-            console.log(`GET /usersDeployables`);
-            
-            let userID = req.query.userID
-            let con = await db.checkConnection()
-            const sql = `SELECT D.name, D.owner, D.product_owner, D.description, PU.access FROM deployable D left outer join project_user PU on D.name = PU.project WHERE PU.user_id=?`
-            let params = [ userID ]
-        
-            con.query(sql, params, function (err, result) {
-                if (err) throw err;
-                res.send({ deployables: result })
-                next()
-            })
-        }) // End of section
-        
-        // Select environments for /myaccount on MySQL database
-        server.get('/api/accountEnvironments', async (req, res, next) => {
-            console.log(`GET /accountEnvironments`);
-            
-            let userID = req.query.userID
-            let con = await db.checkConnection()
-            const sql = `SELECT E.name, E.owner, E.type, E.description, E.notes, EU.access FROM environment E left outer join environment_user EU on E.name = EU.environment WHERE EU.user_id=?`
-            let params = [ userID ]
-        
-            con.query(sql, params, function (err, result) {
-                if (err) throw err;
-                res.send({ environments: result })
-                next()
-            })
-        }) // End of section
 
+        // Select all orgs for /myAccount on MySQL database
+        server.get('/api/organisations', async (req, res, next) => {
+            console.log(`GET /organisations`);
+
+            let user_username = req.params.userName;
+
+            console.log('user_username', user_username)
+
+            let status_confirmed = 'confirmed';
+            let status_pending = 'pending';
+            
+            let con = await db.checkConnection()
+            const sql = `SELECT * from org_user WHERE user_username =? AND (status =? OR status =?)`
+            let params = [ user_username, status_confirmed, status_pending ]
+            
+            con.query(sql, params, function (err, result) {
+                if (err) throw err;
+                console.log(result)
+                res.send({ organisations: result })
+                next()
+            });
+        }); // End of section
+        
         // Edit user account details for /myaccount on MySQL database
         server.post('/api/editAccount', async (req, res, next) => {
             console.log(`POST /editAccount`)
@@ -59,11 +50,31 @@ export default {
             let con = await db.checkConnection()
             let first_name = req.params.first_name;
             let last_name = req.params.last_name;
-            let role = req.params.role;
             let email = req.params.email;
-            let id = req.params.id;
-            const sql = `UPDATE user SET first_name =?, last_name =?, role =?, email =? Where id =?`
-            let params = [ first_name, last_name, role, email, id ]
+            let username = req.params.userName;
+            const sql = `UPDATE user SET first_name =?, last_name =?, email =? WHERE username =?`
+            let params = [ first_name, last_name, email, username ]
+        
+            con.query(sql, params, (err, result) => {
+                if (err) throw err;
+            
+                // Send a success reply
+                res.send({ status: 'ok' })
+                return next();
+            }) 
+        }); // - end of call
+
+        // Edit org_user status for /myaccount
+        server.post('/api/orgUserRes', async (req, res, next) => {
+            console.log(`POST /orgUserRes`)
+        
+            let con = await db.checkConnection()
+            let org_username = req.params.org_username;
+            let user_username = req.params.user_username;
+            let status = req.params.status;
+
+            const sql = `UPDATE org_user SET status =? WHERE org_username =? AND user_username =?`
+            let params = [ status, org_username, user_username ]
         
             con.query(sql, params, (err, result) => {
                 if (err) throw err;

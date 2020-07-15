@@ -5,6 +5,10 @@
             b-tabs(v-model="activeTab", :animated="false")
                 b-tab-item(label="Account Details")
                     table(style="width:80%")
+                        tr 
+                            td(style="justify:right;")
+                                label Username:
+                            td(style="justify:left;") {{userName}}
                         tr  
                             td(style="justify:right;") 
                                 label Full name: 
@@ -15,17 +19,15 @@
                             td(style="justify:left;") {{user.email}}
                         tr  
                             td(style="justify:right;") 
-                                label Role:
-                            td(style="justify:left;") {{user.role}}
-                        tr  
-                            td(style="justify:right;") 
                                 label Access:
                             td(style="justify:left;") {{user.access}}
                         br
                         b-button.is-grey.is-small(@click.prevent="editMyAccount()") Edit
 
-                b-tab-item(label="Organisations")
-                    b-icon(icon="comment-warning-outline") // message-alert is another good icon
+                b-tab-item
+                    template(slot="header")
+                        span Organisations  
+                            b-tag(v-show="this.requests.length > 0", rounded, type="is-danger is-outlined") {{this.requests.length}}
                     h1.is-title.is-size-4 My Organisations:
                         b-button.is-primary(tag="nuxt-link", to="/newOrganisation", type="is-light", style="float:right;") + Create new organisation
                     br
@@ -33,36 +35,18 @@
                         template(slot-scope="props")
                             b-table-column(field="organisation", label="Organisation Name")
                                 nuxt-link(:to="`/organisation/${props.row.org_username}`")
-                                    span(v-show="props.row.role === 'owner'", v-html="props.row.org_username")
-                                span(v-show="props.row.role != 'owner'") {{props.row.org_username}}
+                                    span(v-show="props.row.role === 'owner' && props.row.status === 'confirmed'", v-html="props.row.org_username")
+                                span(v-show="props.row.role != 'owner' || props.row.status === 'pending'") {{props.row.org_username}}
                             b-table-column(field="role", label="Role") 
                                 | {{props.row.role}}
                             b-table-column(field="status", label="Status")
-                                | {{props.row.status}}
-
-                // Below is just filler - it doesn't actually make sense to have this here.
-                b-tab-item(label="Deployables")
-                    b-table(:data="deployables", focusable)
-                        template(slot-scope="props")
-                            b-table-column(field="project", label="Your Projects")
-                                | {{props.row.owner}}:{{ props.row.name }}
-                            b-table-column(field="product owner", label="Product Owner")
-                                | {{ props.row.product_owner }}
-                            b-table-column(field="description", label="Description")
-                                | {{ props.row.description }}
-                            b-table-column(field="access", label="Access")
-                                | {{ props.row.access }}
-                b-tab-item(label="Environments")
-                    b-table(:data="environments", focusable)
-                        template(slot-scope="props")
-                            b-table-column(field="project", label="Your Projects")
-                                | {{props.row.owner}}:{{ props.row.name }}
-                            b-table-column(field="type", label="Type")
-                                | {{ props.row.type }}
-                            b-table-column(field="description", label="Description")
-                                | {{ props.row.description }}
-                            b-table-column(field="notes", label="Notes")
-                                | {{ props.row.notes }}
+                                b-dropdown(v-show="props.row.status === 'pending'", aria-role="list")
+                                    button(class="button", slot="trigger", slot-scope="{active}")
+                                        span {{props.row.status}}
+                                        b-icon(:icon="active ? 'menu-up' : 'menu-down'")
+                                    b-dropdown-item(value="accept", @click="invResponse(props.row.org_username, 'accept')") Accept
+                                    b-dropdown-item(value="decline", @click="invResponse(props.row.org_username, 'decline')") Decline
+                                span(v-show="props.row.status != 'pending'") {{props.row.status}}
 
         // Edit My Account Modal starts below:
         div(v-show="editAccountModal")
@@ -75,6 +59,7 @@
                             section.modal-card-body
                                 slot(name="body")
                                     form
+                                        div Username: {{this.userName}}
                                         div.formStyle First name:
                                             div.control
                                                 input.input(v-model="form.new_first_name", maxlength="35", type="text", value="first_name") 
@@ -84,9 +69,6 @@
                                         div.formStyle Email:
                                             div.control
                                                 input.input(v-model="form.new_email", maxlength="60", type="email", value="last_name") 
-                                        div.formStyle Role:
-                                            div.control
-                                                input.input(v-model="form.new_role", maxlength="16", type="role", value="role") 
                             footer.modal-card-foot 
                                 div.control
                                     b-button(@click.stop="saveEditedAccount", type="is-primary is-light", size="is-small")  Save    
@@ -104,14 +86,14 @@ export default {
                 new_first_name: '',
                 new_last_name: '',
                 new_email: '',
-                new_role: '',
             },
+            requests: [ ],
             user: [ ],
-            deployables: [ ],
-            environments: [ ],
             organisations: [ ],
             editAccountModal: false,
             activeTab: 0,
+            userName: '',
+            status: 'declined',
         }
     },
 
@@ -132,14 +114,68 @@ export default {
     methods: {
         ...standardStuff.methods,
 
+        async invResponse (org, response) {
+            try {
+                if (response == 'accept') {
+                    this.status = 'confirmed'
+                } else {
+                    this.status = 'declined'
+                }
+
+                console.log('Username: ', this.userName)
+
+                let record = {
+                    user_username: this.userName,
+                    org_username: org,
+                    status: this.status,
+                }
+
+                let url = standardStuff.apiURL('/orgUserRes')
+                const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+
+                await axios.post(url, record, config)
+
+                console.log(`Org_user response successfully sent to database`);
+
+                this.reloadOrgUsers();
+
+            } catch (e) {
+                console.log(`Error while sending org_user response record to the database: `, e)
+            }
+        }, 
+
+        // Reload org_users and requests after updating a pending response
+        async reloadOrgUsers() {
+            const params = {
+                params: { 
+                    userName: this.user.username
+                }
+            }
+
+            // Update org_users
+            let url = standardStuff.apiURL('/organisations')
+            const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+            let result = await axios.get(url, params, config)
+            this.organisations = result.data.organisations
+
+            // Update requests
+            url = standardStuff.apiURL('/orgRequests')
+            result = await axios.get(url, params, config)
+            this.requests = result.data.requests           
+
+            return {
+                organisations: this.organisations,
+                requests: this.requests,
+            };
+        },  // -reloadOrgUsers
+
         // OPEN MODAL AND CHANGE VALUES FOR MY ACCOUNT
-        editMyAccount() {  
-        this.editAccountModal = true,
-        this.form.new_first_name = this.user.first_name,
-        this.form.new_last_name = this.user.last_name,
-        this.form.new_email = this.user.email,
-        this.form.new_role = this.user.role
-        return false
+        editMyAccount () {  
+            this.editAccountModal = true,
+            this.form.new_first_name = this.user.first_name,
+            this.form.new_last_name = this.user.last_name,
+            this.form.new_email = this.user.email
+            return false
         }, // -editMyAccount
 
         // SAVE EDITED USER
@@ -151,7 +187,7 @@ export default {
                 first_name: this.form.new_first_name,
                 last_name: this.form.new_last_name,
                 email: this.form.new_email,
-                role: this.form.new_role,
+                userName: this.userName
             }
             let config = standardStuff.axiosConfig(this.$loginservice.jwt)
             await axios.post(url, record, config)
@@ -186,43 +222,38 @@ export default {
     async asyncData ({ app, params, error }) {
         let userName = app.$nuxtLoginservice.user
         try {
-            // Select the deployable for this page
-            const url = standardStuff.apiURL('/myaccount')
             const params = { 
                 params: {
                     userName: userName.username,
-                    //userID: user.id,
+                    userID: userName.id,
                 }
             }
+
+            // Select the deployable for this page
+            let url = standardStuff.apiURL('/myaccount')
             const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
             console.log(`Calling ${url}`);
             let res = await axios.get(url, params, config)
             console.log(`API returned`, res.data);
             const user = res.data.record
 
-            // Select deployables for this page
-            const url2 = standardStuff.apiURL('/usersDeployables')
-            let res2 = await axios.get(url2, params, config)
-            console.log(`API2 returned`, res2.data);
-            const deployables = res2.data.deployables
-
-            // Select environments for this page
-            const url3 = standardStuff.apiURL('/accountEnvironments')
-            let res3 = await axios.get(url3, params, config)
-            console.log(`API3 returned`, res3.data);
-            const environments = res3.data.environments
-
             // Import organisations 
-            const url4 = standardStuff.apiURL('/organisations')
-            let res4 = await axios.get(url4, params, config)
-            console.log(`API4 returned`, res4.data);
-            const organisations = res4.data.organisations
+            url = standardStuff.apiURL('/organisations')
+            res = await axios.get(url, params, config)
+            console.log(`API4 returned`, res.data);
+            const organisations = res.data.organisations
+
+            // import pending invitation requests from org_user db table
+            url = standardStuff.apiURL('/orgRequests')
+            res = await axios.get(url, params, config)
+            const requests = res.data.requests;
+            console.log('Requests: ', requests)
 
             return {
+                requests: requests,
                 user: user,
-                deployables: deployables,
-                environments: environments,
                 organisations: organisations,
+                userName: userName.username,
             }
 
         } catch (e) {
