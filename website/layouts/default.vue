@@ -16,26 +16,32 @@ div
       div.seperatorStyle.mobile(v-if="loggedIn", separator="true", custom="true") | 
       b-dropdown(v-if="loggedIn", position="is-bottom-left", aria-role="menu")
         a.navbar-item(slot="trigger", role="button")
-          b-icon(icon="account")
-          span Account
+          span Menu
+            b-tag(v-show="this.requests.length > 0", rounded, type="is-danger is-outlined") {{this.requests.length}}
           b-icon(icon="menu-down")
-        b-dropdown-item(custom aria-role="menuitem") Logged in as&nbsp;
+        b-dropdown-item(custom aria-role="menuitem") Signed in as&nbsp;
           b {{ username }}
-          | .
+        hr(class="dropdown-divider")
+        b-dropdown-item(custom aria-role="menuitem") Switch dashboard view:
+        b-dropdown-item(href='/', value="User") {{username}}
+          b-icon(icon="check")
+        b-dropdown-item(v-for="orgs in organisations", href='/', value="org") {{orgs.org_username}}
+        hr(class="dropdown-divider")
         b-dropdown-item(href="/myAccount", value="My Account")
           b-icon(icon="account") 
-          | My Account
+          span My Account
+            b-tag(v-show="this.requests.length > 0", rounded, type="is-danger is-outlined") {{this.requests.length}}
         b-dropdown-item(value="Logout", @click="doLogout")
           b-icon(icon="logout") 
           | Logout
-
 
   client-only
     .section.main-content.contentStyle
       .columns(v-if="loggedIn")
         aside.column.is-3.section
+          // user username (use url params to display)
           p.menu-label(v-if="loggedIn")
-            i Welcome, {{username}}!
+            i Welcome, {{username}}
           ul.menu-list
             //b-menu-list(label="Menu")
             b-menu-list(label="")
@@ -43,6 +49,10 @@ div
                 nuxt-link(:to="item.to", exact-active-class="activeHighlight")
                   b-icon(:icon="item.icon")
                   | {{ item.title }}
+              li(v-show="org != ''", v-for="(userstab, key) of userstab", :key="key")
+                nuxt-link(:to="userstab.to", exact-active-class="activeHighlight")
+                  b-icon(:icon="userstab.icon")
+                  | {{ userstab.title }}
           br
           ul.menu-list
             b-menu-list(label="Actions")
@@ -59,6 +69,8 @@ div
 </template> 
 
 <script>
+import axios from 'axios'
+import standardStuff from '../lib/standard-stuff'
  
 export default {
   data () {
@@ -87,15 +99,21 @@ export default {
           icon: 'rocket',
           to: { name: 'deployments' }
         },
-        /*{
+      ],
+      userstab: [
+        {
           title: 'Users',
           icon: 'account-multiple-outline',
           to: { name: 'users' }
-        }*/ // Used only for organisations, implementing later.
+        }
       ],
       isActive: true,
+      requests: [ ],
+      organisations: [ ],
+      org: '',
     }
   },
+
   computed: {
     loggedIn: function() {
       if (this.$loginservice && this.$loginservice.user) {
@@ -109,13 +127,47 @@ export default {
   },
 
   methods: {
+    ...standardStuff.methods,
+
     doLogout: function () {
       this.$loginservice.logout();
       this.$router.push('/');
     }
-  }
+  },
 
+  async asyncData ({ app, params, error }) {
+    let userName = app.$nuxtLoginservice.user;
 
+    try {
+      const params = { 
+        params: {
+            userName: userName.username,
+            userID: userName.id,
+        }
+      }
+
+      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt);
+
+      // Import users organisations from org_user table ***CHECK THIS LATER***
+      let url = standardStuff.apiURL('/organisations')
+      let res = await axios.get(url, params, config)
+      console.log(`Organisations: `, res.data);
+      const organisations = res.data.organisations
+
+      // Import pending invitation requests from org_user db table
+      url = standardStuff.apiURL('/orgRequests')
+      res = await axios.get(url, params, config)
+      const requests = res.data.requests;
+      console.log('Requests: ', requests)
+
+      return {
+        requests: requests,
+        organisations: organisations,
+      }
+    } catch (e) {
+      console.log(`Could not fetch pending requests or org details:`, e)
+    }
+  },
 }
 </script>
 
@@ -157,8 +209,6 @@ export default {
   @import "~bulma";
   @import "~buefy/src/scss/buefy";
 
-
-
   // Other styles
   @media (min-width: 0em) and (max-width: 48em) {
     div.mobile {
@@ -172,7 +222,6 @@ export default {
       float: right;
     }
   }
-
 
   .icon {
     margin-right: 6px;
