@@ -69,8 +69,9 @@ div
 </template> 
 
 <script>
-import axios from 'axios'
-import standardStuff from '../lib/standard-stuff'
+import axios from 'axios';
+import standardStuff from '../lib/standard-stuff';
+import store from 'vuex';
  
 export default {
   data () {
@@ -129,6 +130,10 @@ export default {
   methods: {
     ...standardStuff.methods,
 
+    printOrgs() {
+      console.log(this.$store.state.orgs)
+    },
+    
     doLogout: function () {
       this.$loginservice.logout();
       this.$router.push('/');
