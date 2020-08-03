@@ -25,6 +25,7 @@ div
         b-dropdown-item(custom aria-role="menuitem") Switch dashboard view:
         b-dropdown-item(href='/', value="User") {{username}}
           b-icon(icon="check")
+        button.button(@click="printOrgs()")
         b-dropdown-item(v-for="orgs in organisations", href='/', value="org") {{orgs.org_username}}
         hr(class="dropdown-divider")
         b-dropdown-item(href="/myAccount", value="My Account")
@@ -49,7 +50,7 @@ div
                 nuxt-link(:to="item.to", exact-active-class="activeHighlight")
                   b-icon(:icon="item.icon")
                   | {{ item.title }}
-              li(v-show="org != ''", v-for="(userstab, key) of userstab", :key="key")
+              //li(v-show="org != ''", v-for="(userstab, key) of userstab", :key="key")
                 nuxt-link(:to="userstab.to", exact-active-class="activeHighlight")
                   b-icon(:icon="userstab.icon")
                   | {{ userstab.title }}
@@ -129,15 +130,11 @@ export default {
 
   methods: {
     ...standardStuff.methods,
-
-    printOrgs() {
-      console.log(this.$store.state.orgs)
-    },
     
     doLogout: function () {
       this.$loginservice.logout();
       this.$router.push('/');
-    }
+    },
   },
 
   async asyncData ({ app, params, error }) {

@@ -1,53 +1,73 @@
-import Vue from 'vue';
-import axios from 'axios';
-import standardStuff from '../../lib/standard-stuff';
-import Loginservice from '@tooltwist/vue-loginservice';
-import options from '/opt/Development/Projects/juice/juiceconfig/website/protected-config/loginservice-config.js';
+// Couldn't import this module to index.js... will seperate later once function is working properly.
 
-Vue.use(Loginservice, options)
+// //import Vue from 'vue';
+// import axios from 'axios';
+// import standardStuff from '../../lib/standard-stuff';
 
-// Config, api and auth details for axios call
-const url = standardStuff.apiURL('/organisations');
-const config = standardStuff.axiosConfig(Loginservice._authservice.jwt);
-let userName = Loginservice._authservice.user.username // surely there is a better way of doing this
-const params = { 
-    params: {
-        userName: userName,
-    }
-};
+// //Vue.use(Vuex)
 
-console.log('Hello from orgs module')
-console.log('Config: ', config)
-console.log('Loginservice user: ', userName)
+// // // Config, api and auth details for axios call
+// // const config = standardStuff.axiosConfig(Loginservice._authservice.jwt);
+// // let userName = Loginservice._authservice.user.username 
 
-const state = () => ({
-	organisations: []
-})
+// const state = () => ({
+//     myOrganisations: [],
+//     currentUsername: '',
+// })
 
-const mutations = {
-	SET_ORGS (state, organisations) {
-		state.organisations = organisations
-	}
-}
+// const mutations = {
+// 	SET_ORGS (state, { username, myOrganisations }) {
+//         state.currentUsername = username
+// 		state.myOrganisations = myOrganisations
+//     },
+    
+//     SET_CURRENT_USER (state, { username, myOrganisations }) {
+//         state.currentUsername = username
+//         state.myOrganisations = myOrganisations
+//     }
+// }
 
-const actions = {
-	async init ({ commit }) {
-        let { data } = await axios.get(url, params, config)
-        console.log('testing')
-        commit('SET_ORGS', data.data.organisations)
-	},
+// const actions = {
+// 	async checkMyOrgs ({ commit, vm }) {
+//         if (vm.$loginservice.user) {
+//             const me = vm.$loginservice.user.username
+//             console.log('Me: ', me)
 
-    // // From Vuex tutorial:
-    // fetchOrgs(context) {
-    //     axios.get(url, params, config).then(response => {
-    //         context.commit('SET_ORGS', response.data.organisations)
-    //         console.log('Orgs inside module: ', organisations)
-    //     })
-    // }
-}
+//             // if (me === state.currentUsername) {
+//             //     return
+//             // }
 
-export default {
-    state,
-    mutations,
-    actions,    
-}
+//             const url = standardStuff.apiURL('/organisations');
+//             console.log('Url: ', url)
+
+//             const params = { 
+//                 headers: {
+//                     'Authorization': 'Bearer ' + vm.$loginservice.jwt
+//                 },
+
+//                 params: {
+//                     userName: me
+//                 }
+//             }
+//             console.log('Params: ', params)
+
+//             let { data } = await axios.get(url, params, config)
+//             console.log('Data: ', data)
+
+//             commit('SET_ORGS', { username: me, myOrganisations: data.data.organisations })
+
+//         } else {
+//             commit('SET_CURRENT_USER', { username: null, myOrganisations: [ ] })
+//         }
+
+//         console.log('Finishing checkMyOrgs')
+        
+//         return
+// 	},
+// }
+
+// export default {
+//     state,
+//     mutations,
+//     actions,    
+// }

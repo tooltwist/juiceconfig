@@ -14,6 +14,8 @@
               li Updates on teams
               li New deployments etc
               li Some helpful tips
+              button.button(@click="printOrgs")
+              //v-for(orgs in myOrganisations) {{ orgs.org_username }}
             br
           
           .adBarStyle.column.is-4
@@ -22,7 +24,7 @@
             br
             div
               // When vid is ready, replace w - https://openbase.io/js/vue-video-player 
-              youtube(:video-id="videoId", host="https://www.youtube.com", SameSite="None", Secure)
+              //youtube(:video-id="videoId", host="https://www.youtube.com", SameSite="None", Secure)
             br 
             br
             p(is-small) Powered by:
@@ -42,30 +44,47 @@
 
 <script>
 import Vue from 'vue'
-import VueYouTubeEmbed from 'vue-youtube-embed'
+//import VueYouTubeEmbed from 'vue-youtube-embed'
+import { store } from '../store/index.js'
+import { mapActions } from 'vuex'
 
-Vue.use(VueYouTubeEmbed)
+//Vue.use(VueYouTubeEmbed)
 
 export default {
   name: 'HomePage',
 
   data () {
     return {
-      videoId: '6fRvc2UPyfE',
+      //videoId: '6fRvc2UPyfE',
       links: [
         `https://bulma.io/`,
         `https://buefy.org/documentation`,
         `https://materialdesignicons.com/`,
         `https://nuxtjs.org/faq/pre-processors/`,
         `https://github.com/axios/axios`,
-      ]
+      ],
+
+      myOrganisations: [],
     }
   },// - data
+
+  methods: {
+    printOrgs: function () {
+      console.log('Print orgs')
+      try {
+        this.$store.dispatch('checkMyOrgs')
+        console.log('Result: ', this.$store.state.myOrganisations)
+
+      } catch (e) {
+        console.log('Error calling server from Vuex: ', e)
+      }
+    },
+  },
 
   computed: {
     loggedIn: function () {
       return (this.$loginservice && this.$loginservice.user)
-    }
+    },
   }
 }
 </script>

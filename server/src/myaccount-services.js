@@ -26,6 +26,7 @@ export default {
 
             let user_username = req.params.userName;
 
+            console.log('******** ACCESSING ORGANISATIONS **********');
             console.log('user_username', user_username)
 
             let status_confirmed = 'confirmed';
