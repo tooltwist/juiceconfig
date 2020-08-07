@@ -201,8 +201,7 @@ export default async (req, res, next) => {
 
         let username = identity.username
 
-        // Gets to this point then jumps over to deployables on server - is there something wrong with the get call? Or
-        // should it be app.get?? Is it the route? Should I be using async await?
+
         // var con = mysql.createConnection({
         //     host: "localhost",
         //     port: 56911,

@@ -5,12 +5,12 @@ import restify from 'restify';
 export default {
 	register (server) {
         // Selects the all deployables that are PROJECTS from MySQL db
-        server.get('/api/deployables', auth, async (req, res, next) => {
+        server.get('/api/deployables', async (req, res, next) => {
             console.log(`GET /deployables`);
         
             // Check if owner matches the username for private accounts
-            let me = req.identity.username
-
+            //let me = req.identity.username
+            let me = req.params.user;
             console.log(`I am ${me}`);
             
             const sql = `SELECT * FROM deployable WHERE owner =? OR name IN (SELECT project FROM project_user WHERE username =?)`
@@ -62,13 +62,11 @@ export default {
         server.post('/api/newDeployable', auth, async (req, res, next) => {
             console.log(`POST /newDeployable`)
 
-            let me = req.identity.username
-            console.log(`I am ${me}`);
             let con = await db.checkConnection()
 
             const sql = `INSERT INTO deployable SET ?`
             const newDeployable = {
-                owner: me,
+                owner: req.params.owner,
                 name: req.params.name,
                 type: req.params.type,
                 product_owner: req.params.product_owner,
@@ -88,7 +86,7 @@ export default {
         server.get('/api/projectAccess', async (req, res, next) => {
             console.log(`GET /projectAccess`);
         
-            let userName = req.query.username
+            let userName = req.params.user
             console.log('userName === ', userName)
             let con = await db.checkConnection()
             const sql = `SELECT * from project_user where username=?`

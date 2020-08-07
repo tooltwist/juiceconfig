@@ -12,7 +12,7 @@
         b-table-column(field="last_name", label="Last Name")
           | {{ props.row.last_name }}
         b-table-column(field="id", label="ID")
-          nuxt-link(:to="`/user/${props.row.id}`") {{ props.row.id }}
+          nuxt-link(:to="`/user/user/${user}/${props.row.id}`") {{ props.row.id }}
         b-table-column(field="role", label="Role")
           | {{ props.row.role }}
         b-table-column(field="access", label="Access")

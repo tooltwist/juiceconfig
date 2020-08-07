@@ -39,7 +39,7 @@ export default {
             con.query(sql, params, function (err, result) {
                 if (err) throw err;
                 console.log(result)
-                res.send({ organisations: result })
+                res.send({ organisations: result[0] })
                 next()
             });
         }); // End of section
