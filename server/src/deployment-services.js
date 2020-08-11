@@ -9,7 +9,7 @@ export default {
       console.log(' GET /applications');
 
       // Check if owner matches the username for private accounts
-      let me = req.query.username
+      let me = req.params.user
 
       console.log(`I am ${me}`);
       
@@ -29,7 +29,7 @@ export default {
       console.log(' GET /thisUsersEnvironments');
 
       // Check if owner matches the username for private accounts
-      let me = req.query.username
+      let me = req.params.user
 
       console.log(`I am ${me}`);
       
@@ -49,7 +49,7 @@ export default {
       console.log(' GET /thisUsersProjects');
 
       // Check if owner matches the username for private accounts
-      let me = req.query.username
+      let me = req.params.user
 
       console.log(`I am ${me}`);
       

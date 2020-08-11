@@ -22,12 +22,6 @@ div
         b-dropdown-item(custom aria-role="menuitem") Signed in as&nbsp;
           b {{ username }} 
         hr(class="dropdown-divider")
-        b-dropdown-item(custom aria-role="menuitem") Switch dashboard view:
-        b-dropdown-item(href='/', value="User") {{ username }} 
-        //b-dropdown-item(value="User", has-link) 
-          nuxt-link(:to="`user/${temp_org}`") {{ temp_org }}
-        //b-dropdown-item(href='/', value="User") {{ orgs.org_username }}
-        hr(class="dropdown-divider")
         b-dropdown-item(href="/myAccount", value="My Account")
           b-icon(icon="account") 
           span My Account

@@ -25,11 +25,12 @@ export default {
         }); // End of section
 
         // Selects the all deployables that are owned or global from MySQL db
-        server.get('/api/allDeployables', auth, async (req, res, next) => {
+        server.get('/api/allDeployables', async (req, res, next) => {
             console.log(`GET /allDeployables`);
         
             // Check if owner matches the username for private accounts
-            let me = req.identity.username
+            //let me = req.identity.username
+            let me = req.params.user
 
             console.log(`I am ${me}`);
             

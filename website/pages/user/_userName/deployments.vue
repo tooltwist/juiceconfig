@@ -163,12 +163,12 @@ export default {
 
       // Get all the environments, for the new dialog
       let url = standardStuff.apiURL('/showEnvironments')
-      let reply = await axios.get(url, config)
+      let reply = await axios.get(url, params, config)
       const environments = reply.data.environments
 
       // Get all the deployables, for the new dialog
       url = standardStuff.apiURL('/allDeployables')
-      reply = await axios.get(url, config)
+      reply = await axios.get(url, params, config)
       const deployables = reply.data.deployables
 
       // Get all projectUsers from project_user db
@@ -646,11 +646,6 @@ async function loadDeployments (axiosConfig, params) {
   const deployments = reply.data.applications
   console.log('deployments', deployments)
   return deployments
-
-  // on website control diff bt collab, public and owned
-  // highlight: both env and dep owned; public dep, owned env;
-  // non-highlight, remove configure: only env owned; collab envs; anything not owned/collab **check this** by user;
-  // can users deploy on env that they collab w?
 }
 </script>
 

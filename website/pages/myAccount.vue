@@ -241,7 +241,8 @@ export default {
             url = standardStuff.apiURL('/organisations')
             res = await axios.get(url, params, config)
             console.log(`API4 returned`, res.data);
-            const organisations = res.data.organisations
+            const organisations = res.data.organisations;
+            console.log('Organisations: ', organisations)
 
             // import pending invitation requests from org_user db table
             url = standardStuff.apiURL('/orgRequests')
