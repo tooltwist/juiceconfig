@@ -12,7 +12,8 @@ export default {
             const newGroup = {
                 group_name: req.params.group_name,
                 description: req.params.description,
-                colour: req.params.colour
+                colour: req.params.colour,
+                group_owner: req.params.group_owner,
             }
             
             let con = await db.checkConnection()
@@ -24,13 +25,13 @@ export default {
         }); // End of section
 
         // Select ALL ENVIRONMENTS from MySQL database
-        server.get('/api/showEnvironments', auth, async (req, res, next) => {
+        server.get('/api/showEnvironments', async (req, res, next) => {
+            // auth removed
             console.log(`GET /showEnvironments`);
             
-            // Check if owner matches the username for private accounts 
-            let me = req.identity.username
-            //let me = req.query.username
+            //let me = req.identity.username
 
+            let me = req.params.user;
 
             console.log(`I am ${me}`);
 
@@ -46,30 +47,17 @@ export default {
         }); // End of section
 
         // Select users GROUPS from MySQL database
-        server.get('/api/groups', auth, async (req, res, next) => {
+        server.get('/api/groups', async (req, res, next) => {
             console.log(`GET /groups`);
         
-            let me = req.identity.username
+            // let me = req.identity.username
+            let me = req.params.user
 
             let con = await db.checkConnection()
             const sql = `SELECT * FROM environment_group WHERE group_owner =?`
             const params = [ me ];
             
             con.query(sql, params, function (err, result) {
-                if (err) throw err;
-                res.send({ groups: result })
-                next()
-            });
-        }); // End of section
-
-        // Select ALL GROUPS from MySQL database
-        server.get('/api/allgroups', async (req, res, next) => {
-            console.log(`GET /allgroups`);
-
-            let con = await db.checkConnection()
-            const sql = `SELECT * FROM environment_group`
-            
-            con.query(sql, function (err, result) {
                 if (err) throw err;
                 res.send({ groups: result })
                 next()
@@ -83,7 +71,7 @@ export default {
             let con = await db.checkConnection()
             const sql = `INSERT INTO environment SET ?`
             const newEnvironment = {
-                owner: req.identity.username,
+                owner: req.params.owner,
                 name: req.params.name,
                 description: req.params.description,
                 group_name: req.params.group_name,

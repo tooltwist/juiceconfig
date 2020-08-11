@@ -45,21 +45,25 @@ div
             i Welcome, {{username}}
           ul.menu-list
             b-menu-list(label="")
-              b-menu-item(icon="settings", :active="isActiveDrop" expanded)
+              b-menu-item(icon="settings") 
+                //:active="isActiveDrop", expanded
                 template(slot="label", slot-scope="props") 
                   | Switch account: 
                   b-icon(class="is-pulled-right", :icon="props.expanded ? 'menu-down' : 'menu-up'")
-                nuxt-link(:to="`/user/${temp_org}/index`",  exact-active-class="activeHighlight") 
+                nuxt-link(:to="`/`",  exact-active-class="activeHighlight") 
                   b-menu-item(icon="account") 
                     template(slot="label") {{ temp_org }}
-                nuxt-link(:to="`/user/${username}/index`",  exact-active-class="activeHighlight")   
+                nuxt-link(:to="`/`",  exact-active-class="activeHighlight")   
                   b-menu-item(icon="account") 
                     template(slot="label") {{ username }} 
           ul.menu-list
             //b-menu-list(label="Menu")
             b-menu-list(label="")                   
               li(v-for="(item, key) of items", :key="key")
-                nuxt-link(:to="`/user/${username}/${item.to.name}`", exact-active-class="activeHighlight")
+                nuxt-link(v-if="item.to.name != 'index'", :to="`/user/${username}/${item.to.name}`", exact-active-class="activeHighlight")
+                  b-icon(:icon="item.icon")
+                  | {{ item.title }}
+                nuxt-link(v-else, :to="`/`", exact-active-class="activeHighlight")
                   b-icon(:icon="item.icon")
                   | {{ item.title }}
               //li(v-show="org != ''", v-for="(userstab, key) of userstab", :key="key")
