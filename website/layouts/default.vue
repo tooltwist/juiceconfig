@@ -34,36 +34,23 @@ div
     .section.main-content.contentStyle
       .columns(v-if="loggedIn")
         aside.column.is-3.section
-          // user username (use url params to display)
           p.menu-label(v-if="loggedIn")
             i Welcome, {{username}}
           ul.menu-list
             b-menu-list(label="")
-              b-menu-item(icon="settings") 
-                //:active="isActiveDrop", expanded
-                template(slot="label", slot-scope="props") 
-                  | Switch account: 
-                  b-icon(class="is-pulled-right", :icon="props.expanded ? 'menu-down' : 'menu-up'")
-                nuxt-link(:to="`/`",  exact-active-class="activeHighlight") 
-                  b-menu-item(icon="account") 
-                    template(slot="label") {{ temp_org }}
-                nuxt-link(:to="`/`",  exact-active-class="activeHighlight")   
-                  b-menu-item(icon="account") 
-                    template(slot="label") {{ username }} 
+              select.select(v-model="user", @change="changeUserView()")
+                option(disabled) Switch account view: 
+                option(v-for="user in listOfUserOptions", :value="user") {{ user }}
           ul.menu-list
             //b-menu-list(label="Menu")
             b-menu-list(label="")                   
               li(v-for="(item, key) of items", :key="key")
-                nuxt-link(v-if="item.to.name != 'index'", :to="`/user/${username}/${item.to.name}`", exact-active-class="activeHighlight")
+                nuxt-link(v-if="item.title != 'Users'", :to="`/user/${user}/${item.to.name}`", exact-active-class="activeHighlight")
                   b-icon(:icon="item.icon")
                   | {{ item.title }}
-                nuxt-link(v-else, :to="`/`", exact-active-class="activeHighlight")
+                nuxt-link(v-if="user != username && item.title == 'Users'", :to="item.to", exact-active-class="activeHighlight")
                   b-icon(:icon="item.icon")
                   | {{ item.title }}
-              //li(v-show="org != ''", v-for="(userstab, key) of userstab", :key="key")
-                nuxt-link(:to="userstab.to", exact-active-class="activeHighlight")
-                  b-icon(:icon="userstab.icon")
-                  | {{ userstab.title }}
           br
           ul.menu-list
             b-menu-list(label="Actions")
@@ -94,7 +81,8 @@ export default {
         {
           title: 'Home',
           icon: 'home',
-          to: { name: 'index' }
+          // 'index.vue'
+          to: { name: '' }
         },
         {
           title: 'Deployables',
@@ -111,8 +99,6 @@ export default {
           icon: 'rocket',
           to: { name: 'deployments' }
         },
-      ],
-      userstab: [
         {
           title: 'Users',
           icon: 'account-multiple-outline',
@@ -125,10 +111,21 @@ export default {
       organisations: [ ],
       org: '', 
       temp_org: 'phils_org',
+      user: this.$loginservice.user.username,
     }
   },
 
   computed: {
+    // List of users orgs and username for switching dashboard view 
+    listOfUserOptions: function() {
+      let users = [];
+
+      users[0] = 'phils_org';
+      users[1] = this.username;
+
+      return users;
+    },
+
     loggedIn: function() {
       if (this.$loginservice && this.$loginservice.user) {
         return true
@@ -140,7 +137,7 @@ export default {
       return this.loggedIn ? this.$loginservice.user.username : ''
     },
 
-    orgs: function () {
+    orgs: function() {
       return this.$store.state.myOrganisations
     },
   },
@@ -148,12 +145,16 @@ export default {
   methods: {
     ...standardStuff.methods,
 
-    doLogout: function () {
+    changeUserView: function() {
+      this.$router.push(`/user/${this.user}/`)
+    },
+
+    doLogout: function() {
       this.$loginservice.logout();
       this.$router.push('/');
     },
 
-    printOrgs: function () {
+    printOrgs: function() {
       try {
         this.$store.dispatch('checkMyOrgs')
         //this.organisations = this.$store.state.myOrganisations

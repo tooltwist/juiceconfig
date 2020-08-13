@@ -30,9 +30,9 @@
             p(is-small) Powered by:
             br
             a(href="https://tooltwist.com/")
-              img.ttlogoSize(src="../assets/ttLogo.png") 
+              img.ttlogoSize(src="../../../assets/ttLogo.png") 
             a(href="https://www.twistresources.com/")
-              img(src="../assets/trLogo.png")
+              img(src="../../../assets/trLogo.png")
                 
       .columns(v-show="!loggedIn")
         // Not logged in
@@ -45,7 +45,7 @@
 <script>
 import Vue from 'vue'
 //import VueYouTubeEmbed from 'vue-youtube-embed'
-import { store } from '../store/index.js'
+import { store } from '../../../store/index.js'
 import { mapActions } from 'vuex'
 
 //Vue.use(VueYouTubeEmbed)
