@@ -34,7 +34,7 @@ div
     .section.main-content.contentStyle
       .columns(v-if="loggedIn")
         aside.column.is-3.section
-          p.menu-label(v-if="loggedIn")
+          p.menu-label
             i Welcome, {{username}}
           ul.menu-list
             b-menu-list(label="")
@@ -43,7 +43,7 @@ div
                 option(v-for="user in listOfUserOptions", :value="user") {{ user }}
           ul.menu-list
             //b-menu-list(label="Menu")
-            b-menu-list(label="")                   
+            b-menu-list(label="")
               li(v-for="(item, key) of items", :key="key")
                 nuxt-link(v-if="item.title != 'Users'", :to="`/user/${user}/${item.to.name}`", exact-active-class="activeHighlight")
                   b-icon(:icon="item.icon")
@@ -82,7 +82,7 @@ export default {
           title: 'Home',
           icon: 'home',
           // 'index.vue'
-          to: { name: '' }
+          to: { name: 'home' }
         },
         {
           title: 'Deployables',
@@ -111,7 +111,7 @@ export default {
       organisations: [ ],
       org: '', 
       temp_org: 'phils_org',
-      user: this.$loginservice.user.username,
+      user: '',
     }
   },
 
@@ -147,6 +147,14 @@ export default {
 
     changeUserView: function() {
       this.$router.push(`/user/${this.user}/`)
+    },
+
+    currentUser: function() {
+      if (this.$loginservice.user.username == NULL) {
+        this.user = 'null';
+      } else {
+        this.user = this.$loginservice.user.username;
+      }
     },
 
     doLogout: function() {

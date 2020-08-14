@@ -752,13 +752,24 @@ export default {
     },
 
     isEditable: function() {
-      if (this.currentUser[0].access == 'full'
-       || this.currentUser[0].access == 'write' 
-       || this.currentUser[0].access == 'super') {
-         return true
-       } else {
-         return false
-       }
+      if (this.user == this.username) { // is a personal account
+        return true
+      } else { // organisation account
+        this.orgUsers.forEach(user => { // org admin (can see everything in the organisation)
+          if (user.username == this.user && (user.role == 'admin' || user.role == 'owner')) {
+            return true;
+          } // CREATE AN IF STATEMENT if (user == username) { import orgUsers where username == user}
+        })
+      }
+
+      // forEach loop to find project users, if user == project_user.username && project_user.access == owner || write
+      this.users.forEach(user => {
+        if (user.username == this.user && (user.access == 'owner' || user.access == 'write')) {
+          return true
+        }
+      })
+
+      return false
     },
 
   },
