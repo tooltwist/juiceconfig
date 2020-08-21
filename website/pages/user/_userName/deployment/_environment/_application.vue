@@ -58,7 +58,8 @@ section.section
                                 a.my-not-input-a(v-else-if="validUrl(deployment.website_url)", :href="deployment.website_url+deployment.healthcheck", target="_blank") &nbsp;{{deployment.healthcheck}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.healthcheck}}
             .control
-                button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
+                div(v-if="deployment.deployable_owner == user && deployment.environment_owner == user")
+                    button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
 
         b-tab-item(label="AWS", v-if="environment.type === 'aws'")
             form.formStyle
@@ -341,163 +342,6 @@ export default {
 
             configType: 'file',
             docType: 'markup-list',
-        }
-    },
-
-    async asyncData ({ app, params, error }) {
-        let username = app.$nuxtLoginservice.user.username
-        let {owner:environmentOwner, name:environmentName} = standardStuff.methods.std_fromQualifiedName(params.environment, username)
-        let applicationName = params.application
-        let user = params.userName;
-        // let deployableName = params.deployable
-        console.log(`deployment=> ${environmentOwner}, ${environmentName}, ${applicationName}`);
-        
-
-        try {
-        
-        // Select this deployment for this page
-        let url = standardStuff.apiURL('/deployments')
-        let params = { 
-            params: {
-                environmentOwner,
-                environmentName,
-                applicationName,
-                // deployableOwner: '',
-                // deployableName: deployableName
-            }
-        }
-        const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
-        console.log(`Calling ${url}`);
-        let res = await axios.get(url, params, config)
-        console.log(`API returned deployments`, res.data.deployments);
-        if (res.data.deployments.length > 1) {
-            return error({status: 500, message: 'Returned too many deployments'})
-        }
-        const deployment = res.data.deployments[0]
-console.log(`YYYYY YARP 1`, deployment);
-
-
-
-        // Select the environment for this page
-        url = standardStuff.apiURL('/environmentIndex')
-        params = { 
-            params: {
-                environmentName: environmentName
-            }
-        }
-        console.log(`Calling ${url}`);
-        res = await axios.get(url, params, config)
-        console.log(`API returned environment`, res.data);
-        if (res.data.record.length > 1) {
-            return error({status: 500, message: 'Returned too many environments'})
-        }
-        const environment = res.data.record
-        console.log(`Environment is`, environment);
-        
-
-        // Import deployables to be shown in dropdown
-        const url2 = standardStuff.apiURL('/deployables')
-        let res2 = await axios.get(url2, config)
-        const deployables = res2.data.deployables
-
-        // Find our specific deployable
-        // let deployableOwner = null
-        // let deployableName = null
-        // for (let i = 0; i < deployables.length; )
-
-        // // Select the variables for this deployable
-        // const url3 = `${protocol}://${host}:${port}/variables`
-        // let res3 = await axios.get(url3, { 
-        //     params: {
-        //         deployableName: deployableName
-        //     }
-        // })
-        // // console.log(`API3 returned`, res3.data);
-        // const variables = res3.data.variables
-
-        // // Import dependencies with 'deployableName' as parent
-        // const url4 = `${protocol}://${host}:${port}/dependencies1`
-        // let res4 = await axios.get(url4, {
-        //     params: {
-        //         owner: deployment.deployable_owner,
-        //         name: deployment.deployable
-        //     }
-        // })
-        // console.log(`API4 dependencies`, res4.data)
-        // const dependencies = res4.data.dependencies
-
-        // // Select all variables for dependencies
-        // const url5 = '${protocol}://${host}:${port}/variablesAll'
-        // let res5 = await axios.get(url5)
-        
-        // const variablesDepend = res5.data.variables
-
-        // Variables for dependencies and deployable (recursive array data)
-        const url6 = standardStuff.apiURL(`/deployable/${deployment.deployable_owner}:${deployment.deployable}/variablesConfig`)
-        let res6 = await axios.get(url6, config)
-        console.log(`API6 variablesConfig=`, res6.data)
-        const variableRecursive = res6.data
-
-// console.log(`YYYYY YARP 2`, deployment);
-
-        // Select variable values for this deployment
-console.log(`YARP XUT 1`);
-
-        const url7 = standardStuff.apiURL(`/deployment/${environmentOwner}:${environmentName}/${applicationName}/variableValues`)
-        let result7 = await axios.get(url7, config)
-console.log(`YARP XUT 1`);
-        console.log(`API7 variableValues=`, result7.data)
-        const variableValues = result7.data.variableValues
-
-console.log(`YYYYY YARP 2`, deployment);
-
-        // If we have any values defined that are not used, we might want
-        // to keep them - perhaps they'll be added back to the deployable.
-        let unusedValues = [ ]
-
-        // Patch the variable values in to the variable list
-        // This is inefficient, but the list isn't too long...
-        variableValues.forEach((vv) => {
-            let used = false
-            for (let i = 0; i < variableRecursive.length; i++) {
-                let v = variableRecursive[i]
-                if (v.variableName === vv.variable_name) {
-                    v.value = vv.value
-                    used = true
-                    break                    
-                }
-            }//- for
-
-            // If this value is not used by any defined variable, let's put it in the "unused values" list.
-            if (!used) {
-                unusedValues.push({
-                    variableName: vv.variable_name,
-                    value: vv.value,
-                    deleted: false
-                })
-            }
-        })//- variableValues.forEach
-
-        console.log(`unusedValues=`, unusedValues);
-        
-
-
-        return {
-            environmentOwner,
-            environmentName,
-            applicationName,
-            deployment: deployment,
-            // deployableName: deployableName,
-            environment: environment,
-            deployables: deployables,
-            // variables: variables,
-            // dependencies: dependencies,
-            variableRecursive: variableRecursive,
-            user: user,
-            unusedValues,
-        }
-        } catch (e) {
-            console.log(`Could not fetch data:`, e)
         }
     },
 
@@ -913,7 +757,143 @@ console.log(`YYYYY YARP 2`, deployment);
             return result
         }
 
-    }//- methods
+    },//- methods
+
+    async asyncData ({ app, params, error }) {
+        let username = app.$nuxtLoginservice.user.username
+        let {owner:environmentOwner, name:environmentName} = standardStuff.methods.std_fromQualifiedName(params.environment, username)
+        let applicationName = params.application
+        let user = params.userName;
+        console.log(`deployment=> ${environmentOwner}, ${environmentName}, ${applicationName}`);
+    
+        try {
+            // Params and config for all API calls
+            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+            let params = { 
+                params: {
+                    environmentOwner,
+                    environmentName,
+                    applicationName,
+                    // deployableOwner: '',
+                    // deployableName: deployableName
+                }
+            }
+
+            // Select this deployment for this page
+            let url = standardStuff.apiURL('/deployments')
+            let res = await axios.get(url, params, config)
+            console.log(`Deployment API returned: `, res.data.deployments);
+            if (res.data.deployments.length > 1) {
+                return error({status: 500, message: 'Returned too many deployments'})
+            }
+            const deployment = res.data.deployments[0]
+
+            // Select the environment for this page
+            url = standardStuff.apiURL('/environmentIndex')
+            res = await axios.get(url, params, config)
+            console.log(`Environment API returned: `, res.data);
+            if (res.data.record.length > 1) {
+                return error({status: 500, message: 'Returned too many environments'})
+            }
+            const environment = res.data.record            
+
+            // Import deployables to be shown in dropdown
+            url = standardStuff.apiURL('/deployables')
+            res = await axios.get(url, config)
+            console.log(`Deployables API returned: `, res.data);
+            const deployables = res.data.deployables
+
+            // Find our specific deployable
+            // let deployableOwner = null
+            // let deployableName = null
+            // for (let i = 0; i < deployables.length; )
+
+            // // Select the variables for this deployable
+            // const url3 = `${protocol}://${host}:${port}/variables`
+            // let res3 = await axios.get(url3, { 
+            //     params: {
+            //         deployableName: deployableName
+            //     }
+            // })
+            // // console.log(`API3 returned`, res3.data);
+            // const variables = res3.data.variables
+
+            // // Import dependencies with 'deployableName' as parent
+            // const url4 = `${protocol}://${host}:${port}/dependencies1`
+            // let res4 = await axios.get(url4, {
+            //     params: {
+            //         owner: deployment.deployable_owner,
+            //         name: deployment.deployable
+            //     }
+            // })
+            // console.log(`API4 dependencies`, res4.data)
+            // const dependencies = res4.data.dependencies
+
+            // // Select all variables for dependencies
+            // const url5 = '${protocol}://${host}:${port}/variablesAll'
+            // let res5 = await axios.get(url5)
+            
+            // const variablesDepend = res5.data.variables
+
+            // Variables for dependencies and deployable (recursive array data)
+            url = standardStuff.apiURL(`/deployable/${deployment.deployable_owner}:${deployment.deployable}/variablesConfig`)
+            res = await axios.get(url, config)
+            console.log(`VariablesConfig API returned: `, res.data)
+            const variableRecursive = res.data
+
+            // Select variable values for this deployment
+            url = standardStuff.apiURL(`/deployment/${environmentOwner}:${environmentName}/${applicationName}/variableValues`)
+            res = await axios.get(url, config)
+            console.log(`variableValues API returned: `, res.data)
+            const variableValues = res.data.variableValues
+
+            // If we have any values defined that are not used, we might want
+            // to keep them - perhaps they'll be added back to the deployable.
+            let unusedValues = [ ]
+
+            // Patch the variable values in to the variable list
+            // This is inefficient, but the list isn't too long...
+            variableValues.forEach((vv) => {
+                let used = false
+                for (let i = 0; i < variableRecursive.length; i++) {
+                    let v = variableRecursive[i]
+                    if (v.variableName === vv.variable_name) {
+                        v.value = vv.value
+                        used = true
+                        break                    
+                    }
+                }//- for
+
+                // If this value is not used by any defined variable, let's put it in the "unused values" list.
+                if (!used) {
+                    unusedValues.push({
+                        variableName: vv.variable_name,
+                        value: vv.value,
+                        deleted: false
+                    })
+                }
+            })//- variableValues.forEach
+
+            console.log(`unusedValues=`, unusedValues);
+
+            return {
+                environmentOwner,
+                environmentName,
+                applicationName,
+                deployment: deployment,
+                // deployableName: deployableName,
+                environment: environment,
+                deployables: deployables,
+                // variables: variables,
+                // dependencies: dependencies,
+                variableRecursive: variableRecursive,
+                user: user,
+                unusedValues,
+            }
+        } catch (e) {
+            console.log(`Could not fetch data:`, e)
+        }
+    },
 }
 </script>
 
