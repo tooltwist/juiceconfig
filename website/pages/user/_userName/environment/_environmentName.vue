@@ -73,7 +73,7 @@ div
                           //- input.input(v-if="editingDetails", v-model.trim="environment.notes", placeholder="URL to ECS Service", @input="saveDetails")
                           //- a.my-not-input-a(v-else-if="validUrl(environment.notes)", :href="environment.notes", target="_blank") &nbsp;{{environment.notes}}
                           //- p.my-not-input-p(v-else) &nbsp;{{environment.notes}}
-        div(v-if="isOwner()").control
+        div(v-if="isEditable").control
             button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
 
       b-tab-item(label="AWS", v-if="environment.type==='aws'")
@@ -155,7 +155,7 @@ div
                           input.input(v-if="editingDetails", maxlength="512", v-model.trim="environment.aws_vpc_url", placeholder="URL to VPC dashboard", @input="saveDetails")
                           a.my-not-input-a(v-else-if="validUrl(environment.aws_vpc_url)", :href="environment.aws_vpc_url", target="_blank") &nbsp;{{environment.aws_vpc_url}}
                           p.my-not-input-p(v-else) &nbsp;{{environment.aws_vpc_url}}
-        div(v-if="isOwner()").control
+        div(v-if="isEditable").control
             button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
 
       b-tab-item(label="Deployments")
@@ -165,7 +165,7 @@ div
         div(v-if="this.deployments.length === 0") 
           br
           article.message.is-success.is-small
-            div(v-if="isOwner()").message-body There are no deployments for this environment yet. Would you like to add one?
+            div(v-if="isEditable").message-body There are no deployments for this environment yet. Would you like to add one?
             div(v-else).message-body Nothing to show.
         div(v-else)
           b-table(:data="deployments", focusable)
@@ -212,10 +212,10 @@ div
               br
               | &nbsp;&nbsp;&nbsp;&nbsp; remote
 
-      b-tab-item(v-if="isOwner()", label="Users")
+      b-tab-item(v-if="this.user != this.username", label="Users")
         // Users
         h1.is-title.is-size-4(style="text-align:left;") Users
-          div.buttons(v-if="isOwner()", style="float:right;")
+          div.buttons(v-if="isEditable", style="float:right;")
             button.button.is-primary(@click.prevent="newUser", type="is-light")  + Add New User
         br
         div(v-if="this.users.length === 0")
@@ -239,7 +239,7 @@ div
               div(v-else-if="props.row.access === 'write'") Write
               div(v-else) {{ props.row.access }}
             b-table-column(field="", label="")
-              div(v-if="isOwner()")
+              div(v-if="isEditable")
                 a(href="", @click.prevent="editUser(props.row)")
                   b-icon(icon="circle-edit-outline")
                 a(href="",  @click.prevent="deleteUser(props.row)")
@@ -333,9 +333,9 @@ export default {
   name: 'Environment',
 
   components: {
-      modal: {
+    modal: {
       template: '#modal-template'
-      }
+    }
   },
 
   data () {
@@ -359,6 +359,8 @@ export default {
       allUsers: [],
       currentUser: [],
       groups: [],
+      orgUsers: [],
+      username: '',
 
       user: '',
       noData: false,
@@ -385,13 +387,35 @@ export default {
   methods: {
     ...standardStuff.methods,
 
-    // CHECK IF CURRENT USER IS OWNER 
-    isOwner() {
-      if ( this.currentUser[0].username == this.environment.owner ) {
-        return 1;
-      } else {
-        return 0;
+    // This method returns true if the user is 1. the owner of the private account (user==username), 2. the owner or
+    // admin of the organisation (org_user db table), or, 3/4. the environment has specified that this user has owner/readwrite 
+    // access to this environment (environment_user db table). Else, it returns false and access to edit buttons, etc, are hidden.
+    isEditable: function() {
+      if (this.user == this.username) { // 1. Environment is from a personal account
+        return true;
+
+      } else { 
+        // 2. User is org admin or owner (can see everything in the organisation)
+        this.orgUsers.forEach(user => { 
+          if ((user.user_username == this.username) && (user.role == "owner")) {
+            return true;
+          }
+        })
+
+        // 3. User is owner of environment
+        if (this.username == this.environmentOwner) {
+          return true;
+        }
+        
+        // 4. User has write/admin privileges for this environment
+        this.users.forEach(user => { 
+          if (user.username == this.user && (user.access == 'owner' || user.access == 'write')) {
+            return true;
+          } 
+        })
       }
+
+      return false;
     },
 
     // SAVED EDITED ENVIRONMENT TO THE DATABASE - FROM MODAL
@@ -555,27 +579,27 @@ export default {
             environmentName: this.environmentName
           }
       }
-      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-      let res3 = await axios.get(url3, params, config)
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+      let res3 = await axios.get(url3, params, config);
       console.log(`Environments have been reloaded on the browser:`, res3.data);
-      this.users = res3.data.users
+      this.users = res3.data.users;
       return {
-        users: this.users
-      };
+        users: this.users,
+      }
     },  // -reloadUsers
 
     // OPEN EDIT ENV MODAL:
     setEditMode() {
       this.editEnvInfo = 'edit';
-      this.form.edit_envdescription = this.environment.description
-      this.form.edit_envnotes = this.environment.notes
-      return false
+      this.form.edit_envdescription = this.environment.description;
+      this.form.edit_envnotes = this.environment.notes;
+      return false;
     },
 
     // OPEN MODAL AND CREATE NEW USER:
     newUser() {
-      this.newUserModal = true;
-      return false
+      this.newUserModal = true
+      return false;
     },
 
     // OPEN MODAL AND CHANGE VALUES FOR EDITING USER - receives props.row (i.e. user record)
@@ -585,7 +609,8 @@ export default {
       this.users.last_name = users.last_name,
       this.users.user_id = users.user_id,
       this.form.edit_useraccess = users.access
-      return false
+
+      return false;
     }, //- editUser
 
     deleteUser(user) {
@@ -598,20 +623,22 @@ export default {
     }, // -deleteUser
 
     saveDetails: async function () {
-        let self = this
-        if (self.updateDelay) {
-            clearTimeout(self.updateDelay)
-        }
-        self.updateDelay = setTimeout(async function () {
-            // console.log(`Updating...`, self.deployment);
-            self.updateDelay = null
-            const url = standardStuff.apiURL('/environment')
-            const config = standardStuff.axiosConfig(self.$loginservice.jwt)
-            console.log(`UPDATING ENVIRONMENT`, self.environment);
+      let self = this
 
-           let result = await axios.put(url, self.environment, config)
-            // console.log(`result is `, result);
-        }, 1000)
+      if (self.updateDelay) {
+        clearTimeout(self.updateDelay)
+      }
+
+      self.updateDelay = setTimeout(async function () {
+        // console.log(`Updating...`, self.deployment);
+        self.updateDelay = null
+        const url = standardStuff.apiURL('/environment')
+        const config = standardStuff.axiosConfig(self.$loginservice.jwt)
+        console.log(`UPDATING ENVIRONMENT`, self.environment);
+
+        let result = await axios.put(url, self.environment, config)
+        // console.log(`result is `, result);
+      }, 1000)
     },
 
   },//- methods
@@ -625,60 +652,67 @@ export default {
     let username = app.$nuxtLoginservice.user.username
     let user = params.userName
     let {owner:environmentOwner, name:environmentName} = standardStuff.methods.std_fromQualifiedName(params.environmentName, username)
-console.log(`environment=> ${environmentOwner}, ${environmentName}`);
+    console.log(`environment=> ${environmentOwner}, ${environmentName}`);
 
     try {
-      // Select the environment for this page
-      const url = standardStuff.apiURL('/environment')
+      // Config and params for all calls
+      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+
       const params = { 
         params: {
           environmentName: environmentName,
           environmentOwner: environmentOwner,
+          organisationName: user,
         }
       }
-      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
-      console.log(`Calling ${url}`);
+
+      // Select the environment for this page
+      let url = standardStuff.apiURL('/environment')
       let res = await axios.get(url, params, config)
-      console.log(`API returned environment`, res.data);
+      console.log(`Environment API returned: `, res.data);
       const environment = res.data.record
 
       // Select the deployments for this environment
-      const url2 = standardStuff.apiURL('/deployments')
-      let res2 = await axios.get(url2, params, config)
-      console.log(`API2 returned`, res2.data);
-      const deployments = res2.data.deployments
+      url = standardStuff.apiURL('/deployments')
+      res = await axios.get(url, params, config)
+      console.log(`Deployments API returned: `, res.data);
+      const deployments = res.data.deployments
 
-      // Select the users for the environment
-      const url3 = standardStuff.apiURL('/environments_users')
-      let res3 = await axios.get(url3, params, config)
-      console.log(`API3 returned`, res3.data);
-      const users = res3.data.users
+      // Select the users for the environment (from environment_users db table)
+      url = standardStuff.apiURL('/environments_users')
+      res = await axios.get(url, params, config)
+      console.log(`Users API returned: `, res.data);
+      const users = res.data.users
 
       // Import deployables to be used in deployments form
-      const url4 = standardStuff.apiURL('/deployables')
-      let res4 = await axios.get(url4, config)
-
-      const deployables = res4.data.deployables
+      url = standardStuff.apiURL('/deployables')
+      res = await axios.get(url, config)
+      console.log(`All deployables API returned: `, res.data);
+      const deployables = res.data.deployables
 
       // Import all users for creating new user (on the selected project)
-      const url5 = standardStuff.apiURL('/users')
-      let res5 = await axios.get(url5, config)
-      console.log(`API5 returned`, res5.data);
-      const allUsers = res5.data.users
-      console.log(allUsers)
+      url = standardStuff.apiURL('/users')
+      res = await axios.get(url, config)
+      console.log(`All users API returned: `, res.data);
+      const allUsers = res.data.users
 
       // This users accessibility/profile details
-      const url8 = standardStuff.apiURL('/currentUser')
-      let res8 = await axios.get(url8, config)
-      console.log(`API8 returned`, res8.data);
-      const currentUser = res8.data.user
-      console.log('currentUser: ', currentUser)
+      url = standardStuff.apiURL('/currentUser')
+      res = await axios.get(url, config)
+      console.log(`This user access API returned: `, res.data);
+      const currentUser = res.data.user
 
       // Import all groups to be used when editing environment
-      const url9 = standardStuff.apiURL('/groups')
-      let res9 = await axios.get(url9, config)
-      console.log(`API9 returned`, res9.data);
-      const groups = res9.data.groups
+      url = standardStuff.apiURL('/groups')
+      res = await axios.get(url, config)
+      console.log(`All groups API returned: `, res.data);
+      const groups = res.data.groups
+
+      // Import all orgusers (if an org account)
+      url = standardStuff.apiURL('/organisationUsers')
+      res = await axios.get(url, params, config)
+      console.log('All org_users API returned: ', res.data)
+      const orgUsers = res.data.organisationUsers
     
       return {
         environmentOwner: environmentOwner,
@@ -691,7 +725,10 @@ console.log(`environment=> ${environmentOwner}, ${environmentName}`);
         currentUser: currentUser,
         groups: groups,
         user: user,
+        username: username,
+        orgUsers: orgUsers,
       }
+
     } catch (e) {
       console.log(`Could not fetch project:`, e)
       alert(`Error while fetching project ${environmentName}`)

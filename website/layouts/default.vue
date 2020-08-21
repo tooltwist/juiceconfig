@@ -146,7 +146,7 @@ export default {
     ...standardStuff.methods,
 
     changeUserView: function() {
-      this.$router.push(`/user/${this.user}/`)
+      this.$router.push(`/user/${this.user}/home`)
     },
 
     currentUser: function() {

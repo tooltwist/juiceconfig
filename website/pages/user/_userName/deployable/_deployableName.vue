@@ -50,20 +50,20 @@ div
                     select.select(v-model="deployable.is_global", :disabled="!editingDetails", @input="saveDetails")
                       option(value="1") Yes
                       option(value="0") No
-          div(v-if="isOwner()").control
+          div(v-if="isEditable").control
             button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
 
       b-tab-item(label="Variables")
         // Variables
         h1.is-title.is-size-4(style="text-align:left;") Variables
-          div.buttons(v-if="isOwner()", style="float:right;")
+          div.buttons(v-if="isEditable", style="float:right;")
             div(v-if="isEditable")
               button.button.is-primary(v-if="variables.length>0", @click="editingDetails= !editingDetails") {{editingDetails?'Done':'Edit'}}
               button.button.is-light(@click.prevent="showLearnVariablesDialog")  Learn Variables
               button.button.is-primary(@click.prevent="newVariable(variables)")  + Add New Variable
         br 
         div(v-if="this.variables.length === 0")
-          div(v-if="isOwner()")
+          div(v-if="isEditable")
             br
             article.message.is-success.is-small
               div.message-body 
@@ -172,7 +172,7 @@ div
           article.message.is-success.is-small
             div.message-body There are no dependencies for this deployable yet. Would you like to add a new dependency?
 
-      b-tab-item(v-if="isOwner()", label="Users")
+      b-tab-item(v-if="this.user != this.username", label="Users")
         // Users
         h1.is-title.is-size-4 Users
           div.buttons(style="float:right;")
@@ -680,6 +680,7 @@ export default {
       variables: [ ],
       environments: [ ],
       users: [ ],
+      orgUsers: [ ],
       allUsers: [ ],
       versions: [ ],
       tokens: [ ],
@@ -691,6 +692,7 @@ export default {
       newUserError: null,
       editDeployableStatus: null,
       user: '', // user/org name url params
+      username: '',
 
       access: null,
 
@@ -751,39 +753,40 @@ export default {
       }
     },
 
-    isEditable: function() {
-      if (this.user == this.username) { // is a personal account
-        return true
-      } else { // organisation account
-        this.orgUsers.forEach(user => { // org admin (can see everything in the organisation)
-          if (user.username == this.user && (user.role == 'admin' || user.role == 'owner')) {
-            return true;
-          } // CREATE AN IF STATEMENT if (user == username) { import orgUsers where username == user}
-        })
-      }
-
-      // forEach loop to find project users, if user == project_user.username && project_user.access == owner || write
-      this.users.forEach(user => {
-        if (user.username == this.user && (user.access == 'owner' || user.access == 'write')) {
-          return true
-        }
-      })
-
-      return false
-    },
-
   },
 
   methods: {
     ...standardStuff.methods,
 
-    // CHECK IF CURRENT USER IS OWNER 
-    isOwner() {
-      if ( this.currentUser[0].username == this.deployable.owner ) {
-        return 1;
-      } else {
-        return 0;
+    // This method returns true if the user is 1. the owner of the private account (user==username), 2. the owner or
+    // admin of the organisation (org_user db table), or, 3/4. the project has specified that this user has owner/readwrite 
+    // access to this project (project_user db table). Else, it returns false and access to edit buttons, etc, are hidden.
+    isEditable: function() {
+      if (this.user == this.username) { // 1. Deployable is from a personal account
+        return true;
+
+      } else { 
+        // 2. User is org admin or owner (can see everything in the organisation)
+        this.orgUsers.forEach(user => { 
+          if ((user.user_username == this.username) && (user.role == "owner")) {
+            return true;
+          }
+        })
+
+        // 3. User is owner of this deployable
+        if (this.username == this.deployable.owner) {
+          return true;
+        }
+        
+        // 4. User has write/admin privileges for this deployable
+        this.users.forEach(user => { 
+          if (user.username == this.user && (user.access == 'owner' || user.access == 'write')) {
+            return true;
+          } 
+        })
       }
+
+      return false;
     },
 
     // SAVE EDITED DEPLOYABLE DETAILS 
@@ -1644,88 +1647,89 @@ export default {
     let user = params.userName;
 
     try {
-      // Select the deployable for this page
-      const url = standardStuff.apiURL('/deployable')
+      // Config and params for all calls
+      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
       const params = {
           params: { 
             deployableOwner: deployableOwner,
-            deployableName: deployableName
+            deployableName: deployableName,
+            organisationName: user,
           }
       }
-      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
-      console.log(`Calling ${url}`);
+
+      // Select the deployable for this page
+      let url = standardStuff.apiURL('/deployable')
       let res = await axios.get(url, params, config)
-      console.log(`API returned`, res.data);
+      console.log(`Deployable API returned: `, res.data);
       const deployable = res.data.record
 
       // Select the variables for this deployable
-      const url2 = standardStuff.apiURL('/variables')
-      let res2 = await axios.get(url2, params, config)
-      console.log(`API2 returned`, res2.data);
-      const variables = res2.data.variables
+      url = standardStuff.apiURL('/variables')
+      res = await axios.get(url, params, config)
+      console.log(`Variables API returned: `, res.data);
+      const variables = res.data.variables
       variables.forEach(v => {v._name = v.name})
 
       // Select the deployments for this deployable
-      const url3 = standardStuff.apiURL('/envDeployments')
-      let res3 = await axios.get(url3, params, config)
-      console.log(`API3 returned`, res3.data);
-      const deployments = res3.data.deployments
+      url = standardStuff.apiURL('/envDeployments')
+      res = await axios.get(url, params, config)
+      console.log(`Deployments API returned`, res.data);
+      const deployments = res.data.deployments
 
       // Select dependencies for this deployable
-      // const url4 = standardStuff.apiURL('/dependencies1')
-      const url4 = standardStuff.apiURL('/deployable/${deployableOwner}:${deployableName}/dependancies')
-      let res4 = await axios.get(url4, params, config)
-      // let res4 = await axios.get(url4, params, config)
-      console.log(`API4 returned dependencies:`, res4.data);
-      const dependencies = res4.data.dependencies
+      url = standardStuff.apiURL('/deployable/${deployableOwner}:${deployableName}/dependancies')
+      res = await axios.get(url, params, config)
+      console.log(`Dependencies API returned: `, res.data);
+      const dependencies = res.data.dependencies
 
-      // Select users for this deployable
-      const url5 = standardStuff.apiURL('/project_users')
-      let res5 = await axios.get(url5, params, config)
-      console.log(`API5 returned`, res5.data);
-      const users = res5.data.users
+      // Select project users for this deployable
+      url = standardStuff.apiURL('/project_users')
+      res = await axios.get(url, params, config)
+      console.log(`Project_users API returned: `, res.data);
+      const users = res.data.users
 
       // Import environments to use when creating new Deployment
-      const url6 = standardStuff.apiURL('/environments')
-      console.log(`Calling ${url6}`);
-      console.log(`config = `, config)
-      let res6 = await axios.get(url6, config)
-      console.log(`API6 returned`, res6.data);
-  
-      const environments = res6.data.environments
+      url = standardStuff.apiURL('/environments')
+      res = await axios.get(url, config)
+      console.log(`All environments API returned: `, res.data);
+      const environments = res.data.environments
 
       // Import all users for creating new user (on the selected project)
-      const url7 = standardStuff.apiURL('/users')
-      let res7 = await axios.get(url7, config)
-      console.log(`API7 returned`, res7.data);
-      const allUsers = res7.data.users
-      console.log(allUsers)
+      url = standardStuff.apiURL('/users')
+      res = await axios.get(url, config)
+      console.log(`All users API returned: `, res.data);
+      const allUsers = res.data.users
 
       // This users accessibility/profile details
-      const url8 = standardStuff.apiURL('/currentUser')
-      let res8 = await axios.get(url8, config)
-      console.log(`API8 returned`, res8.data);
-      const currentUser = res8.data.user
-      console.log('currentUser: ', currentUser)
+      url = standardStuff.apiURL('/currentUser')
+      res = await axios.get(url, config)
+      console.log(`User access API returned: `, res.data);
+      const currentUser = res.data.user
 
       // Import all versions for this deployable
-      const url9 = standardStuff.apiURL('/versions')
-      let res9 = await axios.get(url9, params, config)
-      console.log(`API9 returned`, res9.data);
-      const versions = res9.data.versions
+      url = standardStuff.apiURL('/versions')
+      res = await axios.get(url, params, config)
+      console.log(`Versions API returned: `, res.data);
+      const versions = res.data.versions
 
       // Import all tokens for this deployable
-      const url10 = standardStuff.apiURL(`/tokens/${deployableOwner}:${deployableName}`)
-      let res10 = await axios.get(url10, config)
-      // let res10 = await axios.get(url10, params, config)
-      console.log(`API10 returned`, res10.data);
-      const tokens = res10.data.tokens 
+      url = standardStuff.apiURL(`/tokens/${deployableOwner}:${deployableName}`)
+      res = await axios.get(url, config)
+      console.log(`Tokens API returned: `, res.data);
+      const tokens = res.data.tokens 
 
       // Import all deployables for dependency modal
-      const url11 = standardStuff.apiURL('/deployables')
-      let res11 = await axios.get(url11, config)
-      console.log(`API11 returned`, res11.data);
-      const deployables = res11.data.deployables
+      url = standardStuff.apiURL('/deployables')
+      res = await axios.get(url, config)
+      console.log(`All deployables API returned: `, res.data);
+      const deployables = res.data.deployables
+
+      // Import all orgusers (if an org account)
+      url = standardStuff.apiURL('/organisationUsers')
+      res = await axios.get(url, params, config)
+      console.log('All org_users API returned: ', res.data)
+      const orgUsers = res.data.organisationUsers
+
 
       return {
         deployableOwner: deployableOwner,
@@ -1740,6 +1744,8 @@ export default {
         dependencies: dependencies,
         currentUser: currentUser,
         user: user,
+        username: username,
+        orgUsers: orgUsers,
         //versions: versions,
         //tokens: tokens,
       }
