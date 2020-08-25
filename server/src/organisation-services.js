@@ -60,5 +60,47 @@ export default {
             });
         }); // End of section
 
+        // Update status of an existing org_user record
+        server.post('/api/orgStatusUpdate', async (req, res, next) => {
+            console.log(`POST /orgStatusUpdate`);
+
+            let member = req.params.member;
+            let status = req.params.status;
+            console.log(status)
+            let org = req.params.org;
+
+            let con = await db.checkConnection();
+            const sql = `UPDATE org_user SET status =? WHERE org_username =? AND user_username =?`
+            const params = [ status, org, member ]
+
+            con.query(sql, params, (err, result) => {
+                if (err) throw err;
+            
+                // Send a success reply
+                res.send({ status: 'ok' })
+                return next();
+            }) 
+        })
+
+        // Delete an org_user record
+        server.del('/api/deleteOrgUser', async (req, res, next) => {
+            console.log(`DELETE /deleteOrgUser`);
+
+            let con = await db.checkConnection();
+            const member = req.params.member;
+            const org = req.params.org;
+            const status = req.params.status;
+
+            const sql = `DELETE FROM org_user WHERE user_username =? AND org_username =? AND status =?`
+            const params = [member, org, status]
+
+            con.query( sql, params, (err, result) => {
+                if (err) throw err;
+            
+                // Send reply
+                res.send({ status: 'ok' })
+                return next();
+            }) 
+        });
     }
 }

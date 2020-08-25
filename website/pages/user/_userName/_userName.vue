@@ -1,14 +1,24 @@
 <template lang="pug">
 section.section
-    h1.title {{ user.first_name }} {{ user.last_name }} 
+    h1.title {{ this.org }}:{{ this.username }} 
     b-tabs(v-model="activeTab", :animated="false")
         b-tab-item(label="Account Information")
             table(style="width:100%;")
                 tr 
                     td(style="justify:right;")
-                        label ID: 
+                        label First name: 
                     td(style="justify:left;")
-                        | {{ user.id }}
+                        | {{ user.first_name }}
+                tr 
+                    td(style="justify:right;")
+                        label Last name: 
+                    td(style="justify:left;")
+                        | {{ user.last_name }} 
+                tr 
+                    td(style="justify:right;")
+                        label Organisation role: 
+                    td(style="justify:left;")
+                        | {{ orguser.role }} 
                 tr 
                     td(style="justify:right;")
                         label Account Email: 
@@ -16,14 +26,9 @@ section.section
                         | {{ user.email }}
                 tr 
                     td(style="justify:right;")
-                        label Role: 
+                        label Status: 
                     td(style="justify:left;")
-                        | {{ user.role }}
-                tr 
-                    td(style="justify:right;")
-                        label Access: 
-                    td(style="justify:left;")
-                        | {{ user.access }}
+                        | {{ orguser.status }}
             br
             b-button.stop(@click="setEditMode", type="is-primary is-outlined is-light", size="is-small")  Edit
     
@@ -97,12 +102,13 @@ export default {
                 new_accountaccess: '',
             },
             user: [],
-            userID: '',
+            org: '',
             projects: [],
             environments: [],
             activeTab: 0,
             editUserAccount: 'null',
             username: '',
+            orguser: '',
         }
     },
 
@@ -153,39 +159,50 @@ export default {
     },
 
     async asyncData ({ app, params, error }) {
-        let userID = params.userName
-        let username = params.userName;
+        let org = params.userName;
+        let username = params.username;
 
         try {
-            // Select the user for this page
-            const url = standardStuff.apiURL('/userName')
+            // Params and config for all API calls
             const params = {
                 params: {
-                    userID: userID
+                    username: username,
+                    org: org,
                 }
             }
             const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+
+            // Select the user for this page from user db table
+            let url = standardStuff.apiURL('/userName')
             let res = await axios.get(url, params, config)
             const user = res.data.record
             console.log(`User   :`, user)
 
+            // Select user details from org_user db table
+            url = standardStuff.apiURL('/singleOrgUser')
+            res = await axios.get(url, params, config)
+            const orguser = res.data.record
+            console.log(`OrgUser   :`, orguser)
+
             // Select users projects for this page
-            const url2 = standardStuff.apiURL('/usersProjects')
-            let res2 = await axios.get(url2, params, config)
-            const projects = res2.data.records
+            url = standardStuff.apiURL('/usersProjects')
+            res = await axios.get(url, params, config)
+            const projects = res.data.records
 
             // Select users environments for this page
-            const url3 = standardStuff.apiURL('/usersEnvironments')
-            let res3 = await axios.get(url3, params, config)
-            const environments = res3.data.records
+            url = standardStuff.apiURL('/usersEnvironments')
+            res = await axios.get(url, params, config)
+            const environments = res.data.records
 
             return {
-                userID: userID,
+                org: org,
                 username: username,
                 user: user,
+                orguser: orguser,
                 projects: projects,
                 environments: environments,
             }
+
         } catch (e) {
             console.log(`Error while fetching user: `, e)
         }

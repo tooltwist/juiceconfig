@@ -8,10 +8,29 @@ export default {
         server.get('/api/userName', async (req, res, next) => {
             console.log(`GET /userName`);
         
-            let userID = req.query.userID
+            let username = req.query.username
             let con = await db.checkConnection()
-            const sql = `SELECT * from user where id=?`
-            const params = [ userID ]
+            const sql = `SELECT * from user where username=?`
+            const params = [ username ]
+        
+            con.query(sql, params, function (err, result) {
+                if (err) throw err;
+                console.log(`result[0]=`, result[0]);
+                res.send({ record: result[0] })
+                next()
+            });
+        }); // End of section
+
+        // Dynamically select the USER for /_userName from MySQL database
+        server.get('/api/singleOrgUser', async (req, res, next) => {
+            console.log(`GET /singleOrgUser`);
+        
+            let username = req.query.username;
+            let org = req.query.org;
+
+            let con = await db.checkConnection()
+            const sql = `SELECT * from org_user where user_username=? and org_username=?`
+            const params = [ username, org ]
         
             con.query(sql, params, function (err, result) {
                 if (err) throw err;
@@ -21,15 +40,15 @@ export default {
             });
         }); // End of section
         
-        // Dynamically select the PROJECTS for /_userName from MySQL database
+        // Dynamically select the PROJECTS for /_username from MySQL database
         server.get('/api/usersProjects', async (req, res, next) => {
             console.log(`GET /usersProjects`);
         
-            let userID = req.query.userID
-            console.log('userid === ', userID)
+            let username = req.query.username
+
             let con = await db.checkConnection()
-            const sql = `SELECT * from project_user where user_id=?`
-            const params = [ userID ]
+            const sql = `SELECT * from project_user where username=?`
+            const params = [ username ]
 
         
             con.query(sql, params, function (err, result) {
@@ -44,10 +63,10 @@ export default {
         server.get('/api/usersEnvironments', async (req, res, next) => {
             console.log(`GET /usersEnvironments`);
         
-            let userID = req.query.userID
+            let username = req.query.username
             let con = await db.checkConnection()
-            const sql = `SELECT * from environment_user where user_id=?`
-            const params = [ userID ]
+            const sql = `SELECT * from environment_user where username=?`
+            const params = [ username ]
         
             con.query(sql, params, function (err, result) {
                 if (err) throw err;

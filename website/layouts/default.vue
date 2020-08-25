@@ -48,7 +48,8 @@ div
                 nuxt-link(v-if="item.title != 'Users'", :to="`/user/${user}/${item.to.name}`", exact-active-class="activeHighlight")
                   b-icon(:icon="item.icon")
                   | {{ item.title }}
-                nuxt-link(v-if="user != username && item.title == 'Users'", :to="item.to", exact-active-class="activeHighlight")
+                nuxt-link(v-if="user != username && item.title == 'Users'", :to="`/user/${user}/${item.to.name}`", exact-active-class="activeHighlight")
+                  // Will need to import org admins from Vuex store: if (username == org.admin) show users
                   b-icon(:icon="item.icon")
                   | {{ item.title }}
           br
