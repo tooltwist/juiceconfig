@@ -88,7 +88,6 @@ export default {
             console.log(`GET /projectAccess`);
         
             let userName = req.params.user
-            console.log('userName === ', userName)
             let con = await db.checkConnection()
             const sql = `SELECT * from project_user where username=?`
             const params = [ userName ]

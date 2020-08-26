@@ -37,24 +37,30 @@ section.section
                 br
                 article.message.is-success.is-small
                     div.message-body {{ user.first_name}} {{user.last_name}} is not involved in any projects yet. Add this user to a project via the relevant deployables' 'Users' tab.
-            b-table(:data="projects", focusable)
+            b-table(:data="filteredProjects", focusable)
                 template(slot-scope="props")
                     b-table-column(field="project", label="User's Projects")
-                        | {{ props.row.project }}
-                    b-table-column(field="access", label="Access")
-                        | {{ props.row.access }}
+                        | {{ props.row.name }}
+                    b-table-column(field="description", label="Description")
+                        | {{ props.row.description }}
+                    b-table-column(field="type", label="Type")
+                        | {{ props.row.type }}
     
         b-tab-item(label="Environments")
             div(v-if="this.environments.length === 0")
                 br
                 article.message.is-success.is-small
                     div.message-body {{ user.first_name}} {{user.last_name}} does not have access to any environments yet. Add this user to an environment via the relevant environments' 'Users' tab.
-            b-table(:data="environments", focusable)
+            b-table(:data="filteredEnvironments", focusable)
                 template(slot-scope="props")
-                    b-table-column(field="project", label="User's Environments")
-                        | {{ props.row.environment }}
-                    b-table-column(field="access", label="Access")
-                        | {{ props.row.access }}
+                    b-table-column(field="environment", label="User's Environments")
+                        | {{ props.row.name }}
+                    b-table-column(field="description", label="Description")
+                        | {{ props.row.description }}
+                    b-table-column(field="type", label="Type")
+                        | {{ props.row.type }}
+                    b-table-column(field="notes", label="Notes")
+                        | {{ props.row.notes }}
             
     // Edit users account details MODAL
     div(v-show="editUserAccount == 'edit'")
@@ -90,6 +96,7 @@ section.section
 <script>
 import axios from 'axios';
 import standardStuff from '../../../lib/standard-stuff'
+import environmentsVue from '../../../../../juiceconfig-userorg/website/pages/environments.vue';
 
 export default {
     name: 'User',
@@ -102,6 +109,8 @@ export default {
                 new_accountaccess: '',
             },
             user: [],
+            projectUsers: [],
+            environmentUsers: [],
             org: '',
             projects: [],
             environments: [],
@@ -110,6 +119,38 @@ export default {
             username: '',
             orguser: '',
         }
+    },
+
+    computed: {
+        filteredProjects() {
+            let projects = [];
+
+            this.projects.forEach(project => {
+                this.projectUsers.forEach(user => {
+                    if (project.name == user.project) {
+                        projects.push(project);
+                    }
+                })
+            })
+
+            return projects;
+        },
+
+        filteredEnvironments() {
+            let environments = [];
+
+            this.environments.forEach(env => {
+                this.environmentUsers.forEach(user => {
+                    if (env.name == user.environment) {
+                        environments.push(env);
+                    }
+                })
+            })
+
+            console.log('env', environments)
+
+            return environments;
+        },
     },
 
     methods: {
@@ -164,9 +205,10 @@ export default {
 
         try {
             // Params and config for all API calls
-            const params = {
+            let params = {
                 params: {
                     username: username,
+                    user: username,
                     org: org,
                 }
             }
@@ -184,17 +226,40 @@ export default {
             const orguser = res.data.record
             console.log(`OrgUser   :`, orguser)
 
-            // Select users projects for this page
-            url = standardStuff.apiURL('/usersProjects')
+            // Import all project_users with username to cross-reference with org deployables
+            url = standardStuff.apiURL('/projectAccess')
             res = await axios.get(url, params, config)
-            const projects = res.data.records
+            const projectUsers = res.data.records
+            console.log('projectUsers = ', projectUsers);
 
-            // Select users environments for this page
-            url = standardStuff.apiURL('/usersEnvironments')
+            // Import all project_users with username to cross-reference with org deployables
+            url = standardStuff.apiURL('/thisUsersEnvironments')
             res = await axios.get(url, params, config)
-            const environments = res.data.records
+            const environmentUsers = res.data.environmentUsers
+            console.log('environmentUsers = ', environmentUsers);
+
+            // Import all org deployables
+            params = { // change params for future calls
+                params: {
+                    username: org,
+                    user: org,
+                }
+            }
+
+            url = standardStuff.apiURL('/allDeployables')
+            res = await axios.get(url, params, config)
+            const projects = res.data.deployables
+            console.log('projects = ', projects);
+
+            // Import all org environments
+            url = standardStuff.apiURL('/showEnvironments')
+            res = await axios.get(url, params, config)
+            const environments = res.data.environments
+            console.log('environments = ', environments);
 
             return {
+                environmentUsers: environmentUsers,
+                projectUsers: projectUsers,
                 org: org,
                 username: username,
                 user: user,

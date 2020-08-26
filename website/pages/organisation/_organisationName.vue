@@ -28,7 +28,27 @@
                         b-table-column(field="role", label="Role") 
                             | {{props.row.role}}
                         b-table-column(field="status", label="Status")
-                            | {{props.row.status}}
+                            b-dropdown(v-show="props.row.status === 'pending'", aria-role="list")
+                                button(class="button", slot="trigger", slot-scope="{active}")
+                                    span {{props.row.status}}
+                                    b-icon(:icon="active ? 'menu-up' : 'menu-down'")
+                                b-dropdown-item(value="accept", @click="changeMembership(props.row.user_username, 'remove')") 
+                                    b-icon(icon="delete")
+                                    span Remove Member              
+                            b-dropdown(v-show="props.row.status === 'confirmed'", aria-role="list") 
+                                button(class="button", slot="trigger", slot-scope="{active}")
+                                    span {{props.row.status}}
+                                    b-icon(:icon="active ? 'menu-up' : 'menu-down'")
+                                b-dropdown-item(value="accept", @click="changeMembership(props.row.user_username, 'disable')") 
+                                    b-icon(icon="cancel")
+                                    span Disable Member
+                            b-dropdown(v-show="props.row.status === 'disabled'", aria-role="list") 
+                                button(class="button", slot="trigger", slot-scope="{active}")
+                                    span {{props.row.status}}
+                                    b-icon(:icon="active ? 'menu-up' : 'menu-down'")
+                                b-dropdown-item(value="accept", @click="changeMembership(props.row.user_username, 'enable')") 
+                                    b-icon(icon="account-reactivate")
+                                    span Reactivate Membership 
 
             b-tab-item(label="Payment Details")
                 br
@@ -119,6 +139,69 @@ export default {
         newUser() {
             this.newUserModal = true;
             return false
+        },
+
+
+        // Change status of org_user: (disable) temporarily removes access of existing user, (remove) deletes a pending user invitation.
+        async changeMembership(member, status) {
+            if (status == 'disable') {
+                // update the user_org record where user_username == member, org_username == user SET status == disabled
+                try {
+                    let params = {
+                        org: this.organisationName,
+                        member: member,
+                        status: 'disabled',
+                    }
+
+                    const url = standardStuff.apiURL('/orgStatusUpdate')
+                    const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+                    await axios.post(url, params, config)
+
+                } catch (e) {
+                    console.log(`Error while updating user on the database: `, e)
+                }
+
+            } else if (status == 'remove') {
+                // delete the user_org record where user_username == member, org_username == user, status == pending
+                try {
+                    const params = {
+                        params: {
+                            org: this.organisationName,
+                            member: member,
+                            status: 'pending',
+                        }
+                    }
+
+                    const url = standardStuff.apiURL('/deleteOrgUser')
+                    const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+                    await axios.delete(url, params, config)
+
+                } catch (e) {
+                    console.log(`Error while deleting user record from the database: `, e)
+                }
+
+            } else if (status == 'enable') {
+                try {
+                    let params = {
+                        org: this.organisationName,
+                        member: member,
+                        status: 'confirmed',
+                    }
+
+                    const url = standardStuff.apiURL('/orgStatusUpdate')
+                    const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+                    await axios.post(url, params, config)
+
+                } catch (e) {
+                    console.log(`Error while updating user on the database: `, e)
+                }        
+            }
+
+            try {
+                this.reloadOrgUsers();
+            } catch (e) {
+                console.log(`Error whilst reloading users: `, e)
+            }
         },
 
         // Reload org_users data after adding new user 
