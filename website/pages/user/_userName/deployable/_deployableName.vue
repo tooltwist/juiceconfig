@@ -520,16 +520,15 @@ div
                     div.form-group
                       div.formStyle Select User: 
                         div.control
-                          b-select(placeholder="User", v-model="form.new_projectuser") User:
-                            option(v-for="user in allUsers", :value="user.id") {{ user.first_name }} {{ user.last_name }}
+                          b-select(placeholder="User", v-model="form.new_username") User:
+                            option(v-for="user in orgUsers", :value="user.user_username") {{ user.user_username }}
                         div(v-if="newUserError === `User already exists`") 
-                          p.help.is-danger {{ deployableName }} already has this user added.
+                          p.help.is-danger {{ deployableName }} already has {{ form.new_projectuser }} added.
                       div.formStyle Access:
                         div.control
                           b-select(placeholder="Access", v-model="form.new_user_access") Type:
                             option(value="owner") Admin
-                            option(value="read") Read
-                            option(value="write") Write
+                            option(value="read") Read only
             footer.modal-card-foot 
               div.control
                 b-button(@click.stop="saveNewUser",  type="is-primary is-light", size="is-small")  Save
@@ -551,8 +550,7 @@ div
                     b-field.formStyle.control Edit accessibility:
                       b-select(placeholder="Accessibility", v-model="form.edit_useraccess", value="accessibility") 
                         option(value="owner") Admin
-                        option(value="read") Read
-                        option(value="write") Write
+                        option(value="read") Read Only
             footer.modal-card-foot 
               div.control
                 b-button(@click.stop="saveEditedUser", type="is-primary is-light", size="is-small")  Save    
@@ -648,7 +646,6 @@ export default {
         child_owner: '',
 
         // Adding a new user
-        new_projectuser: '',
         new_user_access: '',
         new_username: '',
 
@@ -889,14 +886,13 @@ export default {
 
     // ADD A NEW USER FOR SELECTED PROJECT TO THE DATABASE - FROM MODAL 
     async saveNewUser() {
-      console.log(`saveNewUser(): `, this.form.new_projectuser)
       //Check that form is filled correctly
-      if (this.form.new_projectuser && this.form.new_user_access) {
+      if (this.form.new_username && this.form.new_user_access) {
         
         // Check for existing user using selected project:
         let found = false
         this.users.forEach(user => {
-          if (user.user_id === this.form.new_projectuser) {
+          if (user.username === this.form.new_username) {
             console.log(`This user is already able to access this project!`)
             found = true
           }
@@ -910,26 +906,47 @@ export default {
         }
         this.newUserError = null
 
-        this.allUsers.forEach(user => {
-          if (user.id === this.form.new_projectuser) {
-            this.form.new_username = user.username;
+        // Retrieve user record from db for new project_user
+        let userId = '';
+
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+
+        try {
+          let url = standardStuff.apiURL('/usernameRecord')
+          const params = {
+            params: {
+              username: this.form.new_username,
+            }
           }
-        })
+
+          let res = await axios.get(url, params, config)
+          userId = res.data.user[0].id
+          console.log('res: ', res)
+          console.log('userId: ', userId)
+
+        } catch (e) {
+          console.log('Error retrieving user record', e)
+        }
+
+        console.log('USERid: ', userId)
+
 
         // If no error, send post request to server
         try {
           let url = standardStuff.apiURL('/newProjectUser')
 
           let record = {
-            id: this.form.new_projectuser,
             access: this.form.new_user_access,
             project: this.deployableName,
             username: this.form.new_username,
+            id: userId,
           }
-          let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+          
           await axios.post(url, record, config)
-          this.newUserModal = false
           console.log(`New project user successfully sent to database`);
+
+          this.newUserModal = false
+
         } catch (e) {
           console.log(`Error while sending new project user to the database: `, e)
         }
@@ -938,9 +955,11 @@ export default {
         try {
           this.reloadUsers(); 
           console.log(`Reloading...`)
+
         } catch (e) {
           console.log(`Error while reloading users on the browser: `, e)
         }
+
       } else {
         this.errormode = 'inputError'
       }
@@ -1651,6 +1670,7 @@ export default {
       const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
       const params = {
           params: { 
+            user: user,
             deployableOwner: deployableOwner,
             deployableName: deployableName,
             organisationName: user,
@@ -1720,7 +1740,7 @@ export default {
 
       // Import all deployables for dependency modal
       url = standardStuff.apiURL('/deployables')
-      res = await axios.get(url, config)
+      res = await axios.get(url, params, config)
       console.log(`All deployables API returned: `, res.data);
       const deployables = res.data.deployables
 

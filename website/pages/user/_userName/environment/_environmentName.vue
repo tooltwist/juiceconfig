@@ -498,6 +498,7 @@ export default {
           this.newUserError = `User already exists`
           return 
         }
+        
         this.newUserError = null
 
         this.allUsers.forEach(user => {

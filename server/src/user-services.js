@@ -19,6 +19,26 @@ export default {
         }); // End of section
 
         // Select all USERS for /users on MySQL database
+        server.get('/api/usernameRecord', async (req, res, next) => {
+            console.log(`GET /usernameRecord`);
+            
+            let username = req.params.username;
+            console.log('username: ', username)
+            console.log('req: ', req.params)
+
+            let con = await db.checkConnection()
+            const sql = `SELECT * from user WHERE username=?`
+            const params = [ username ]
+            
+            con.query(sql, params, function (err, result) {
+                if (err) throw err;
+                res.send({ user: result })
+                next()
+            });
+
+        }); // End of section
+
+        // Select all USERS for /users on MySQL database
         server.get('/api/orgUsers', async (req, res, next) => {
             console.log(`GET /orgUsers`);
 

@@ -29,8 +29,6 @@ section.section
                         label Status: 
                     td(style="justify:left;")
                         | {{ orguser.status }}
-            br
-            b-button.stop(@click="setEditMode", type="is-primary is-outlined is-light", size="is-small")  Edit
     
         b-tab-item(label="Projects")
             div(v-if="this.projects.length === 0")
@@ -61,36 +59,6 @@ section.section
                         | {{ props.row.type }}
                     b-table-column(field="notes", label="Notes")
                         | {{ props.row.notes }}
-            
-    // Edit users account details MODAL
-    div(v-show="editUserAccount == 'edit'")
-        transition(name="modal")
-            div.modal-mask
-                div.modal-wrapper
-                    div.modal-card
-                        header.modal-card-head
-                            p.modal-card-title Edit User
-                                b {{ user.first_name }} {{ user.last_name }} ({{ user.id }})
-                        section.modal-card-body
-                            div.modal-body
-                                slot(name="body")
-                                    form
-                                        div.form-group
-                                            div.formStyle Email:
-                                                div.control
-                                                    input.input(v-model="form.new_accountemail", maxlength="60", type="text", value="email", placeholder="Email")  
-                                            div.formStyle Account Role:
-                                                div.control
-                                                    input.input(v-model="form.new_accountrole", maxlength="16", type="text", value="role", placeholder="Role")  
-                                            b-field.formStyle.control Edit accessibility:
-                                                b-select(placeholder="Accessibility", v-model="form.new_accountaccess", value="access") 
-                                                    option(value="limited") limited
-                                                    option(value="write") write
-                                                    option(value="conditional") conditional (clients-only)
-                        footer.modal-card-foot  
-                            div.control
-                                b-button(@click.stop="saveEditedUser", type="is-primary is-light", size="is-small")  Save    
-                                b-button(@click="editUserAccount='null'", type="is-danger is-outlined", size="is-small") Cancel
 </template> 
 
 <script>
@@ -103,11 +71,6 @@ export default {
 
     data () {
         return {
-            form: {
-                new_accountemail: '',
-                new_accountrole: '',
-                new_accountaccess: '',
-            },
             user: [],
             projectUsers: [],
             environmentUsers: [],
@@ -115,7 +78,6 @@ export default {
             projects: [],
             environments: [],
             activeTab: 0,
-            editUserAccount: 'null',
             username: '',
             orguser: '',
         }
@@ -154,34 +116,7 @@ export default {
     },
 
     methods: {
-        setEditMode() {
-            this.editUserAccount = 'edit'
-            this.form.new_accountemail = this.user.email
-            this.form.new_accountrole = this.user.role
-            this.form.new_accountaccess = this.user.access
-        },
-
-        async saveEditedUser() {
-            try {
-                const url = standardStuff.apiURL('/editUserAccount')
-                let record = {
-                    id: this.user.id,
-                    email: this.form.new_accountemail,
-                    role: this.form.new_accountrole,
-                    access: this.form.new_accountaccess
-                }
-                let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-                await axios.post(url, record, config)
-                console.log(`Edited user successfully`)
-                this.editUserAccount = 'null', 
-                this.reloadUsers();
-
-            } catch (e) {
-                console.log(`Error while sending edited account details to the server: `, e)
-            }
-        },
-
-        // RELOAD THE DATABASE TABLE AFTER SAVING NEW PROJECT USER
+        // RELOAD THE DATABASE TABLE 
         async reloadUsers() {
         const url = standardStuff.apiURL('/userName')
         const params = {
