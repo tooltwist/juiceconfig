@@ -921,14 +921,10 @@ export default {
 
           let res = await axios.get(url, params, config)
           userId = res.data.user[0].id
-          console.log('res: ', res)
-          console.log('userId: ', userId)
 
         } catch (e) {
           console.log('Error retrieving user record', e)
         }
-
-        console.log('USERid: ', userId)
 
 
         // If no error, send post request to server
@@ -951,10 +947,13 @@ export default {
           console.log(`Error while sending new project user to the database: `, e)
         }
 
-        // Once data sent, reload with the new deployment
+        // Once data sent, reload with the new deployment and reset form values
         try {
           this.reloadUsers(); 
           console.log(`Reloading...`)
+
+          this.form.new_user_access = '';
+          this.form.new_username = '';
 
         } catch (e) {
           console.log(`Error while reloading users on the browser: `, e)
@@ -1769,6 +1768,7 @@ export default {
         //versions: versions,
         //tokens: tokens,
       }
+      
     } catch (e) {
       console.log(`Could not fetch project:`, e)
       alert(`Error while fetching project ${deployableName}`)

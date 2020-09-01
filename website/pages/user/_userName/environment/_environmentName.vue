@@ -266,19 +266,15 @@ div
                     div.form-group
                       div.formStyle Select User: 
                         div.control
-                        div(v-if="newUserError === null")
                           b-select(placeholder="User", v-model="form.new_environmentuser") User:
-                            option(v-for="user in allUsers", :value="user.id") {{ user.first_name }} {{ user.last_name }} 
+                            option(v-for="user in orgUsers", :value="user.user_username") {{ user.user_username }} 
                         div(v-if="newUserError === `User already exists`") 
-                          b-select(placeholder="User", v-model="form.new_environmentuser") User:
-                            option(v-for="user in allUsers", :value="user.id") {{ user.first_name }} {{ user.last_name }} 
-                          p.help.is-danger {{ environmentName }} already has this user added.
+                          p.help.is-danger {{ environmentName }} already has {{ form.new_environmentuser }} added.
                       div.formStyle Access:
                         div.control
                           b-select(placeholder="Access", v-model="form.new_user_access") Type:
                             option(value="owner") Admin
-                            option(value="read") Read
-                            option(value="write") Write 
+                            option(value="read") Read only
             footer.modal-card-foot
               div.control
                 b-button(@click.stop="saveNewUser",  type="is-primary is-light", size="is-small")  Save
@@ -302,8 +298,7 @@ div
                         b-field.control Change accessibility:
                           b-select(placeholder="Accessibility", v-model="form.edit_useraccess", value="accessibility") 
                             option(value="owner") Admin
-                            option(value="read") Read
-                            option(value="write") Write
+                            option(value="read") Read only
             footer.modal-card-foot 
               div.control
                 b-button(@click.stop="saveEditedUser", type="is-primary is-light", size="is-small")  Save    
@@ -351,8 +346,8 @@ export default {
         // Add new user
         new_environmentuser: '',
         new_user_access: '',
-        new_username: '',
       },
+
       editingDetails: false,
 
       users: [],
@@ -479,14 +474,13 @@ export default {
 
     // ADD A NEW USER FOR SELECTED ENVIRONMENT TO THE DATABASE - FROM MODAL 
     async saveNewUser() {
-      console.log(`saveNewUser(): `, this.form.new_environmentuser)
       //Check that form is filled correctly
       if (this.form.new_environmentuser && this.form.new_user_access) {
-        
+        console.log('In new user')
         // Check for existing user using selected project:
         let found = false
         this.users.forEach(user => {
-          if (user.user_id === this.form.new_environmentuser) {
+          if (user.username === this.form.new_environmentuser) {
             console.log(`This user is already able to access this environment!`)
             found = true
           }
@@ -498,39 +492,61 @@ export default {
           this.newUserError = `User already exists`
           return 
         }
-        
         this.newUserError = null
 
-        this.allUsers.forEach(user => {
-          if (user.id === this.form.new_environmentuser) {
-            this.form.new_username = user.username;
+        // Retrieve user record from db for new project_user
+        let userId = '';
+
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+
+        try {
+          let url = standardStuff.apiURL('/usernameRecord')
+          const params = {
+            params: {
+              username: this.form.new_environmentuser,
+            }
           }
-        })
+
+          let res = await axios.get(url, params, config)
+          userId = res.data.user[0].id
+
+        } catch (e) {
+          console.log('Error retrieving user record', e)
+        }
+
+        console.log('userId= ', userId)
 
         // If no error, send post request to server
         try {
           let url = standardStuff.apiURL('/newEnvironmentUser')
           let record = {
-            id: this.form.new_environmentuser,
+            username: this.form.new_environmentuser,
             access: this.form.new_user_access,
             environment: this.environmentName,
-            username: this.form.new_username,
+            id: userId,
           }
+
           let config = standardStuff.axiosConfig(this.$loginservice.jwt)
           await axios.post(url, record, config)
           this.newUserModal = false
           console.log(`New environment user successfully sent to database`);
+
         } catch (e) {
           console.log(`Error while sending new environment user to the database: `, e)
         }
 
-        // Once data sent, reload with the new deployment
+        // Once data sent, reload with the new deployment and reset form values
         try {
           this.reloadUsers(); 
           console.log(`Reloading...`)
+
+          this.form.new_environmentuser = '';
+          this.form.new_user_access = '';
+
         } catch (e) {
           console.log(`Error while reloading users on the browser: `, e)
         }
+
       } else {
         this.errormode = 'inputError'
       }

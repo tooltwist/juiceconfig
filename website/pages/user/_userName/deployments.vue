@@ -415,9 +415,10 @@ export default {
 
         const params = {
           params: { 
-            username: this.currentUser,
+            user: this.user,
           }
         }
+
         let reloadedDeployments = await loadDeployments(config, params)
         // this.deployables = loadDeployables(jwt)
         console.log(`reloaded deployments: `, reloadedDeployments);
