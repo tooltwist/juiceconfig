@@ -17,7 +17,7 @@ div
       b-dropdown(v-if="loggedIn", @click="printOrgs()" position="is-bottom-left", aria-role="menu")
         a.navbar-item(slot="trigger", role="button")
           span Menu
-            b-tag(v-show="this.requests.length > 0", rounded, type="is-danger is-outlined") {{this.requests.length}}
+            b-tag(v-show="$store.state.myPendingRequests.length > 0", rounded, type="is-danger is-outlined") {{ $store.state.myPendingRequests.length }}
           b-icon(icon="menu-down")
         b-dropdown-item(custom aria-role="menuitem") Signed in as&nbsp;
           b {{ username }} 
@@ -25,7 +25,7 @@ div
         b-dropdown-item(href="/myAccount", value="My Account")
           b-icon(icon="account") 
           span My Account
-            b-tag(v-show="this.requests.length > 0", rounded, type="is-danger is-outlined") {{this.requests.length}}
+            b-tag(v-show="$store.state.myPendingRequests.length > 0", rounded, type="is-danger is-outlined") {{ $store.state.myPendingRequests.length }}
         b-dropdown-item(value="Logout", @click="doLogout")
           b-icon(icon="logout") 
           | Logout
@@ -108,10 +108,8 @@ export default {
       ],
       isActive: true,
       isActiveDrop: true,
-      requests: [ ],
       organisations: [ ],
       org: '', 
-      temp_org: 'phils_org',
       user: '',
     }
   },
@@ -121,8 +119,13 @@ export default {
     listOfUserOptions: function() {
       let users = [];
 
-      users[0] = 'phils_org';
-      users[1] = this.username;
+      users[0] = this.$loginservice.user.username; // personal account
+
+      let i = 1;
+      this.listOfOrgs.forEach(user => {
+        users[i] = user.org_username; // org accounts 
+        i++;
+      })
 
       return users;
     },
@@ -138,9 +141,15 @@ export default {
       return this.loggedIn ? this.$loginservice.user.username : ''
     },
 
-    orgs: function() {
+    listOfOrgs: function() {
       return this.$store.state.myOrganisations
     },
+  },
+
+  mounted() {
+    console.log('Mounted')
+    this.$store.dispatch('checkMyOrgs')
+    this.$store.dispatch('checkMyRequests')
   },
 
   methods: {
@@ -169,7 +178,7 @@ export default {
         //this.organisations = this.$store.state.myOrganisations
         //console.log('This organisations[]: ', this.organisations)
       } catch (e) {
-        console.log('Error calling server from Vuex: ', e)
+        console.log('Error from Vuex: ', e)
       }
     },
   },  

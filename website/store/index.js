@@ -39,6 +39,8 @@ import standardStuff from '../lib/standard-stuff';
 
 const state = {
     myOrganisations: [ ],
+    myPendingRequests: [ ], 
+    myAdmins: [ ],
     currentUsername: '',
 }
 
@@ -48,6 +50,11 @@ const mutations = {
 		state.myOrganisations = myOrganisations
     },
     
+    SET_REQS (state, { username, myPendingRequests }) {
+        state.currentUsername = username
+        state.myPendingRequests = myPendingRequests
+    },
+
     SET_CURRENT_USER (state, { username, myOrganisations }) {
         state.currentUsername = username
         state.myOrganisations = myOrganisations
@@ -79,7 +86,7 @@ const actions = {
 
                 commit('SET_ORGS', { username: me, myOrganisations: organisations })
 
-                console.log('state: ', state.myOrganisations) // this works
+                console.log('state: ', state.myOrganisations) 
             } catch (e) {
                 console.log('Error while updating myOrganisations: ', e)
             }
@@ -88,7 +95,40 @@ const actions = {
         }
 
         return
-	},
+    },
+    
+    async checkMyRequests ({ commit, vm, error }) {
+        vm = this._vm;
+
+        if (vm.$loginservice.user) {
+            try {
+                const me = vm.$loginservice.user.username
+                const url = standardStuff.apiURL('/pendingRequests');
+                const config = standardStuff.axiosConfig(vm.$loginservice.jwt);
+    
+                const params = { 
+                    headers: {
+                        'Authorization': 'Bearer ' + vm.$loginservice.jwt
+                    },
+    
+                    params: {
+                        username: me
+                    }
+                }
+
+                let res = await axios.get(url, params, config) 
+                const pendingRequests = res.data.pendingRequests
+
+                commit('SET_REQS', { username: me, myPendingRequests: pendingRequests })
+
+                console.log('state: ', state.myPendingRequests) 
+            } catch (e) {
+                console.log('Error while updating myPendingRequests: ', e)
+            }
+        } else {
+            commit('SET_CURRENT_USER', { username: null, myPendingRequests: [ ] })
+        }
+    }
 }
 
 const store = () => {

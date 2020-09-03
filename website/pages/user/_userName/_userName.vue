@@ -38,7 +38,8 @@ section.section
             b-table(:data="filteredProjects", focusable)
                 template(slot-scope="props")
                     b-table-column(field="project", label="User's Projects")
-                        | {{ props.row.name }}
+                        nuxt-link(:to="`/user/${user}/deployable/${std_toQualifiedName(props.row.owner,props.row.name)}`")
+                            span(v-html="std_toQualifiedDisplay(props.row.owner,props.row.name,true)")
                     b-table-column(field="description", label="Description")
                         | {{ props.row.description }}
                     b-table-column(field="type", label="Type")
@@ -52,7 +53,8 @@ section.section
             b-table(:data="filteredEnvironments", focusable)
                 template(slot-scope="props")
                     b-table-column(field="environment", label="User's Environments")
-                        | {{ props.row.name }}
+                        nuxt-link(:to="`/user/${user}/environment/${std_toQualifiedName(props.row.owner,props.row.name)}`")
+                            span(v-html="std_toQualifiedDisplay(props.row.owner,props.row.name,true)")
                     b-table-column(field="description", label="Description")
                         | {{ props.row.description }}
                     b-table-column(field="type", label="Type")
@@ -116,21 +118,28 @@ export default {
     },
 
     methods: {
+        ...standardStuff.methods,
+
         // RELOAD THE DATABASE TABLE 
         async reloadUsers() {
-        const url = standardStuff.apiURL('/userName')
-        const params = {
-            params: { 
-                userID: this.userID
+            const url = standardStuff.apiURL('/userName')
+
+            const params = {
+                params: { 
+                    userID: this.userID
+                }
             }
-        }
-        const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-        let res = await axios.get(url, params, config)
-        console.log(`API returned`, res.data);
-        this.user = res.data.record
-        return {
-            user: this.user
-        };
+
+            const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+            let res = await axios.get(url, params, config)
+            console.log(`API returned`, res.data);
+
+            this.user = res.data.record
+
+            return {
+                user: this.user
+            };
+
         },  // -reloadUsers
     },
 

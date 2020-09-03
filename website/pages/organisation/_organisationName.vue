@@ -141,7 +141,6 @@ export default {
             return false
         },
 
-
         // Change status of org_user: (disable) temporarily removes access of existing user, (remove) deletes a pending user invitation.
         async changeMembership(member, status) {
             if (status == 'disable') {

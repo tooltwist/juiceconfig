@@ -3,6 +3,24 @@ import auth from './auth'
 
 export default {
 	register (server) {
+        server.get('/api/pendingRequests', async (req, res, next) => {
+            console.log(`GET /pendingRequests`);
+
+            let user_username = req.query.username;
+            let status_pending = 'pending';
+            
+            let con = await db.checkConnection()
+            const sql = `SELECT * from org_user WHERE user_username =? AND status =?`
+            let params = [ user_username, status_pending ]
+            
+            con.query(sql, params, function (err, result) {
+                if (err) throw err;
+                console.log(result)
+                res.send({ pendingRequests: result })
+                next()
+            });
+        })
+
         // Select USER details from MySQL database
         server.get('/api/myaccount', async (req, res, next) => {
             console.log(`GET /myaccount`);
