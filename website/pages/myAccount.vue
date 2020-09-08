@@ -216,7 +216,6 @@ export default {
                 user: this.user
             };
         },  // -reloadAccount
-
     },
 
     async asyncData ({ app, params, error }) {

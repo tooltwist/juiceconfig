@@ -58,7 +58,9 @@ const mutations = {
     SET_CURRENT_USER (state, { username, myOrganisations }) {
         state.currentUsername = username
         state.myOrganisations = myOrganisations
-    }
+    },
+
+    // SET_ADMINS (state, { username, my})
 }
 
 const actions = {
@@ -128,7 +130,43 @@ const actions = {
         } else {
             commit('SET_CURRENT_USER', { username: null, myPendingRequests: [ ] })
         }
+    },
+
+        
+    async checkMyAdmins ({ commit, vm, error }) {
+        vm = this._vm;
+
+        if (vm.$loginservice.user) {
+            try {
+                const me = vm.$loginservice.user.username
+                const url = standardStuff.apiURL('/pendingRequests');
+                const config = standardStuff.axiosConfig(vm.$loginservice.jwt);
+    
+                const params = { 
+                    headers: {
+                        'Authorization': 'Bearer ' + vm.$loginservice.jwt
+                    },
+    
+                    params: {
+                        username: me
+                    }
+                }
+
+                let res = await axios.get(url, params, config) 
+                const pendingRequests = res.data.pendingRequests
+
+                commit('SET_REQS', { username: me, myPendingRequests: pendingRequests })
+
+                console.log('state: ', state.myPendingRequests) 
+            } catch (e) {
+                console.log('Error while updating myPendingRequests: ', e)
+            }
+        } else {
+            commit('SET_CURRENT_USER', { username: null, myPendingRequests: [ ] })
+        }
     }
+
+
 }
 
 const store = () => {

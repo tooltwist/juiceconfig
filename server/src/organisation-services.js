@@ -82,6 +82,27 @@ export default {
             }) 
         })
 
+        // Update user role of an existing org_user record
+        server.post('/api/orgRoleUpdate', async (req, res, next) => {
+            console.log(`POST /orgRoleUpdate`);
+
+            let org = req.params.org;
+            let member = req.params.username;
+            let role = req.params.role;
+
+            let con = await db.checkConnection();
+            const sql = `UPDATE org_user SET role =? WHERE org_username =? AND user_username =?`
+            const params = [ role, org, member ]
+
+            con.query(sql, params, (err, result) => {
+                if (err) throw err;
+            
+                // Send a success reply
+                res.send({ status: 'ok' })
+                return next();
+            }) 
+        })
+
         // Delete an org_user record
         server.del('/api/deleteOrgUser', async (req, res, next) => {
             console.log(`DELETE /deleteOrgUser`);

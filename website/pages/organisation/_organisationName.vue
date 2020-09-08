@@ -26,7 +26,7 @@
                         b-table-column(field="user_username", label="Username")
                             | {{props.row.user_username}}
                         b-table-column(field="role", label="Role") 
-                            | {{props.row.role}}
+                            | {{props.row.role}} 
                         b-table-column(field="status", label="Status")
                             b-dropdown(v-show="props.row.status === 'pending'", aria-role="list")
                                 button(class="button", slot="trigger", slot-scope="{active}")
@@ -49,6 +49,9 @@
                                 b-dropdown-item(value="accept", @click="changeMembership(props.row.user_username, 'enable')") 
                                     b-icon(icon="account-reactivate")
                                     span Reactivate Membership 
+                        b-table-column(v-if="isEditable", field="edit/delete", label="")
+                            a(href="", @click.prevent="editUser(props.row)") 
+                                b-icon(icon="circle-edit-outline")
 
             b-tab-item(label="Payment Details")
                 br
@@ -81,7 +84,29 @@
                                     b-button(@click.stop="saveNewUser",  type="is-primary is-light", size="is-small")  Save
                                     b-button(@click="newUserModal=false", type="is-danger is-outlined", size="is-small") Cancel
 
-    
+        // Edit User Modal starts below:
+        div(v-show="showUserEditModal")
+            transition(name="modal")
+                div.modal-mask
+                    div.modal-wrapper
+                        div.modal-card
+                            header.modal-card-head
+                                p.modal-card-title Edit user access: 
+                                    b  {{ form.user_username}}
+                            section.modal-card-body
+                                slot(name="body")
+                                    form
+                                        div.form-group
+                                            b-field.formStyle.control Update users role:
+                                                b-select(placeholder="Accessibility", v-model="form.edit_useraccess", value="accessibility") 
+                                                    option(value="owner") Owner
+                                                    option(value="admin") Admin
+                                                    option(value="user") User
+                            footer.modal-card-foot 
+                                div.control
+                                    b-button(@click.stop="saveEditedUser", type="is-primary is-light", size="is-small")  Save    
+                                    b-button(@click="showUserEditModal=false", type="is-danger is-outlined", size="is-small") Cancel
+
 </template>
 
 <script>
@@ -100,15 +125,22 @@ export default {
     data () {
         return {
             form: {
+                // New user
                 new_user: '',
                 user_role: '',
+
+                // Edit existing user 
+                edit_useraccess: '',
+                user_username: '',
             },
             org_users: [ ],
             organisation: [ ],
             users: [ ],
             organisationName: '',
+            currentUser: '',
             activeTab: 0,
             newUserModal: false,
+            showUserEditModal: false,
         }
     },
 
@@ -134,6 +166,52 @@ export default {
 
     methods: {
         ...standardStuff.methods,
+
+        // Not working
+        isEditable: function() {
+            console.log('In isEditable')
+            this.org_users.forEach(user => {
+                console.log('user11111: ', user)
+                if ((user.role == 'admin' || user.role == 'owner') && (this.currentUser == user.user_username)) {
+                    console.log('returning true')
+                    return true;
+                }
+            })
+            
+            return false;
+        },
+
+        // OPEN MODAL AND CHANGE VALUES FOR EDITING USER - receives props.row (i.e. user record)
+        editUser(user) {  
+            this.showUserEditModal = true;
+            this.form.edit_useraccess = user.role;
+            this.form.user_username = user.user_username;
+            return false;
+        }, // -editUser
+
+        // SAVE EDITED USER
+        async saveEditedUser() {
+            try {
+                let url = standardStuff.apiURL('/orgRoleUpdate')
+
+                let record = {
+                    username: this.form.user_username,
+                    role: this.form.edit_useraccess,
+                    org: this.organisationName,
+                }
+
+                let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+                await axios.post(url, record, config)
+
+                // Display new users details
+                this.showUserEditModal = false;
+                this.reloadOrgUsers();
+                console.log('New org_user details have been updated on the browser.')
+                
+            } catch (e) {
+                console.log(`Error whilst updating browser with edited user:`, e)
+            } 
+        }, // - saveEditedUser
 
         // Open modal to add new org member/user:
         newUser() {
@@ -256,6 +334,7 @@ export default {
     },
     
     async asyncData ({ app, params, error }) {
+        let currentUser = app.$nuxtLoginservice.user.username
         let organisationName = params.organisationName;
         console.log('Orgname: ', organisationName)
 
@@ -290,6 +369,7 @@ export default {
                 organisation: organisation,
                 org_users: org_users,
                 users: users,
+                currentUser: currentUser,
             }
 
         } catch (e) {
