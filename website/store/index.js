@@ -42,6 +42,7 @@ const state = {
     myPendingRequests: [ ], 
     myAdmins: [ ],
     currentUsername: '',
+    currentOrg: '',
 }
 
 const mutations = {
@@ -60,7 +61,10 @@ const mutations = {
         state.myOrganisations = myOrganisations
     },
 
-    // SET_ADMINS (state, { username, my})
+    SET_CURRENT_ADMINS (state, { username, myAdmins }) {
+        state.currentUsername = username
+        state.myAdmins = myAdmins
+    },
 }
 
 const actions = {
@@ -131,42 +135,44 @@ const actions = {
             commit('SET_CURRENT_USER', { username: null, myPendingRequests: [ ] })
         }
     },
-
-        
+    
     async checkMyAdmins ({ commit, vm, error }) {
         vm = this._vm;
 
-        if (vm.$loginservice.user) {
+        if ((vm.$loginservice.user.username != state.currentOrg) && (state.currentOrg != null)) { 
+            // --> if currentUsername is an org, not private acc or null
             try {
                 const me = vm.$loginservice.user.username
-                const url = standardStuff.apiURL('/pendingRequests');
+                const url = standardStuff.apiURL('/orgAdmins');
                 const config = standardStuff.axiosConfig(vm.$loginservice.jwt);
     
-                const params = { 
+                console.log('currUsername: ', state.currentUsername)
+
+                const params = {
                     headers: {
                         'Authorization': 'Bearer ' + vm.$loginservice.jwt
                     },
     
                     params: {
-                        username: me
-                    }
+                        username: me,
+                        org: state.currentUsername,
+                    } // when a user is selected on browser, state will update 'currentOrg', which will reset myAdmin list.
                 }
 
                 let res = await axios.get(url, params, config) 
-                const pendingRequests = res.data.pendingRequests
+                const admins = res.data.admins
 
-                commit('SET_REQS', { username: me, myPendingRequests: pendingRequests })
+                commit('SET_CURRENT_ADMINS', { username: me, myAdmins: admins })
 
-                console.log('state: ', state.myPendingRequests) 
+                console.log('state: ', state.myAdmins) 
+
             } catch (e) {
-                console.log('Error while updating myPendingRequests: ', e)
+                console.log('Error while updating myAdmins: ', e)
             }
         } else {
-            commit('SET_CURRENT_USER', { username: null, myPendingRequests: [ ] })
+            commit('SET_CURRENT_ADMINS', { username: null, myAdmins: [ ] })
         }
     }
-
-
 }
 
 const store = () => {

@@ -4,6 +4,26 @@ import restify from 'restify';
 
 export default {
 	register (server) {
+        // Return list of admins for the selected organisation
+        server.get('/api/orgAdmins', async (req, res, next) => {
+            console.log('GET /orgAdmins');
+
+            let organisation = req.params.org;
+            let admin = 'admin'
+            let owner = 'owner'
+            console.log('Orgdeets = ', organisation, admin, owner)
+            
+            let con = await db.checkConnection()
+            const sql = `SELECT * FROM org_user WHERE org_username =? AND (role =? OR role =?)`
+            const params = [ organisation, admin, owner ];
+
+            con.query(sql, params, function (err, result) {
+                if (err) throw err;
+                res.send({ admins: result })
+                next()
+            });
+
+        });
 
         // Select organisation from user MySQL database
         server.get('/api/organisation', async (req, res, next) => {

@@ -85,6 +85,7 @@ export default {
             const role = req.params.role;
             const email = req.params.email;
             const id = req.params.id;
+            
             const sql = `UPDATE user SET access =?, role =?, email =? Where id =?`
             const params = [ access, role, email, id ]
         
@@ -96,6 +97,7 @@ export default {
                 res.send({ status: 'ok' })
                 return next();
             }) 
+
         }); // - end of call
             
         // Select ENVIRONMENTS for /_userName on MySQL database

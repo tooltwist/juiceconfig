@@ -172,7 +172,7 @@ export default {
             console.log('In isEditable')
             this.org_users.forEach(user => {
                 console.log('user11111: ', user)
-                if ((user.role == 'admin' || user.role == 'owner') && (this.currentUser == user.user_username)) {
+                if ((user.role === 'admin' || user.role === 'owner') && (this.currentUser === user.user_username)) {
                     console.log('returning true')
                     return true;
                 }

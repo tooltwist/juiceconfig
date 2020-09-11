@@ -21,6 +21,8 @@ export default {
             });
         })
 
+        
+
         // Select USER details from MySQL database
         server.get('/api/myaccount', async (req, res, next) => {
             console.log(`GET /myaccount`);
