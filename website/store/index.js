@@ -40,7 +40,7 @@ import standardStuff from '../lib/standard-stuff';
 const state = {
     myOrganisations: [ ],
     myPendingRequests: [ ], 
-    myAdmins: [ ],
+    //myAdmins: [ ],
     currentUsername: '',
     currentOrg: '',
 }
@@ -56,15 +56,19 @@ const mutations = {
         state.myPendingRequests = myPendingRequests
     },
 
-    SET_CURRENT_USER (state, { username, myOrganisations }) {
+    SET_CURRENT_ORG (state, { username, myOrganisations }) {
         state.currentUsername = username
         state.myOrganisations = myOrganisations
     },
 
-    SET_CURRENT_ADMINS (state, { username, myAdmins }) {
+    SET_CURRENT_USER (state, { username }) {
         state.currentUsername = username
-        state.myAdmins = myAdmins
     },
+
+    // SET_CURRENT_ADMINS (state, { username, myAdmins }) {
+    //     state.currentUsername = username
+    //     state.myAdmins = myAdmins
+    // },
 }
 
 const actions = {
@@ -97,7 +101,7 @@ const actions = {
                 console.log('Error while updating myOrganisations: ', e)
             }
         } else {
-            commit('SET_CURRENT_USER', { username: null, myOrganisations: [ ] })
+            commit('SET_CURRENT_ORG', { username: null, myOrganisations: [ ] })
         }
 
         return
@@ -132,47 +136,63 @@ const actions = {
                 console.log('Error while updating myPendingRequests: ', e)
             }
         } else {
-            commit('SET_CURRENT_USER', { username: null, myPendingRequests: [ ] })
+            commit('SET_CURRENT_ORG', { username: null, myPendingRequests: [ ] })
         }
     },
-    
-    async checkMyAdmins ({ commit, vm, error }) {
-        vm = this._vm;
 
-        if ((vm.$loginservice.user.username != state.currentOrg) && (state.currentOrg != null)) { 
-            // --> if currentUsername is an org, not private acc or null
-            try {
-                const me = vm.$loginservice.user.username
-                const url = standardStuff.apiURL('/orgAdmins');
-                const config = standardStuff.axiosConfig(vm.$loginservice.jwt);
-    
-                console.log('currUsername: ', state.currentUsername)
+    async checkUser ({ commit, vm, error }, username) {
+        let user = username.user
+        vm = this._vm
+        const me = vm.$loginservice.user.username
 
-                const params = {
-                    headers: {
-                        'Authorization': 'Bearer ' + vm.$loginservice.jwt
-                    },
-    
-                    params: {
-                        username: me,
-                        org: state.currentUsername,
-                    } // when a user is selected on browser, state will update 'currentOrg', which will reset myAdmin list.
-                }
+        console.log('UserNAMENAMENENANNAA: ', user)
 
-                let res = await axios.get(url, params, config) 
-                const admins = res.data.admins
-
-                commit('SET_CURRENT_ADMINS', { username: me, myAdmins: admins })
-
-                console.log('state: ', state.myAdmins) 
-
-            } catch (e) {
-                console.log('Error while updating myAdmins: ', e)
-            }
-        } else {
-            commit('SET_CURRENT_ADMINS', { username: null, myAdmins: [ ] })
+        if (user == '' || user == null || user == "") {
+            console.log('User is null')
+            user = me;
         }
+        
+        commit('SET_CURRENT_USER', { username: user })
+        console.log('Updated user: ', state.currentUsername)
     }
+    
+    // async checkMyAdmins ({ commit, vm, error }) {
+    //     vm = this._vm;
+
+    //     if ((vm.$loginservice.user.username != state.currentOrg) && (state.currentOrg != null)) { 
+    //         // --> if currentUsername is an org, not private acc or null
+    //         try {
+    //             const me = vm.$loginservice.user.username
+    //             const url = standardStuff.apiURL('/orgAdmins');
+    //             const config = standardStuff.axiosConfig(vm.$loginservice.jwt);
+    
+    //             console.log('currUsername: ', state.currentUsername)
+
+    //             const params = {
+    //                 headers: {
+    //                     'Authorization': 'Bearer ' + vm.$loginservice.jwt
+    //                 },
+    
+    //                 params: {
+    //                     username: me,
+    //                     org: state.currentUsername,
+    //                 } // when a user is selected on browser, state will update 'currentOrg', which will reset myAdmin list.
+    //             }
+
+    //             let res = await axios.get(url, params, config) 
+    //             const admins = res.data.admins
+
+    //             commit('SET_CURRENT_ADMINS', { username: me, myAdmins: admins })
+
+    //             console.log('state: ', state.myAdmins) 
+
+    //         } catch (e) {
+    //             console.log('Error while updating myAdmins: ', e)
+    //         }
+    //     } else {
+    //         commit('SET_CURRENT_ADMINS', { username: null, myAdmins: [ ] })
+    //     }
+    // }
 }
 
 const store = () => {

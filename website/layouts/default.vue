@@ -35,7 +35,11 @@ div
       .columns(v-if="loggedIn")
         aside.column.is-3.section
           p.menu-label
-            i Welcome, {{username}}
+            i Welcome, {{ username }}
+            br
+            span USER IS {{ user }}
+            br
+            span STORE USER IS {{ this.$store.state.currentUsername }}
           ul.menu-list
             b-menu-list(label="")
               select.select(v-model="user", @change="changeUserView()")
@@ -110,7 +114,7 @@ export default {
       isActiveDrop: true,
       organisations: [ ],
       org: '', 
-      user: '',
+      //user: '',
     }
   },
 
@@ -144,28 +148,47 @@ export default {
     listOfOrgs: function() {
       return this.$store.state.myOrganisations
     },
+
+    user: function() {
+      if (this.$loginservice.user.username == '') {
+        return ''
+      } else {
+        return this.$store.state.currentUsername;
+      }
+    },
   },
 
   mounted() {
     console.log('Mounted')
     this.$store.dispatch('checkMyOrgs')
     this.$store.dispatch('checkMyRequests')
+    this.$store.dispatch('checkUser', { 
+      user: this.user, // should be empty string when initialising 
+    })
   },
 
   methods: {
     ...standardStuff.methods,
 
     changeUserView: function() {
+      // Update store with new user
+      this.$store.dispatch('checkUser', {
+        user: this.user,
+      })
+
+      console.log('This user is: ', this.user)
+
+      // Update url 
       this.$router.push(`/user/${this.user}/home`)
     },
 
-    currentUser: function() {
-      if (this.$loginservice.user.username == NULL) {
-        this.user = 'null';
-      } else {
-        this.user = this.$loginservice.user.username;
-      }
-    },
+    // currentUser: function() {
+    //   if (this.$loginservice.user.username == NULL) {
+    //     this.user = '';
+    //   } else {
+    //     this.user = this.$loginservice.user.username;
+    //   }
+    // },
 
     doLogout: function() {
       this.$loginservice.logout();
