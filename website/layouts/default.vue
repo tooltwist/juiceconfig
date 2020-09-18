@@ -3,10 +3,10 @@ div
   nav.headerStyle.navbar.mobileStyle(role="navigation" aria-label="main navigation")
     div.navbar-brand.juiceHeaderLogo.mobile
       //a.navbar-item.linkStyle(href="/")
-        img.juiceHeadStyle(src="../assets/header-logo.png") 
+        img.juiceHeadStyle(src="../assets/header-logo.png")
         //- v-if(class="mobile")
           br
-          // New logo will need to be properly sized 
+      // New logo will need to be properly sized 
     
       a(class="navbar-item", href="/")
           .juiceLogo Juice.
@@ -37,13 +37,10 @@ div
           p.menu-label
             i Welcome, {{ username }}
             br
-            span USER IS {{ user }}
-            br
-            span STORE USER IS {{ this.$store.state.currentUsername }}
           ul.menu-list
             b-menu-list(label="")
-              select.select(v-model="user", @change="changeUserView()")
-                option(disabled) Switch account view: 
+              select.select(v-model="userDefault")
+                option(disabled) Switch account view:
                 option(v-for="user in listOfUserOptions", :value="user") {{ user }}
           ul.menu-list
             //b-menu-list(label="Menu")
@@ -61,7 +58,7 @@ div
             b-menu-list(label="Actions")
               a.href(href="#", @click="doLogout")
                 b-icon(icon="logout")
-                | Logout       
+                | Logout 
         div.container.column.is-9
           nuxt
       div(v-else)
@@ -114,7 +111,7 @@ export default {
       isActiveDrop: true,
       organisations: [ ],
       org: '', 
-      //user: '',
+      user: '',
     }
   },
 
@@ -149,13 +146,39 @@ export default {
       return this.$store.state.myOrganisations
     },
 
-    user: function() {
-      if (this.$loginservice.user.username == '') {
-        return ''
-      } else {
-        return this.$store.state.currentUsername;
-      }
-    },
+    userDefault: {
+      get: function() {
+        let currentUsername = this.$store.state.currentUsername
+
+        if (this.username == '') { // not logged in
+          return ''
+        } else { // user is set
+          console.log('store 1')
+          console.log('store 2', this.$store)
+
+          console.log('store 3', this.$store.state)
+
+          console.log('store 4', this.$store.state.currentUsername)
+
+          console.log('store')
+
+          return currentUsername
+        }
+      },
+
+      set: function(value) { // setter 
+        // Update store with new user
+        this.$store.dispatch('checkUser', {
+          user: value,
+        })
+
+        console.log('This user is: ', value)
+
+        // Update url 
+        this.$router.push(`/user/${value}/home`)
+      },
+    },  
+
   },
 
   mounted() {
@@ -170,25 +193,13 @@ export default {
   methods: {
     ...standardStuff.methods,
 
-    changeUserView: function() {
-      // Update store with new user
-      this.$store.dispatch('checkUser', {
-        user: this.user,
-      })
-
-      console.log('This user is: ', this.user)
-
-      // Update url 
-      this.$router.push(`/user/${this.user}/home`)
+    currentUser: function() {
+      if (this.$loginservice.user.username == NULL) {
+        this.user = '';
+      } else {
+        this.user = this.$loginservice.user.username;
+      }
     },
-
-    // currentUser: function() {
-    //   if (this.$loginservice.user.username == NULL) {
-    //     this.user = '';
-    //   } else {
-    //     this.user = this.$loginservice.user.username;
-    //   }
-    // },
 
     doLogout: function() {
       this.$loginservice.logout();

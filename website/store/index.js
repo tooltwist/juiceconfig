@@ -57,7 +57,7 @@ const mutations = {
     },
 
     SET_CURRENT_ORG (state, { username, myOrganisations }) {
-        state.currentUsername = username
+        state.currentUsername = username // changes to private user acc ??
         state.myOrganisations = myOrganisations
     },
 
@@ -141,19 +141,25 @@ const actions = {
     },
 
     async checkUser ({ commit, vm, error }, username) {
-        let user = username.user
         vm = this._vm
-        const me = vm.$loginservice.user.username
 
-        console.log('UserNAMENAMENENANNAA: ', user)
+        if (vm.$loginservice.user) { // -> If logged in
+            let user = username.user
 
-        if (user == '' || user == null || user == "") {
-            console.log('User is null')
-            user = me;
+            const me = vm.$loginservice.user.username
+    
+            console.log('UserNAMENAMENENANNAA: ', user)
+    
+            if (user == '' || user == null || user == "") {
+                console.log('User is null')
+                user = me;
+            }
+            
+            commit('SET_CURRENT_USER', { username: user })
+            console.log('Updated user: ', state.currentUsername)
+        } else {
+            commit('SET_CURRENT_USER', { username: null })
         }
-        
-        commit('SET_CURRENT_USER', { username: user })
-        console.log('Updated user: ', state.currentUsername)
     }
     
     // async checkMyAdmins ({ commit, vm, error }) {
