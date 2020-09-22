@@ -49,7 +49,7 @@
                                 b-dropdown-item(value="accept", @click="changeMembership(props.row.user_username, 'enable')") 
                                     b-icon(icon="account-reactivate")
                                     span Reactivate Membership 
-                        b-table-column(v-if="isEditable", field="edit/delete", label="")
+                        b-table-column(field="edit", label="")
                             a(href="", @click.prevent="editUser(props.row)") 
                                 b-icon(icon="circle-edit-outline")
 
@@ -166,20 +166,6 @@ export default {
 
     methods: {
         ...standardStuff.methods,
-
-        // Not working
-        isEditable: function() {
-            console.log('In isEditable')
-            this.org_users.forEach(user => {
-                console.log('user11111: ', user)
-                if ((user.role === 'admin' || user.role === 'owner') && (this.currentUser === user.user_username)) {
-                    console.log('returning true')
-                    return true;
-                }
-            })
-            
-            return false;
-        },
 
         // OPEN MODAL AND CHANGE VALUES FOR EDITING USER - receives props.row (i.e. user record)
         editUser(user) {  
