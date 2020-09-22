@@ -11,13 +11,14 @@ export default {
             let organisation = req.params.org;
             let admin = 'admin'
             let owner = 'owner'
-            console.log('Orgdeets = ', organisation, admin, owner)
+            //console.log('Orgdeets = ', organisation, admin, owner)
             
             let con = await db.checkConnection()
             const sql = `SELECT * FROM org_user WHERE org_username =? AND (role =? OR role =?)`
             const params = [ organisation, admin, owner ];
 
             con.query(sql, params, function (err, result) {
+                //console.log('Results orgadmins: ', result)
                 if (err) throw err;
                 res.send({ admins: result })
                 next()

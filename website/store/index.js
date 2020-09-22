@@ -40,24 +40,24 @@ import standardStuff from '../lib/standard-stuff';
 const state = {
     myOrganisations: [ ],
     myPendingRequests: [ ], 
-    //myAdmins: [ ],
+    myAdmins: [ ],
     currentUsername: '',
-    currentOrg: '',
+   // currentOrg: '',
 }
 
 const mutations = {
 	SET_ORGS (state, { username, myOrganisations }) {
-        state.currentUsername = username
+        //state.currentUsername = username
 		state.myOrganisations = myOrganisations
     },
     
     SET_REQS (state, { username, myPendingRequests }) {
-        state.currentUsername = username
+        //state.currentUsername = username
         state.myPendingRequests = myPendingRequests
     },
 
     SET_CURRENT_ORG (state, { username, myOrganisations }) {
-        state.currentUsername = username // changes to private user acc ??
+        //state.currentUsername = username // changes to private user acc ??
         state.myOrganisations = myOrganisations
     },
 
@@ -65,10 +65,10 @@ const mutations = {
         state.currentUsername = username
     },
 
-    // SET_CURRENT_ADMINS (state, { username, myAdmins }) {
-    //     state.currentUsername = username
-    //     state.myAdmins = myAdmins
-    // },
+    SET_CURRENT_ADMINS (state, { username, myAdmins }) {
+        //state.currentUsername = username
+        state.myAdmins = myAdmins
+    },
 }
 
 const actions = {
@@ -96,7 +96,9 @@ const actions = {
 
                 commit('SET_ORGS', { username: me, myOrganisations: organisations })
 
-                console.log('state: ', state.myOrganisations) 
+                console.log('checkOrgs myOrganisations: ', state.myOrganisations) 
+                //console.log('checkOrgs currentUser: ', state.currentUsername) 
+                
             } catch (e) {
                 console.log('Error while updating myOrganisations: ', e)
             }
@@ -131,7 +133,9 @@ const actions = {
 
                 commit('SET_REQS', { username: me, myPendingRequests: pendingRequests })
 
-                console.log('state: ', state.myPendingRequests) 
+                console.log('checkMyRequests myPendingRequests: ', state.myPendingRequests) 
+                //console.log('checkMyRequests currentUser: ', state.currentUsername)
+
             } catch (e) {
                 console.log('Error while updating myPendingRequests: ', e)
             }
@@ -143,12 +147,9 @@ const actions = {
     async checkUser ({ commit, vm, error }, username) {
         vm = this._vm
 
-        if (vm.$loginservice.user) { // -> If logged in
+        if (vm.$loginservice.user) {
             let user = username.user
-
             const me = vm.$loginservice.user.username
-    
-            console.log('UserNAMENAMENENANNAA: ', user)
     
             if (user == '' || user == null || user == "") {
                 console.log('User is null')
@@ -156,49 +157,48 @@ const actions = {
             }
             
             commit('SET_CURRENT_USER', { username: user })
-            console.log('Updated user: ', state.currentUsername)
+
+            console.log('checkUser currentUsername: ', state.currentUsername)
         } else {
             commit('SET_CURRENT_USER', { username: null })
         }
+    },
+    
+    async checkMyAdmins ({ commit, vm, error }) {
+        vm = this._vm;
+
+        if (vm.$loginservice.user && state.currentUsername != null) { // --> if currentUsername is an org, not private acc or null
+            try {
+                const me = vm.$loginservice.user.username
+                const url = standardStuff.apiURL('/orgAdmins');
+                const config = standardStuff.axiosConfig(vm.$loginservice.jwt);
+
+                const params = {
+                    headers: {
+                        'Authorization': 'Bearer ' + vm.$loginservice.jwt
+                    },
+    
+                    params: {
+                        username: me,
+                        org: state.currentUsername,
+                    } 
+                }
+
+                let res = await axios.get(url, params, config) 
+                const admins = res.data.admins
+
+                commit('SET_CURRENT_ADMINS', { username: me, myAdmins: admins })
+
+                console.log('checkMyAdmins myAdmins: ', state.myAdmins) 
+                //console.log('checkMyAdmins currentUsername: ', state.currentUsername)
+
+            } catch (e) {
+                console.log('Error while updating myAdmins: ', e)
+            }
+        } else {
+            commit('SET_CURRENT_ADMINS', { username: null, myAdmins: [ ] })
+        }
     }
-    
-    // async checkMyAdmins ({ commit, vm, error }) {
-    //     vm = this._vm;
-
-    //     if ((vm.$loginservice.user.username != state.currentOrg) && (state.currentOrg != null)) { 
-    //         // --> if currentUsername is an org, not private acc or null
-    //         try {
-    //             const me = vm.$loginservice.user.username
-    //             const url = standardStuff.apiURL('/orgAdmins');
-    //             const config = standardStuff.axiosConfig(vm.$loginservice.jwt);
-    
-    //             console.log('currUsername: ', state.currentUsername)
-
-    //             const params = {
-    //                 headers: {
-    //                     'Authorization': 'Bearer ' + vm.$loginservice.jwt
-    //                 },
-    
-    //                 params: {
-    //                     username: me,
-    //                     org: state.currentUsername,
-    //                 } // when a user is selected on browser, state will update 'currentOrg', which will reset myAdmin list.
-    //             }
-
-    //             let res = await axios.get(url, params, config) 
-    //             const admins = res.data.admins
-
-    //             commit('SET_CURRENT_ADMINS', { username: me, myAdmins: admins })
-
-    //             console.log('state: ', state.myAdmins) 
-
-    //         } catch (e) {
-    //             console.log('Error while updating myAdmins: ', e)
-    //         }
-    //     } else {
-    //         commit('SET_CURRENT_ADMINS', { username: null, myAdmins: [ ] })
-    //     }
-    // }
 }
 
 const store = () => {

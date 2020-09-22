@@ -46,11 +46,10 @@ div
             //b-menu-list(label="Menu")
             b-menu-list(label="")
               li(v-for="(item, key) of items", :key="key")
-                nuxt-link(v-if="item.title != 'Users'", :to="`/user/${user}/${item.to.name}`", exact-active-class="activeHighlight")
+                nuxt-link(v-if="item.title != 'Users'", :to="`/user/${userDefault}/${item.to.name}`", exact-active-class="activeHighlight")
                   b-icon(:icon="item.icon")
                   | {{ item.title }}
-                nuxt-link(v-if="user != username && item.title == 'Users'", :to="`/user/${user}/${item.to.name}`", exact-active-class="activeHighlight")
-                  // Will need to import org admins from Vuex store: if (username == org.admin) show users
+                nuxt-link(v-if="(userDefault != username) && (item.title == 'Users') && isAdmin()", :to="`/user/${userDefault}/${item.to.name}`", exact-active-class="activeHighlight")
                   b-icon(:icon="item.icon")
                   | {{ item.title }}
           br
@@ -111,7 +110,6 @@ export default {
       isActiveDrop: true,
       organisations: [ ],
       org: '', 
-      user: '',
     }
   },
 
@@ -152,18 +150,11 @@ export default {
 
         if (this.username == '') { // not logged in
           return ''
+          
         } else { // user is set
-          console.log('store 1')
-          console.log('store 2', this.$store)
-
-          console.log('store 3', this.$store.state)
-
-          console.log('store 4', this.$store.state.currentUsername)
-
-          console.log('store')
-
           return currentUsername
         }
+
       },
 
       set: function(value) { // setter 
@@ -172,7 +163,8 @@ export default {
           user: value,
         })
 
-        console.log('This user is: ', value)
+        // Import admins to check the permissions for new state.currentUsername
+        this.$store.dispatch('checkMyAdmins') 
 
         // Update url 
         this.$router.push(`/user/${value}/home`)
@@ -183,23 +175,16 @@ export default {
 
   mounted() {
     console.log('Mounted')
+    this.$store.dispatch('checkUser', { 
+      user: this.userDefault, // empty string when initialising 
+    })
     this.$store.dispatch('checkMyOrgs')
     this.$store.dispatch('checkMyRequests')
-    this.$store.dispatch('checkUser', { 
-      user: this.user, // should be empty string when initialising 
-    })
+    this.$store.dispatch('checkMyAdmins')
   },
 
   methods: {
     ...standardStuff.methods,
-
-    currentUser: function() {
-      if (this.$loginservice.user.username == NULL) {
-        this.user = '';
-      } else {
-        this.user = this.$loginservice.user.username;
-      }
-    },
 
     doLogout: function() {
       this.$loginservice.logout();
@@ -209,11 +194,21 @@ export default {
     printOrgs: function() {
       try {
         this.$store.dispatch('checkMyOrgs')
-        //this.organisations = this.$store.state.myOrganisations
-        //console.log('This organisations[]: ', this.organisations)
       } catch (e) {
         console.log('Error from Vuex: ', e)
       }
+    },
+
+    isAdmin: function() { // Permissions for users tab -> for items only accessible to admin/owner
+      let admins = this.$store.state.myAdmins
+
+      for (let i = 0; i < admins.length; i++) {
+        if (admins[i].user_username == this.username) {
+          return true
+        } 
+      }
+
+      return false;
     },
   },  
 }
