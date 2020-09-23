@@ -4,34 +4,61 @@ section.section
     b-tabs(v-model="activeTab", :animated="false")
         b-tab-item(label="Account Information")
             table(style="width:100%;")
-                tr 
-                    td(style="justify:right;")
-                        label First name: 
-                    td(style="justify:left;")
-                        | {{ user.first_name }}
-                tr 
-                    td(style="justify:right;")
-                        label Last name: 
-                    td(style="justify:left;")
-                        | {{ user.last_name }} 
-                tr 
-                    td(style="justify:right;")
-                        label Organisation role: 
-                    td(style="justify:left;")
-                        | {{ orguser.role }} 
-                tr 
-                    td(style="justify:right;")
-                        label Account Email: 
-                    td(style="justify:left;")
-                        | {{ user.email }}
-                tr 
-                    td(style="justify:right;")
-                        label Status: 
-                    td(style="justify:left;")
-                        | {{ orguser.status }}
+                .field.is-horizontal
+                    .field-label.is-normal
+                        label.label(style="width:200px;") First name: 
+                    .field-body
+                        .field
+                            .control
+                                input.input(v-if="editingDetails", :disabled="editingDetails", v-model="user.first_name", @input="saveDetails")
+                                p.my-not-input-p(v-else) &nbsp; {{user.first_name}}
+
+                .field.is-horizontal
+                    .field-label.is-normal
+                        label.label(style="width:200px;") Last name: 
+                    .field-body
+                        .field
+                            .control
+                                input.input(v-if="editingDetails", :disabled="editingDetails", v-model="user.last_name", @input="saveDetails")
+                                p.my-not-input-p(v-else) &nbsp; {{user.last_name}}
+
+                .field.is-horizontal
+                    .field-label.is-normal
+                        label.label(style="width:200px;") Organisation role: 
+                    .field-body
+                        .field
+                            .control
+                                select.select(v-if="editingDetails", v-model.trim="orguser.role", @input="saveDetails")
+                                    option(value="owner") Owner
+                                    option(value="admin") Admin 
+                                    option(value="user") User 
+                                p.my-not-input-p(v-else) &nbsp;{{orguser.role}}
+
+                .field.is-horizontal
+                    .field-label.is-normal
+                        label.label(style="width:200px;") Account email: 
+                    .field-body
+                        .field
+                            .control
+                                input.input(v-if="editingDetails", :disabled="editingDetails", v-model="user.email", @input="saveDetails")
+                                p.my-not-input-p(v-else) &nbsp; {{user.email}}
+
+                .field.is-horizontal
+                    .field-label.is-normal
+                        label.label(style="width:200px;") Status: 
+                    .field-body
+                        .field
+                            .control
+                                select.select(v-if="editingDetails", v-model.trim="orguser.status", @input="saveDetails")
+                                    option(value="confirmed") Active 
+                                    option(value="disabled") Disable
+                                p.my-not-input-p(v-else) &nbsp;{{orguser.status}}
+            .control
+                button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
+
     
         b-tab-item(label="Projects")
-            div(v-if="this.projects.length === 0")
+            div(v-if="this.filteredProjects.length === 0")
                 br
                 article.message.is-success.is-small
                     div.message-body {{ user.first_name}} {{user.last_name}} is not involved in any projects yet. Add this user to a project via the relevant deployables' 'Users' tab.
@@ -46,7 +73,7 @@ section.section
                         | {{ props.row.type }}
     
         b-tab-item(label="Environments")
-            div(v-if="this.environments.length === 0")
+            div(v-if="this.filteredEnvironments.length === 0")
                 br
                 article.message.is-success.is-small
                     div.message-body {{ user.first_name}} {{user.last_name}} does not have access to any environments yet. Add this user to an environment via the relevant environments' 'Users' tab.
@@ -82,6 +109,7 @@ export default {
             activeTab: 0,
             username: '',
             orguser: '',
+            editingDetails: false,
         }
     },
 
@@ -119,6 +147,33 @@ export default {
 
     methods: {
         ...standardStuff.methods,
+
+        saveDetails: async function () {
+            let self = this
+
+            if (self.updateDelay) {
+                clearTimeout(self.updateDelay)
+            }
+
+            self.updateDelay = setTimeout(async function () {
+                console.log('org user print: ', self.orguser)
+                let params = {
+                    params: {
+                        org_username: self.org,
+                        user_username: self.orguser.user_username,
+                        status: self.orguser.status,
+                        role: self.orguser.role,
+                    }
+                }
+
+                self.updateDelay = null
+                const url = standardStuff.apiURL('/updateOrgUser')
+                const config = standardStuff.axiosConfig(self.$loginservice.jwt)
+                let result = await axios.put(url, params, config)
+                console.log(`result is `, result);
+
+            }, 1000)
+        }, // - saveDetails
 
         // RELOAD THE DATABASE TABLE 
         async reloadUsers() {
@@ -290,6 +345,16 @@ FORM STYLING
 
 .formStyle {
     margin: 10px 0px;
+}
+
+a.my-not-input-a {
+    position: relative;
+    top: 6px;
+}
+
+.my-not-input-p {
+    position: relative;
+    top: 6px;
 }
 
 </style>

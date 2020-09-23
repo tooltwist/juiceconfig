@@ -103,6 +103,29 @@ export default {
             }) 
         })
 
+        // Update status and role of an existing org_user record
+        server.put('/api/updateOrgUser', async (req, res, next) => {
+            console.log(`PUT /updateOrgUser`);
+
+            let con = await db.checkConnection();
+
+            let member = req.params.user_username;
+            let status = req.params.status;
+            let role = req.params.role;
+            let org = req.params.org_username;
+            
+            const sql = `UPDATE org_user SET status =? AND role=? WHERE org_username =? AND user_username =?`
+            const params = [ status, role, org, member ]
+
+            con.query(sql, params, (err, result) => {
+                if (err) throw err;
+            
+                // Send a success reply
+                res.send({ status: 'ok' })
+                return next();
+            }) 
+        })
+
         // Update user role of an existing org_user record
         server.post('/api/orgRoleUpdate', async (req, res, next) => {
             console.log(`POST /orgRoleUpdate`);
