@@ -24,10 +24,6 @@ div
                             option(value="aws") Amazon Web Services (AWS)
                             option(value="local") Local development machine
                             option(value="other") Other
-                          //- | &nbsp;{{environment.type}}
-                          //- input.input(v-if="editingDetails", v-model.trim="environment.description", placeholder="URL to ECS Service", @input="saveDetails")
-                          //- a.my-not-input-a(v-else-if="validUrl(environment.description)", :href="deployment.description", target="_blank") &nbsp;{{deployment.description}}
-                          //- p.my-not-input-p(v-else) &nbsp;{{environment.description}}
           .field.is-horizontal
             .field-label.is-normal
               label.label(style="width:200px;") Universal: 
@@ -78,7 +74,6 @@ div
 
       b-tab-item(label="AWS", v-if="environment.type==='aws'")
         form.formStyle
-          //- hr(v-if="environment.type==='aws'")
           .field.is-horizontal()
               .field-label.is-normal
                   label.label(style="width:200px;") Account no: 
@@ -125,9 +120,6 @@ div
                             option(value="sa-east-1") South America (Sao Paulo)	
                             option(value="us-gov-east-1") AWS GovCloud (US-East)	
                             option(value="us-gov-west-1") AWS GovCloud (US-West)	
-
-                          //- a.my-not-input-a(v-else-if="validUrl(environment.aws_region)", :href="environment.aws_region", target="_blank") &nbsp;{{environment.aws_region}}
-                          //- p.my-not-input-p(v-else) &nbsp;{{environment.aws_region}}
           .field.is-horizontal(v-if="environment.type==='aws'")
               .field-label.is-normal
                   label.label(style="width:200px;") Stack: 
@@ -178,7 +170,6 @@ div
               b-table-column(field="notes", label="Notes")
                 | {{ props.row.notes }}
       
-
       b-tab-item(label="Commands", v-if="environment.type==='aws'")
         .notification
             h1.title.is-size-5 Provisioning
@@ -411,114 +402,124 @@ export default {
       }
 
       return false;
-    },
+    }, // - isEditable
 
     // SAVED EDITED ENVIRONMENT TO THE DATABASE - FROM MODAL
     async saveEditedEnv() {
       try {
-        let url = standardStuff.apiURL('/editedEnv')
+        let url = standardStuff.apiURL('/editedEnv');
+
         let record = {
           description: this.form.edit_envdescription,
           notes: this.form.edit_envnotes,
           name: this.environmentName,
         }
-        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-        await axios.post(url, record, config)
-        this.editEnvInfo = null
-        console.log(`Updated environment successfully sent to database`)
+
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt);
+        await axios.post(url, record, config);
+        this.editEnvInfo = null;
+        console.log(`Updated environment successfully sent to database`);
+
       } catch (e) {
-        console.log(`Error while sending edited environment to the database: `, e)
+        console.log(`Error while sending edited environment to the database: `, e);
       }
 
       try {
         this.reloadEnvironment(); 
-        console.log(`Environment has been reloaded`)
+        console.log(`Environment has been reloaded`);
+
       } catch (e) {
-        console.log(`Error while reloading environment: `, e)
+        console.log(`Error while reloading environment: `, e);
       }
-    }, // -saveEditedEnv
+    }, // - saveEditedEnv
 
     // RELOAD THE DATABASE TABLE AFTER SAVING EDITED ENVIRONMENT
     async reloadEnvironment() {
-      const url = standardStuff.apiURL('/environment')
+      const url = standardStuff.apiURL('/environment');
+
       const params = { 
         params: {
-          environmentName: this.environmentName
+          environmentName: this.environmentName,
         }
       }
-      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-      let res = await axios.get(url, params, config)
-      this.environment = res.data.record
-      console.log(`Environment has been reloaded on the browser.`)
+
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+      let res = await axios.get(url, params, config);
+      this.environment = res.data.record;
+      console.log(`Environment has been reloaded on the browser.`);
+
       return {
-        environment: this.environment
+        environment: this.environment,
       };
-    },  // -reloadEnvironment 
+    },  // - reloadEnvironment 
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW DEPLOYMENT
     async reloadDeployments() {
-      const url2 = standardStuff.apiURL('/deployments')
+      const url = standardStuff.apiURL('/deployments');
+
       const params = { 
         params: {
           environmentName: this.environmentName
         }
       }
-      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-      let res2 = await axios.get(url2, params, config)
+
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+      let res = await axios.get(url, params, config);
       console.log(`Deployments have been reloaded on the browser`);
-      this.deployments = res2.data.deployments
+      this.deployments = res.data.deployments;
+
       return {
         deployments: this.deployments
       };
-    },  // -reloadDeployments
+    },  // - reloadDeployments
 
     // ADD A NEW USER FOR SELECTED ENVIRONMENT TO THE DATABASE - FROM MODAL 
     async saveNewUser() {
-      //Check that form is filled correctly
+      // Check that form is filled correctly
       if (this.form.new_environmentuser && this.form.new_user_access) {
-        console.log('In new user')
         // Check for existing user using selected project:
-        let found = false
+        let found = false;
+
         this.users.forEach(user => {
           if (user.username === this.form.new_environmentuser) {
-            console.log(`This user is already able to access this environment!`)
-            found = true
+            console.log(`This user is already able to access this environment!`);
+            found = true;
           }
         })
 
         // If matching user is found, send error 
         if (found) {
-          console.log(`There is already a user with these values... Error message shown!`)
-          this.newUserError = `User already exists`
-          return 
+          console.log(`There is already a user with these values... Error message shown!`);
+          this.newUserError = `User already exists`;
+          return;
         }
-        this.newUserError = null
+
+        this.newUserError = null;
 
         // Retrieve user record from db for new project_user
         let userId = '';
-
-        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt);
 
         try {
-          let url = standardStuff.apiURL('/usernameRecord')
+          let url = standardStuff.apiURL('/usernameRecord');
+
           const params = {
             params: {
               username: this.form.new_environmentuser,
             }
           }
 
-          let res = await axios.get(url, params, config)
-          userId = res.data.user[0].id
+          let res = await axios.get(url, params, config);
+          userId = res.data.user[0].id;
 
         } catch (e) {
-          console.log('Error retrieving user record', e)
+          console.log('Error retrieving user record', e);
         }
-
-        console.log('userId= ', userId)
 
         // If no error, send post request to server
         try {
-          let url = standardStuff.apiURL('/newEnvironmentUser')
+          let url = standardStuff.apiURL('/newEnvironmentUser');
+
           let record = {
             username: this.form.new_environmentuser,
             access: this.form.new_user_access,
@@ -526,84 +527,87 @@ export default {
             id: userId,
           }
 
-          let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-          await axios.post(url, record, config)
-          this.newUserModal = false
+          let config = standardStuff.axiosConfig(this.$loginservice.jwt);
+          await axios.post(url, record, config);
+          this.newUserModal = false;
           console.log(`New environment user successfully sent to database`);
 
         } catch (e) {
-          console.log(`Error while sending new environment user to the database: `, e)
+          console.log(`Error while sending new environment user to the database: `, e);
         }
 
         // Once data sent, reload with the new deployment and reset form values
         try {
           this.reloadUsers(); 
-          console.log(`Reloading...`)
-
           this.form.new_environmentuser = '';
           this.form.new_user_access = '';
 
         } catch (e) {
-          console.log(`Error while reloading users on the browser: `, e)
+          console.log(`Error while reloading users on the browser: `, e);
         }
 
       } else {
-        this.errormode = 'inputError'
+        this.errormode = 'inputError';
       }
     }, // - saveNewUser
 
     async saveEditedUser() {
       try {
-        let url = standardStuff.apiURL('/editEnvUser')
+        let url = standardStuff.apiURL('/editEnvUser');
+
         let record = {
             id: this.users.user_id,
             access: this.form.edit_useraccess,
             environment: this.environmentName,
         }
-        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-        await axios.post(url, record, config)
-        console.log('Edited user successfully saved: ' + this.environmentName + ' ' + this.users.user_id + ' ' + this.form.edit_useraccess)
+
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt);
+        await axios.post(url, record, config);
 
         // Display new users details
         this.showUserEditModal = false;
         this.reloadUsers();
-        console.log('New user details have been updated on the browser.')
+        console.log('New user details have been updated on the browser.');
+
       } catch (e) {
-        console.log(`Error while updating browser with edited user:`, e)
+        console.log(`Error while updating browser with edited user:`, e);
       } 
     }, // - saveEditedUser
 
     // REMOVE USER
     async removeUser() {
       try {
-        let url = standardStuff.apiURL(`/removeEnvUser/${this.environmentName}/${this.users.username}`)
-        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-        await axios.delete(url, config) 
+        let url = standardStuff.apiURL(`/removeEnvUser/${this.environmentName}/${this.users.username}`);
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt);
+        await axios.delete(url, config);
 
         // Display new users details
         this.deleteUserModal = false;
         this.reloadUsers();
-        console.log('User has been removed from the environment_users db table.')
+        console.log('User has been removed from the environment_users db table.');
+
       } catch (e) {
-        console.log(`Error whilst removing user:`, e)
+        console.log(`Error whilst removing user:`, e);
       } 
     }, // - removeUser
 
     async reloadUsers() {
-      const url3 = standardStuff.apiURL('/environments_users')
+      const url = standardStuff.apiURL('/environments_users');
+
       const params = {
           params: { 
             environmentName: this.environmentName
           }
       }
       const config = standardStuff.axiosConfig(this.$loginservice.jwt);
-      let res3 = await axios.get(url3, params, config);
-      console.log(`Environments have been reloaded on the browser:`, res3.data);
-      this.users = res3.data.users;
+      let res = await axios.get(url, params, config);
+      console.log(`Environments have been reloaded on the browser:`, res.data);
+      this.users = res.data.users;
+
       return {
         users: this.users,
-      }
-    },  // -reloadUsers
+      };
+    },  // - reloadUsers
 
     // OPEN EDIT ENV MODAL:
     setEditMode() {
@@ -611,24 +615,25 @@ export default {
       this.form.edit_envdescription = this.environment.description;
       this.form.edit_envnotes = this.environment.notes;
       return false;
-    },
+    }, // - setEditMode
 
     // OPEN MODAL AND CREATE NEW USER:
     newUser() {
-      this.newUserModal = true
+      this.newUserModal = true;
+
       return false;
-    },
+    }, // - newUser
 
     // OPEN MODAL AND CHANGE VALUES FOR EDITING USER - receives props.row (i.e. user record)
     editUser(users) {  
-      this.showUserEditModal = true,
-      this.users.first_name = users.first_name,
-      this.users.last_name = users.last_name,
-      this.users.user_id = users.user_id,
-      this.form.edit_useraccess = users.access
+      this.showUserEditModal = true;
+      this.users.first_name = users.first_name;
+      this.users.last_name = users.last_name;
+      this.users.user_id = users.user_id;
+      this.form.edit_useraccess = users.access;
 
       return false;
-    }, //- editUser
+    }, // - editUser
 
     deleteUser(user) {
       this.deleteUserModal = true;
@@ -636,29 +641,26 @@ export default {
       this.users.last_name = user.last_name;
       this.users.username = user.username;
       this.users.user_id = user.user_id;
+
       return false;
-    }, // -deleteUser
+    }, // - deleteUser
 
     saveDetails: async function () {
-      let self = this
+      let self = this;
 
       if (self.updateDelay) {
-        clearTimeout(self.updateDelay)
+        clearTimeout(self.updateDelay);
       }
 
       self.updateDelay = setTimeout(async function () {
-        // console.log(`Updating...`, self.deployment);
-        self.updateDelay = null
-        const url = standardStuff.apiURL('/environment')
-        const config = standardStuff.axiosConfig(self.$loginservice.jwt)
+        self.updateDelay = null;
+        const url = standardStuff.apiURL('/environment');
+        const config = standardStuff.axiosConfig(self.$loginservice.jwt);
         console.log(`UPDATING ENVIRONMENT`, self.environment);
-
-        let result = await axios.put(url, self.environment, config)
-        // console.log(`result is `, result);
+        let result = await axios.put(url, self.environment, config);
       }, 1000)
-    },
-
-  },//- methods
+    }, // - saveDetails
+  }, //- methods
 
   /*
    *  Call our API using Axios, to get the project data.
@@ -666,14 +668,13 @@ export default {
    */
   async asyncData ({ app, params, error }) {
     // let environmentName = params.environmentName
-    let username = app.$nuxtLoginservice.user.username
-    let user = params.userName
-    let {owner:environmentOwner, name:environmentName} = standardStuff.methods.std_fromQualifiedName(params.environmentName, username)
-    console.log(`environment=> ${environmentOwner}, ${environmentName}`);
+    let username = app.$nuxtLoginservice.user.username;
+    let user = params.userName;
+    let {owner:environmentOwner, name:environmentName} = standardStuff.methods.std_fromQualifiedName(params.environmentName, username);
 
     try {
       // Config and params for all calls
-      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt);
 
       const params = { 
         params: {
@@ -684,52 +685,52 @@ export default {
       }
 
       // Select the environment for this page
-      let url = standardStuff.apiURL('/environment')
-      let res = await axios.get(url, params, config)
+      let url = standardStuff.apiURL('/environment');
+      let res = await axios.get(url, params, config);
       console.log(`Environment API returned: `, res.data);
-      const environment = res.data.record
+      const environment = res.data.record;
 
       // Select the deployments for this environment
-      url = standardStuff.apiURL('/deployments')
-      res = await axios.get(url, params, config)
+      url = standardStuff.apiURL('/deployments');
+      res = await axios.get(url, params, config);
       console.log(`Deployments API returned: `, res.data);
-      const deployments = res.data.deployments
+      const deployments = res.data.deployments;
 
       // Select the users for the environment (from environment_users db table)
-      url = standardStuff.apiURL('/environments_users')
-      res = await axios.get(url, params, config)
+      url = standardStuff.apiURL('/environments_users');
+      res = await axios.get(url, params, config);
       console.log(`Users API returned: `, res.data);
-      const users = res.data.users
+      const users = res.data.users;
 
       // Import deployables to be used in deployments form
-      url = standardStuff.apiURL('/deployables')
-      res = await axios.get(url, config)
+      url = standardStuff.apiURL('/deployables');
+      res = await axios.get(url, config);
       console.log(`All deployables API returned: `, res.data);
-      const deployables = res.data.deployables
+      const deployables = res.data.deployables;
 
       // Import all users for creating new user (on the selected project)
-      url = standardStuff.apiURL('/users')
-      res = await axios.get(url, config)
+      url = standardStuff.apiURL('/users');
+      res = await axios.get(url, config);
       console.log(`All users API returned: `, res.data);
-      const allUsers = res.data.users
+      const allUsers = res.data.users;
 
       // This users accessibility/profile details
-      url = standardStuff.apiURL('/currentUser')
-      res = await axios.get(url, config)
+      url = standardStuff.apiURL('/currentUser');
+      res = await axios.get(url, config);
       console.log(`This user access API returned: `, res.data);
-      const currentUser = res.data.user
+      const currentUser = res.data.user;
 
       // Import all groups to be used when editing environment
-      url = standardStuff.apiURL('/groups')
-      res = await axios.get(url, config)
+      url = standardStuff.apiURL('/groups');
+      res = await axios.get(url, config);
       console.log(`All groups API returned: `, res.data);
-      const groups = res.data.groups
+      const groups = res.data.groups;
 
       // Import all orgusers (if an org account)
-      url = standardStuff.apiURL('/organisationUsers')
-      res = await axios.get(url, params, config)
-      console.log('All org_users API returned: ', res.data)
-      const orgUsers = res.data.organisationUsers
+      url = standardStuff.apiURL('/organisationUsers');
+      res = await axios.get(url, params, config);
+      console.log('All org_users API returned: ', res.data);
+      const orgUsers = res.data.organisationUsers;
     
       return {
         environmentOwner: environmentOwner,
@@ -747,8 +748,8 @@ export default {
       }
 
     } catch (e) {
-      console.log(`Could not fetch project:`, e)
-      alert(`Error while fetching project ${environmentName}`)
+      console.log(`Could not fetch project:`, e);
+      alert(`Error while fetching project ${environmentName}`);
     }
   }
 }

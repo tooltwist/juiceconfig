@@ -74,8 +74,8 @@
 </template>
 
 <script>
-import axios from 'axios'
-import standardStuff from '../../../lib/standard-stuff'
+import axios from 'axios';
+import standardStuff from '../../../lib/standard-stuff';
 
 export default {
   name: 'Users',
@@ -104,6 +104,7 @@ export default {
           label: 'Access',
         },
       ],
+
       form: {
         new_user: '',
         user_role: '',
@@ -126,13 +127,13 @@ export default {
       })
 
       return usernames;
-    },
+    }, // - usernames
 
     filterUsernames: function () {
       return this.usernames.filter((option) => {
-        return option.toString().toLowerCase().indexOf(this.form.new_user.toLowerCase()) >= 0
+        return option.toString().toLowerCase().indexOf(this.form.new_user.toLowerCase()) >= 0;
       })
-    },
+    }, // - filterUsernames
 
     filterUsers: function () {
       let sort = this.sortBy;
@@ -150,13 +151,13 @@ export default {
 
         return newUsers;
       }
-    }
+    }, // - filterUsers
   },
 
   methods: {
     newUser(users) {
       this.newUserModal = true;
-    },
+    }, // - newUser
 
     // Change status of org_user: (disable) temporarily removes access of existing user, (remove) deletes a pending user invitation.
     async changeMembership(member, status) {
@@ -168,12 +169,13 @@ export default {
             member: member,
             status: 'disabled',
           }
-          const url = standardStuff.apiURL('/orgStatusUpdate')
-          const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-          await axios.post(url, params, config)
+
+          const url = standardStuff.apiURL('/orgStatusUpdate');
+          const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+          await axios.post(url, params, config);
 
         } catch (e) {
-          console.log(`Error while updating user on the database: `, e)
+          console.log(`Error while updating user on the database: `, e);
         }
 
       } else if (status == 'remove') {
@@ -187,12 +189,12 @@ export default {
             }
           }
 
-          const url = standardStuff.apiURL('/deleteOrgUser')
-          const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-          await axios.delete(url, params, config)
+          const url = standardStuff.apiURL('/deleteOrgUser');
+          const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+          await axios.delete(url, params, config);
 
         } catch (e) {
-          console.log(`Error while deleting user record from the database: `, e)
+          console.log(`Error while deleting user record from the database: `, e);
         }
 
       } else if (status == 'enable') {
@@ -203,21 +205,21 @@ export default {
             status: 'confirmed',
           }
 
-          const url = standardStuff.apiURL('/orgStatusUpdate')
-          const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-          await axios.post(url, params, config)
+          const url = standardStuff.apiURL('/orgStatusUpdate');
+          const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+          await axios.post(url, params, config);
 
         } catch (e) {
-          console.log(`Error while updating user on the database: `, e)
+          console.log(`Error while updating user on the database: `, e);
         }        
       }
 
       try {
         this.reloadUsers();
       } catch (e) {
-        console.log(`Error whilst reloading users: `, e)
+        console.log(`Error whilst reloading users: `, e);
       }
-    },
+    }, // - changeMembership
 
     // ADD A NEW USER TO THE DATABASE - FROM MODAL 
     async saveNewUser() {
@@ -231,50 +233,51 @@ export default {
             user_username: this.form.new_user,
             status: 'pending',
           }
-          const url = standardStuff.apiURL('/newOrgUser')
-          const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-          await axios.post(url, record, config)
-          this.newUserModal = false
+
+          const url = standardStuff.apiURL('/newOrgUser');
+          const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+          await axios.post(url, record, config);
+          this.newUserModal = false;
           console.log(`New user successfully sent to database`);
 
         } catch (e) {
-          console.log(`Error while sending new user to the database: `, e)
+          console.log(`Error while sending new user to the database: `, e);
         }
 
         // Once data sent, reload with the new user
         try {
           this.reloadUsers(); 
-          console.log(`Users have been reloaded on the browser.`)
+          console.log(`Users have been reloaded on the browser.`);
 
         } catch (e) {
-          console.log(`Error while reloading users on the browser: `, e)
+          console.log(`Error while reloading users on the browser: `, e);
         }
 
       } else {
-        this.errormode = 'inputError'
+        this.errormode = 'inputError';
       }
     }, // - saveNewUser
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW USER
     async reloadUsers() {
-      const url = standardStuff.apiURL('/organisationUsers')
-      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
+      const url = standardStuff.apiURL('/organisationUsers');
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+
       const params = {
         params: {
           organisationName: this.user,
         }
       }
 
-      let res = await axios.get(url, params, config)
-      this.users = res.data.organisationUsers
-      console.log(`Users have been reloaded on the browser.`)
+      let res = await axios.get(url, params, config);
+      this.users = res.data.organisationUsers;
+      console.log(`Users have been reloaded on the browser.`);
 
       return {
-        users: this.users
+        users: this.users,
       };
-    },  // -reloadVariables 
-  }
-  , // - data
+    },  // - reloadUsers 
+  }, // - data
 
   /*
    *  Call our API using Axios, to get the project data.
@@ -289,27 +292,28 @@ export default {
           organisationName: user,
         }
       }
-      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+
+      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt);
 
       // Import all users from org_user db table where org_username = user;
-      let url = standardStuff.apiURL('/organisationUsers')
+      let url = standardStuff.apiURL('/organisationUsers');
       let res = await axios.get(url, params, config);
-      const users = res.data.organisationUsers
-      console.log("Users API calls result: ", users)
+      const users = res.data.organisationUsers;
+      console.log("Users API calls result: ", users);
 
       // Import all users
       url = standardStuff.apiURL('/users');
-      res = await axios.get(url, config)
-      const allUsers = res.data.users
+      res = await axios.get(url, config);
+      const allUsers = res.data.users;
 
-        return {
-          allUsers: allUsers,
-          users: users,
-          user: user,
-        }
+      return {
+        allUsers: allUsers,
+        users: users,
+        user: user,
+      };
 
     } catch (error) {
-      error({ statusCode: 404, message: 'Error while fetching projects' })
+      error({ statusCode: 404, message: 'Error while fetching projects' });
     }
   },
 }

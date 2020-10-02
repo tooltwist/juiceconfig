@@ -14,8 +14,6 @@
               li Updates on teams
               li New deployments etc
               li Some helpful tips
-              //button.button(@click="printOrgs")
-              //v-for(orgs in myOrganisations) {{ orgs.org_username }}
             br
           
           .adBarStyle.column.is-4
@@ -43,10 +41,10 @@
 </template>
 
 <script>
-import Vue from 'vue'
-//import VueYouTubeEmbed from 'vue-youtube-embed'
-import { store } from '../../../store/index.js'
-import { mapActions } from 'vuex'
+import Vue from 'vue';
+//import VueYouTubeEmbed from 'vue-youtube-embed';
+import { store } from '../../../store/index.js';
+import { mapActions } from 'vuex';
 
 //Vue.use(VueYouTubeEmbed)
 
@@ -63,25 +61,13 @@ export default {
         `https://nuxtjs.org/faq/pre-processors/`,
         `https://github.com/axios/axios`,
       ],
-
-      myOrganisations: [],
     }
-  },// - data
-
-  methods: {
-    // printOrgs: function () {
-    //   try {
-    //     this.$store.dispatch('checkMyOrgs')
-    //   } catch (e) {
-    //     console.log('Error calling server from Vuex: ', e)
-    //   }
-    // },
-  },
+  }, // - data
 
   computed: {
     loggedIn: function () {
-      return (this.$loginservice && this.$loginservice.user)
-    },
+      return (this.$loginservice && this.$loginservice.user);
+    }, // - loggedIn
   }
 }
 </script>

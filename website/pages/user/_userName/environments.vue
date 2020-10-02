@@ -41,8 +41,8 @@
 </template>
 
 <script>
-import axios from 'axios'
-import standardStuff from '../../../lib/standard-stuff'
+import axios from 'axios';
+import standardStuff from '../../../lib/standard-stuff';
 
 export default {
   name: 'Environments',
@@ -55,44 +55,6 @@ export default {
       user: '',
     }
   }, // - data
-
-  /*
-   *  Call our API using Axios, to get the project data.
-   *  See https://nuxtjs.org/guide/async-data#handling-errors
-   */
-  async asyncData ({ app, params, error }) {
-    let user = params.userName;
-
-    try {
-      const params = {
-        params: { 
-          user: user,
-        }
-      }
-
-      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
-
-      // Get the environments
-      const url = standardStuff.apiURL('/showEnvironments')
-      console.log(`Calling ${url}`);
-      let reply = await axios.get(url, params, config)
-      console.log(`Response is: `, reply)
-
-      // Load all groups for distinction
-      const url2 = standardStuff.apiURL('/groups')
-      console.log(`Calling ${url2}`);
-      let reply2 = await axios.get(url2, params, config)
-      console.log(`Response2 is: `, reply2)
-
-      return {
-        environments: reply.data.environments,
-        groups: reply2.data.groups,
-        user: user,
-      }
-    } catch (e) {
-      console.log(`Error while fetching environments: `, e)
-    }
-  },
 
   computed: {
     // This function changes the display of the environments table based on the selection of group 
@@ -117,7 +79,7 @@ export default {
         return environmentsGrouped;
       }
     }
-  },
+  }, // - selectedGroup
 
   methods: {
     ...standardStuff.methods,
@@ -148,9 +110,47 @@ export default {
       } else {
         return '';
       }
-    },//- groupColour
+    }, // - groupColour
+  }, // - methods
 
-  }
+  /*
+  *  Call our API using Axios, to get the project data.
+  *  See https://nuxtjs.org/guide/async-data#handling-errors
+  */
+  async asyncData ({ app, params, error }) {
+    let user = params.userName;
+
+    try {
+      const params = {
+        params: { 
+          user: user,
+        }
+      }
+
+      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt);
+
+      // Get the environments
+      let url = standardStuff.apiURL('/showEnvironments');
+      let reply = await axios.get(url, params, config);
+      let environments = reply.data.environments;
+      console.log(`Environments: `, environments);
+
+      // Load all groups for distinction
+      url = standardStuff.apiURL('/groups');
+      reply = await axios.get(url, params, config);
+      let groups = reply.data.groups;
+      console.log(`Groups: `, groups);
+
+      return {
+        environments: environments,
+        groups: groups,
+        user: user,
+      };
+      
+    } catch (e) {
+      console.log(`Error while fetching environments: `, e);
+    }
+  },
 }
 </script>
 

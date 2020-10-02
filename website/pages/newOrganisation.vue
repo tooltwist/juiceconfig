@@ -13,8 +13,6 @@ section.section
                 label.label Contact email:
                     input.input(v-model="form.email", maxLength="60")
                 b-message.is-danger.is-small(v-show="emailError") A user with this email address already exists.
-                    // first name, last name, role, access etc are all invalid for org records
-                    // form.type = org
         br
         button.button.is-primary(:disabled="!disable('first_page')", @click="whichPage('next')") Next
 
@@ -66,6 +64,7 @@ import standardStuff from '../lib/standard-stuff'
 
 export default {
     name: "new_organisation",
+
     data () {
         return {
             form: {
@@ -102,14 +101,14 @@ export default {
             })
 
             return usernames;
-        },
+        }, // - usernames
 
         filterUsernames: function () {
             return this.usernames.filter((option) => {
-                return option.toString().toLowerCase().indexOf(this.form.username.toLowerCase()) >= 0
+                return option.toString().toLowerCase().indexOf(this.form.username.toLowerCase()) >= 0;
             })
-        }
-    },
+        }, // - filterUsernames
+    }, // - computed
 
     methods: {
         // Check for existing email and username
@@ -133,7 +132,7 @@ export default {
             }
 
             return false;
-        },
+        }, // - checkForm
 
         // Disable next/submit buttons on forms that are incomplete
         disable (button) {
@@ -156,7 +155,7 @@ export default {
             } 
 
             return true;
-        },
+        }, // - disable
 
         // Navigate forward and backwards on form pages
         whichPage (dir) {
@@ -168,7 +167,7 @@ export default {
             }
 
             return this.page;
-        },
+        }, // - whichPage
 
         // Reload org_users data after adding new user 
         async reloadOrgUsers() {
@@ -180,16 +179,14 @@ export default {
 
             const url = standardStuff.apiURL('/orgUsers');
             const config = standardStuff.axiosConfig(this.$loginservice.jwt);
-            let res = await axios.get(url, params, config)
-
-            this.org_users = res.data.org_users
-
-            console.log('org_users = ', this.org_users)
+            let res = await axios.get(url, params, config);
+            this.org_users = res.data.org_users;
+            console.log('org_users = ', this.org_users);
             
             return {
                 org_users: this.org_users,
             }
-        },  // -reloadOrgUsers 
+        },  // - reloadOrgUsers 
 
         // Add new org users 
         async addUser () {
@@ -201,28 +198,26 @@ export default {
                     status: 'pending'
                 }
 
-                let url = standardStuff.apiURL('/newOrgUser')
-                const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-
-                await axios.post(url, record, config)
-
+                let url = standardStuff.apiURL('/newOrgUser');
+                const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+                await axios.post(url, record, config);
                 console.log(`New org_user successfully sent to database`);
 
             } catch (e) {
-                console.log(`Error while sending new org_user record to the database: `, e)
+                console.log(`Error while sending new org_user record to the database: `, e);
             }
 
             try {
                 // Reload page 2 and show added users table
                 this.reloadOrgUsers();
-
                 this.page = 2;
                 this.form.username = '';
                 this.form.user_role = '';
+
             } catch (e) {
-                console.log(`Error updating page: `, e)
+                console.log(`Error updating page: `, e);
             }
-        },
+        }, // - addUser
 
         // Add new organisation to users db table
         async submitForm () { 
@@ -233,17 +228,14 @@ export default {
                     email: this.form.email
                 }
 
-                let url = standardStuff.apiURL('/newOrg')
-                const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-
-                await axios.post(url, record, config)
-
+                let url = standardStuff.apiURL('/newOrg');
+                const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+                await axios.post(url, record, config);
                 console.log(`New org successfully sent to database`);
-
                 this.page++;
 
             } catch (e) {
-                console.log(`Error while sending new org to the database: `, e)
+                console.log(`Error while sending new org to the database: `, e);
             }
 
             // Add current user as owner of organisation is org_users db table
@@ -255,18 +247,15 @@ export default {
                     status: 'confirmed'
                 }
 
-                let url = standardStuff.apiURL('/newOrgUser')
-                const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-
-                await axios.post(url, record, config)
-
+                let url = standardStuff.apiURL('/newOrgUser');
+                const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+                await axios.post(url, record, config);
                 console.log(`New org_user successfully sent to database`);
                 
             } catch (e) {
-                console.log(`Error while updating org_user db table with new owner: `, e)
+                console.log(`Error while updating org_user db table with new owner: `, e);
             }
-        },
-
+        }, // - submitForm
     },
 
     async asyncData ({ app, params, error }) {
@@ -276,7 +265,6 @@ export default {
             const params = {
                 params: { 
                     currentUser: currentUser,
-                    //org_username: this.form.org_name,
                 }
             }
 
@@ -284,25 +272,25 @@ export default {
             let url = standardStuff.apiURL('/users');
             const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt);
             console.log(`Calling ${url}`);
-            let res = await axios.get(url, config)
-            const users = res.data.users
-            console.log('Users: ', users)
+            let res = await axios.get(url, config);
+            const users = res.data.users;
+            console.log('Users: ', users);
 
             // Import all org_users for newly created org 
             url = standardStuff.apiURL('/orgUsers');
             console.log(`Calling ${url}`);
-            res = await axios.get(url, params, config)
-            const org_users = res.data.org_users
-            console.log('org_users: ', org_users)
+            res = await axios.get(url, params, config);
+            const org_users = res.data.org_users;
+            console.log('org_users: ', org_users); 
 
             return {
                 org_users: org_users,
                 users: users,
                 currentUser: currentUser,
-            }
+            };
 
         } catch (error) {
-            error({ statusCode: 404, message: 'Error while fetching users' })
+            error({ statusCode: 404, message: 'Error while fetching users' });
         }
     }
 }

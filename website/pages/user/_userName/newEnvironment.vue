@@ -100,14 +100,16 @@ section.section
 </template>
 
 <script>
-import axios from 'axios'
-import standardStuff from '../../../lib/standard-stuff'
+import axios from 'axios';
+import standardStuff from '../../../lib/standard-stuff';
 
 export default {
     name: 'New_Environment',
+
     data () {
         return {
             initialisationError: false,
+
             form: {
                 new_owner: '',
                 new_environment: '',
@@ -130,6 +132,7 @@ export default {
                 group_colour: '',
                 group_description: '',
             },
+
             newGroup: '',
             saveMode: false,
             environments: '',
@@ -142,45 +145,54 @@ export default {
         // Check for existing environment name
         environmentExists () {
             if (this.form.new_environment) {
-                let found = false
+                let found = false;
+
                 this.environments.forEach(environment => {
                     if (environment.name === this.form.new_environment) {
-                        console.log(`There is already an existing environment with these values!`)
-                        found = true
+                        console.log(`There is already an existing environment with these values!`);
+                        found = true;
                     }
                 })
-                return found
+
+                return found;
             }
-            return false
-        },//- environmentExists
+
+            return false;
+        }, // - environmentExists
 
         // Check for existing group name
         groupExists () {
             if (this.form.new_group) {
-                let found = false
+                let found = false;
+
                 this.groups.forEach(group => {
                     if (group.group_name === this.form.new_group) {
-                        console.log(`There is already an existing group with this value!`)
-                        found = true
+                        console.log(`There is already an existing group with this value!`);
+                        found = true;
                     }
                 })
-                return found
+
+                return found;
             }
-            return false
-        },//- groupExists
+
+            return false;
+        }, // - groupExists
 
         readyToSave () {
             if (!this.form.new_environment) {
-                return false // Need a name
+                return false; // Need a name
             }
+
             if (this.environmentExists) {
-                return false // Name is already used
+                return false; // Name is already used
             }
+
             if (!this.form.type) {
-                return false // Must have a type
+                return false; // Must have a type
             }
-            return true
-        }
+
+            return true;
+        }, // - readyToSave
     },
 
     methods: {
@@ -190,12 +202,12 @@ export default {
             } else {
                 this.newGroup = true;
             }
-        },
+        }, // - addNewGroup
 
         async newEnvironment(e) {
             // Check that form is correctly filled out
             if (!this.readyToSave) {
-                return
+                return;
             }
 
             // Check if using existing group or creating new group
@@ -205,20 +217,23 @@ export default {
 
                     // send record for new group
                     const url = standardStuff.apiURL('/newGroup');
+
                     const record = { 
                         group_name: this.form.new_group,
                         description: this.form.group_description,
                         colour: this.form.group_colour,
                         group_owner: this.user,
                     };
-                    const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-                    await axios.post(url, record, config)
+
+                    const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+                    await axios.post(url, record, config);
                     console.log('New group sent to the database.');
 
                     // set this.form.group_name as new group name
                     this.form.group_name = this.form.new_group;
+
                 } catch (e) {
-                    console.log(`Error while sending new group to the database: `, e)
+                    console.log(`Error while sending new group to the database: `, e);
                 }
             }
 
@@ -229,7 +244,8 @@ export default {
                     this.form.is_aws = 1;
                 }
 
-                const url = standardStuff.apiURL('/newEnvironment')
+                const url = standardStuff.apiURL('/newEnvironment');
+
                 const record = {
                     owner: this.user,
                     name: this.form.new_environment,
@@ -246,19 +262,21 @@ export default {
                     aws_cluster_url: this.form.aws_cluster_url,
                     aws_vpc_url: this.form.aws_vpc_url,
 
-                }
-                const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-                await axios.post(url, record, config)
+                };
+
+                const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+                await axios.post(url, record, config);
                 // Prevent input error from showing
                 // this.mode = false;
                 console.log('New environment successfully sent to the database.');
+
             } catch (e) {
-                console.log(`Error while sending new environment to the database: `, e)
+                console.log(`Error while sending new environment to the database: `, e);
             }
             
-            this.saveMode = true
-            console.log(this.saveMode, 'Successful')
-        },
+            this.saveMode = true;
+            console.log(this.saveMode, 'Successful');
+        }, // - newEnvironment
     },
 
     /*
@@ -266,7 +284,6 @@ export default {
      *  See https://nuxtjs.org/guide/async-data#handling-errors
      */
     async asyncData ({ app, params, error }) {
-        console.log(`asyncData()`);
         let user = params.userName;
         let me = app.$nuxtLoginservice.user.username;
         
@@ -277,35 +294,37 @@ export default {
                 }
             }
 
+            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt);
+
             // Get the environments
-            const url = standardStuff.apiURL('/showEnvironments')
-            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
-            console.log(`Calling ${url}`);
-            let reply = await axios.get(url, params, config)
-            console.log(`Response is: `, reply)
+            let url = standardStuff.apiURL('/showEnvironments');
+            let reply = await axios.get(url, params, config);
+            let environments = reply.data.environments;
+            console.log(`Environments: `, environments);
 
             // Get environment groups 
-            const url2 = standardStuff.apiURL('/groups')
-            console.log(`Calling ${url2}`);
-            let reply2 = await axios.get(url2, params, config)
-            console.log(`Response2 is: `, reply2)
+            url = standardStuff.apiURL('/groups');
+            reply = await axios.get(url, params, config);
+            let groups = reply.data.groups;
+            console.log(`Groups: `, groups);
 
             return {
-                environments: reply.data.environments,
-                groups: reply2.data.groups,
+                environments: environments,
+                groups: groups,
                 form: {
                     new_owner: user,
                 },
                 user: user,
-            }
+            };
 
         } catch (e) {
-            console.log(`Error while fetching environments: `, e)
+            console.log(`Error while fetching environments: `, e);
+
             return {
-                initialisationError: true
-            }
+                initialisationError: true,
+            };
         }
-    },//- asyncData
+    }, // - asyncData
 }
 </script>
 

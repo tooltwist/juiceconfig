@@ -9,7 +9,6 @@ section.section
         article.message.is-success
             div.message-header
                 p Success!
-                //button(class="delete", aria-label="delete")
             div.message-body
                 | New deployable has been successfully saved. Would you like to return to the 
                 a(:href="`/user/${user}/deployables`") deployables page
@@ -17,11 +16,6 @@ section.section
                 a(:href="`/user/${user}/newDeployable`") create another deployable?
     div(v-else)
         h1.title Add New Deployable:
-        //- div(v-if="mode === 'inputError'")
-            article(class="message is-danger is-small")
-                div(class="message-header")
-                    p Form Error
-                div(class="message-body") Please ensure that all fields have values before saving.
         
         div(v-if="global === true")
             article.message.is-warning.is-small
@@ -39,8 +33,6 @@ section.section
             .field
                 label.label New deployable name:
                     input.input(v-model="form.new_deployable", maxlength="16", type="text", placeholder="Deployable Name")
-                    //- div(v-else="variableError === `Deployable already exists`")
-                    //- input(class="input is-danger", v-model="form.new_deployable", type="text", placeholder="Deployable Name")
                     p.help.is-danger(v-if="deployableExists") This deployable name already exists.
             .field
                 label.label Description:
@@ -61,11 +53,12 @@ section.section
 </template>
 
 <script>
-import axios from 'axios'
-import standardStuff from '../../../lib/standard-stuff'
+import axios from 'axios';
+import standardStuff from '../../../lib/standard-stuff';
 
 export default {
     name: 'New_Deployable',
+
     data () {
         return {
             initialisationError: false,
@@ -78,8 +71,8 @@ export default {
                 new_description: '',
                 type: '',
             },
+
             global: false,
-            // mode: false,
             ownerName: '',
             savedMode: false,
             deployables: [ ],
@@ -88,67 +81,36 @@ export default {
         }
     },
 
-    /*
-     *  Call our API using Axios, to get the project data.
-     *  See https://nuxtjs.org/guide/async-data#handling-errors
-     */
-    async asyncData ({ params, error, app }) {
-        let user = params.userName;
-        let me = app.$nuxtLoginservice.user.username
-
-        try {
-            const url = standardStuff.apiURL('/deployables')
-            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
-            console.log(`Calling ${url}`);
-            let result = await axios.get(url, config)
-            console.log(`result=`, result);
-            
-            return {
-                deployables: result.data.deployables,
-                ownerName: me,
-                user: user,
-                form: {
-                    new_owner: user
-                }
-            }
-         } catch (e) {
-            console.log(`Error while fetching deployables: `, e)
-            // error({ statusCode: 400, message: 'Error while fetching deployables' })
-            return {
-                initialisationError: true
-            }
-        }
-    },//- asyncData
-
     computed: {
-
         // Check for existing deployable name
         deployableExists () {
             if (this.form.new_deployable) {
-                let found = false
+                let found = false;
+
                 this.deployables.forEach(deployable => {
                     if (deployable.name === this.form.new_deployable) {
-                        console.log(`There is already an existing deployable with this name!`)
-                        found = true
+                        console.log(`There is already an existing deployable with this name!`);
+                        found = true;
                     }
                 })
-                return found
+
+                return found;
             }
-            return false
-        },//- deployableExists
+
+            return false;
+        }, // - deployableExists
 
         readyToSave () {
             if (!this.form.new_deployable) {
-                console.log(`readyToSave 1`);
-                return false // Need a name
+                return false; // Need a name
             }
+
             if (this.deployableExists) {
-                console.log(`readyToSave 2`);
-                return false // Name is already used
+                return false; // Name is already used
             }
-            console.log(`readyToSave 4`);
-            return true
-        },//- readyToSave
+
+            return true;
+        }, // - readyToSave
     },
 
     methods: {
@@ -160,19 +122,18 @@ export default {
                 this.form.is_global = 0;
                 this.global = false;
             }
-        },
+        }, // - globalDeployable
 
         async newDeployable(e) {
-            console.log(`newDeployable()`, this);
-
             // Check that form is correctly filled out
             if (!this.readyToSave) {
-                return
+                return;
             }
+
             try {
                 e.preventDefault();                    
-
                 console.log(`calling /newDeployable`);
+
                 let record = {
                     owner: this.form.new_owner,
                     name: this.form.new_deployable,
@@ -180,19 +141,53 @@ export default {
                     description: this.form.new_description,
                     type: this.form.type,
                 }
+
                 console.log(`record = `, record);
-                let url = standardStuff.apiURL('/newDeployable')
-                const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-                await axios.post(url, record, config)
+                let url = standardStuff.apiURL('/newDeployable');
+                const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+                await axios.post(url, record, config);
 
             } catch (err) {
-                console.log(`Error while sending new deployable to the database: `, err)
+                console.log(`Error while sending new deployable to the database: `, err);
             }
             
-            this.savedMode = true
-            console.log(this.savedMode, 'Successful')
-        },
-    },//- methods
+            this.savedMode = true;
+            console.log(this.savedMode, 'Successful');
+        }, // - newDeployable
+    }, // - methods
+
+    /*
+    *  Call our API using Axios, to get the project data.
+    *  See https://nuxtjs.org/guide/async-data#handling-errors
+    */
+    async asyncData ({ params, error, app }) {
+        let user = params.userName;
+        let me = app.$nuxtLoginservice.user.username;
+
+        try {
+            const url = standardStuff.apiURL('/deployables');
+            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt);
+            let result = await axios.get(url, config);
+            let deployables = result.data.depoyables;
+            console.log(`Deployables: `, deployables);
+            
+            return {
+                deployables: deployables,
+                ownerName: me,
+                user: user,
+                form: {
+                    new_owner: user
+                },
+            }
+
+         } catch (e) {
+            console.log(`Error while fetching deployables: `, e);
+            // error({ statusCode: 400, message: 'Error while fetching deployables' })
+            return {
+                initialisationError: true,
+            };
+        }
+    }, // - asyncData
 }
 </script>
 

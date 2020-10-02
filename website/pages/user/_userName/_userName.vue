@@ -55,7 +55,6 @@ section.section
                                 p.my-not-input-p(v-else) &nbsp;{{orguser.status}}
             .control
                 button.button.is-small.is-success(@click="editingDetails= !editingDetails") {{editingDetails ? 'Done' : 'Edit'}}
-
     
         b-tab-item(label="Projects")
             div(v-if="this.filteredProjects.length === 0")
@@ -126,7 +125,7 @@ export default {
             })
 
             return projects;
-        },
+        }, // - filteredProjects
 
         filteredEnvironments() {
             let environments = [];
@@ -139,24 +138,21 @@ export default {
                 })
             })
 
-            console.log('env', environments)
-
             return environments;
-        },
+        }, // - filteredEnvironments
     },
 
     methods: {
         ...standardStuff.methods,
 
         saveDetails: async function () {
-            let self = this
+            let self = this;
 
             if (self.updateDelay) {
-                clearTimeout(self.updateDelay)
+                clearTimeout(self.updateDelay);
             }
 
             self.updateDelay = setTimeout(async function () {
-                console.log('org user print: ', self.orguser)
                 let params = {
                     params: {
                         org_username: self.org,
@@ -166,18 +162,16 @@ export default {
                     }
                 }
 
-                self.updateDelay = null
-                const url = standardStuff.apiURL('/updateOrgUser')
-                const config = standardStuff.axiosConfig(self.$loginservice.jwt)
-                let result = await axios.put(url, params, config)
-                console.log(`result is `, result);
-
+                self.updateDelay = null;
+                const url = standardStuff.apiURL('/updateOrgUser');
+                const config = standardStuff.axiosConfig(self.$loginservice.jwt);
+                let result = await axios.put(url, params, config);
             }, 1000)
         }, // - saveDetails
 
         // RELOAD THE DATABASE TABLE 
         async reloadUsers() {
-            const url = standardStuff.apiURL('/userName')
+            const url = standardStuff.apiURL('/userName');
 
             const params = {
                 params: { 
@@ -185,17 +179,15 @@ export default {
                 }
             }
 
-            const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-            let res = await axios.get(url, params, config)
-            console.log(`API returned`, res.data);
-
-            this.user = res.data.record
+            const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+            let res = await axios.get(url, params, config);
+            console.log(`reloadUsers returned: `, res.data);
+            this.user = res.data.record;
 
             return {
-                user: this.user
+                user: this.user,
             };
-
-        },  // -reloadUsers
+        },  // - reloadUsers
     },
 
     async asyncData ({ app, params, error }) {
@@ -211,30 +203,31 @@ export default {
                     org: org,
                 }
             }
-            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+
+            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt);
 
             // Select the user for this page from user db table
-            let url = standardStuff.apiURL('/userName')
-            let res = await axios.get(url, params, config)
-            const user = res.data.record
-            console.log(`User   :`, user)
+            let url = standardStuff.apiURL('/userName');
+            let res = await axios.get(url, params, config);
+            const user = res.data.record;
+            console.log(`User   :`, user);
 
             // Select user details from org_user db table
-            url = standardStuff.apiURL('/singleOrgUser')
-            res = await axios.get(url, params, config)
-            const orguser = res.data.record
-            console.log(`OrgUser   :`, orguser)
+            url = standardStuff.apiURL('/singleOrgUser');
+            res = await axios.get(url, params, config);
+            const orguser = res.data.record;
+            console.log(`OrgUser   :`, orguser);
 
             // Import all project_users with username to cross-reference with org deployables
-            url = standardStuff.apiURL('/projectAccess')
-            res = await axios.get(url, params, config)
-            const projectUsers = res.data.records
+            url = standardStuff.apiURL('/projectAccess');
+            res = await axios.get(url, params, config);
+            const projectUsers = res.data.records;
             console.log('projectUsers = ', projectUsers);
 
             // Import all project_users with username to cross-reference with org deployables
-            url = standardStuff.apiURL('/thisUsersEnvironments')
-            res = await axios.get(url, params, config)
-            const environmentUsers = res.data.environmentUsers
+            url = standardStuff.apiURL('/thisUsersEnvironments');
+            res = await axios.get(url, params, config);
+            const environmentUsers = res.data.environmentUsers;
             console.log('environmentUsers = ', environmentUsers);
 
             // Import all org deployables
@@ -245,15 +238,15 @@ export default {
                 }
             }
 
-            url = standardStuff.apiURL('/allDeployables')
-            res = await axios.get(url, params, config)
-            const projects = res.data.deployables
+            url = standardStuff.apiURL('/allDeployables');
+            res = await axios.get(url, params, config);
+            const projects = res.data.deployables;
             console.log('projects = ', projects);
 
             // Import all org environments
-            url = standardStuff.apiURL('/showEnvironments')
-            res = await axios.get(url, params, config)
-            const environments = res.data.environments
+            url = standardStuff.apiURL('/showEnvironments');
+            res = await axios.get(url, params, config);
+            const environments = res.data.environments;
             console.log('environments = ', environments);
 
             return {
@@ -268,7 +261,7 @@ export default {
             }
 
         } catch (e) {
-            console.log(`Error while fetching user: `, e)
+            console.log(`Error while fetching user: `, e);
         }
     }
 }

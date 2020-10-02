@@ -76,8 +76,8 @@
 </template>
 
 <script>
-import axios from 'axios'
-import standardStuff from '../lib/standard-stuff'
+import axios from 'axios';
+import standardStuff from '../lib/standard-stuff';
 
 export default {
     data () {
@@ -87,6 +87,7 @@ export default {
                 new_last_name: '',
                 new_email: '',
             },
+
             requests: [ ],
             user: [ ],
             organisations: [ ],
@@ -95,20 +96,20 @@ export default {
             userName: '',
             status: 'declined',
         }
-    },
+    }, // - data
 
     computed: {
         loggedIn: function() {
             if (this.$loginservice && this.$loginservice.user) {
-                return true
+                return true;
             }
 
-            return false
-        },
+            return false;
+        }, // - loggedIn
         
         fullname: function() {
-            return this.loggedIn ? this.$loginservice.user.fullname : ''
-        }
+            return this.loggedIn ? this.$loginservice.user.fullname : '';
+        }, // - fullname
     },
 
     methods: {
@@ -117,12 +118,12 @@ export default {
         async invResponse (org, response) {
             try {
                 if (response == 'accept') {
-                    this.status = 'confirmed'
+                    this.status = 'confirmed';
                 } else {
-                    this.status = 'declined'
+                    this.status = 'declined';
                 }
 
-                console.log('Username: ', this.userName)
+                console.log('Username: ', this.userName);
 
                 let record = {
                     user_username: this.userName,
@@ -130,17 +131,14 @@ export default {
                     status: this.status,
                 }
 
-                let url = standardStuff.apiURL('/orgUserRes')
-                const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-
-                await axios.post(url, record, config)
-
+                let url = standardStuff.apiURL('/orgUserRes');
+                const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+                await axios.post(url, record, config);
                 console.log(`Org_user response successfully sent to database`);
-
                 this.reloadOrgUsers();
 
             } catch (e) {
-                console.log(`Error while sending org_user response record to the database: `, e)
+                console.log(`Error while sending org_user response record to the database: `, e);
             }
         }, 
 
@@ -153,101 +151,107 @@ export default {
             }
 
             // Update org_users
-            let url = standardStuff.apiURL('/organisations')
-            const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-            let result = await axios.get(url, params, config)
-            this.organisations = result.data.organisations
+            let url = standardStuff.apiURL('/organisations');
+            const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+            let result = await axios.get(url, params, config);
+            this.organisations = result.data.organisations;
 
             // Update requests
-            url = standardStuff.apiURL('/orgRequests')
-            result = await axios.get(url, params, config)
-            this.requests = result.data.requests           
+            url = standardStuff.apiURL('/orgRequests');
+            result = await axios.get(url, params, config);
+            this.requests = result.data.requests;
 
             return {
                 organisations: this.organisations,
                 requests: this.requests,
             };
-        },  // -reloadOrgUsers
+        },  // - reloadOrgUsers
 
         // OPEN MODAL AND CHANGE VALUES FOR MY ACCOUNT
         editMyAccount () {  
-            this.editAccountModal = true,
-            this.form.new_first_name = this.user.first_name,
-            this.form.new_last_name = this.user.last_name,
-            this.form.new_email = this.user.email
-            return false
-        }, // -editMyAccount
+            this.editAccountModal = true;
+            this.form.new_first_name = this.user.first_name;
+            this.form.new_last_name = this.user.last_name;
+            this.form.new_email = this.user.email;
+            return false;
+        }, // - editMyAccount
 
         // SAVE EDITED USER
         async saveEditedAccount() {
-        try {
-            let url = standardStuff.apiURL('/editAccount')
-            let record = {
-                id: this.user.id,
-                first_name: this.form.new_first_name,
-                last_name: this.form.new_last_name,
-                email: this.form.new_email,
-                userName: this.userName
-            }
-            let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-            await axios.post(url, record, config)
+            try {
+                let url = standardStuff.apiURL('/editAccount');
 
-            // Display new users details
-            this.editAccountModal = false;
-            this.reloadAccount();
-            console.log('New account details have been updated on the browser.')
-        } catch (e) {
-            console.log(`Error whilst updating browser with edited account:`, e)
-        } 
+                let record = {
+                    id: this.user.id,
+                    first_name: this.form.new_first_name,
+                    last_name: this.form.new_last_name,
+                    email: this.form.new_email,
+                    userName: this.userName
+                };
+                
+                let config = standardStuff.axiosConfig(this.$loginservice.jwt);
+                await axios.post(url, record, config);
+
+                // Display new users details
+                this.editAccountModal = false;
+                this.reloadAccount();
+                console.log('New account details have been updated on the browser.');
+
+            } catch (e) {
+                console.log(`Error whilst updating browser with edited account:`, e);
+            } 
         }, // - saveEditedAccount
 
         // RELOAD THE DATABASE TABLE AFTER SAVING NEW ACCOUNT DETAILS
         async reloadAccount() {
-            const url = standardStuff.apiURL('/myaccount')
+            const url = standardStuff.apiURL('/myaccount');
+
             const params = {
                 params: { 
                     userName: this.user.username
                 }
             }
-            const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-            let result = await axios.get(url, params, config)
-            this.user = result.data.record
+
+            const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+            let result = await axios.get(url, params, config);
+            this.user = result.data.record;
+
             return {
-                user: this.user
+                user: this.user,
             };
         },  // -reloadAccount
-    },
-
+    }, // - methods
+ 
     async asyncData ({ app, params, error }) {
-        let userName = app.$nuxtLoginservice.user
+        let userName = app.$nuxtLoginservice.user;
+
         try {
             const params = { 
                 params: {
                     userName: userName.username,
                     userID: userName.id,
                 }
-            }
+            };
 
             // Select the deployable for this page
-            let url = standardStuff.apiURL('/myaccount')
-            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
-            console.log(`Calling ${url}`);
-            let res = await axios.get(url, params, config)
-            console.log(`API returned`, res.data);
-            const user = res.data.record
+            let url = standardStuff.apiURL('/myaccount');
+            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt);
+            let res = await axios.get(url, params, config);
+            console.log(`User: `, res.data);
+            const user = res.data.record;
 
             // Import organisations 
-            url = standardStuff.apiURL('/organisations')
-            res = await axios.get(url, params, config)
+            url = standardStuff.apiURL('/organisations');
+            res = await axios.get(url, params, config);
             console.log(`API4 returned`, res.data);
             const organisations = res.data.organisations;
-            console.log('Organisations: ', organisations)
+            console.log('Organisations: ', organisations);
 
             // import pending invitation requests from org_user db table
-            url = standardStuff.apiURL('/orgRequests')
-            res = await axios.get(url, params, config)
+            url = standardStuff.apiURL('/orgRequests');
+            res = await axios.get(url, params, config);
             const requests = res.data.requests;
-            console.log('Requests: ', requests)
+            console.log('Requests: ', requests);
 
             return {
                 requests: requests,
@@ -257,7 +261,7 @@ export default {
             }
 
         } catch (e) {
-            console.log(`Could not fetch user details:`, e)
+            console.log(`Could not fetch user details:`, e);
         }
     }
 }

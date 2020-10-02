@@ -97,16 +97,20 @@ export default {
       }
     
       return sortedDeployables; 
-    },
+    }, // - listOfDeployables
   },
+
+  methods: {
+    ...standardStuff.methods
+  }, // - methods
 
   /*
    *  Call our API using Axios, to get the project data.
    *  See https://nuxtjs.org/guide/async-data#handling-errors
    */
   async asyncData ({ app, params, error }) {
-    let currentUser = app.$nuxtLoginservice.user.username
-    let user = params.userName
+    let currentUser = app.$nuxtLoginservice.user.username;
+    let user = params.userName;
 
     try {
       const params = {
@@ -116,19 +120,19 @@ export default {
         }
       }
 
+      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt);
+
       // Retrieve ALL deployables from db table deployables 
-      console.log(`------------------- asyncData`)
-      const url = standardStuff.apiURL('/deployables')
-      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+      let url = standardStuff.apiURL('/deployables');
       let res = await axios.get(url, params, config);
       const projects = res.data.deployables;
-      console.log(`data::: `, res.data.deployables)
+      console.log(`Deployables: `, projects);
 
       // Retrieve all records with current userid from project_user db table
-      const url2 = standardStuff.apiURL('/projectAccess')
-      let res2 = await axios.get(url2, params, config);
-      const projectUsers = res2.data.records;
-      console.log(`data2::: `, res2.data.records)
+      url = standardStuff.apiURL('/projectAccess');
+      res = await axios.get(url, params, config);
+      const projectUsers = res.data.records;
+      console.log(`projectUsers: `, projectUsers);
 
       return {
         projects: projects,
@@ -136,14 +140,11 @@ export default {
         projectUsers: projectUsers,
         user: user,
       }
-    } catch (e) {
-      console.log(`Error while fetching deployables:`, e)
-    }
-  },
 
-  methods: {
-    ...standardStuff.methods
-  }//- methods
+    } catch (e) {
+      console.log(`Error while fetching deployables:`, e);
+    }
+  }
 }
 </script>
 

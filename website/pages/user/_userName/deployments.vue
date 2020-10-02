@@ -2,7 +2,6 @@
   section.section
     h1.title Applications
       div.buttons.has-text-weight-normal(style="float:right;")
-        //b-button(class="is-primary", tag="nuxt-link", to="/newEnvironment",  type="is-light")  + New Deployment
         b-button.is-primary(@click="initNewDeploymentDialog")  + New Deployment
     b-tabs(v-model="activeTab", :animated="false")
       b-tab-item(label="Deployments")
@@ -109,8 +108,8 @@
 </template>
 
 <script>
-import axios from 'axios'
-import standardStuff from '../../../lib/standard-stuff'
+import axios from 'axios';
+import standardStuff from '../../../lib/standard-stuff';
 
 export default {
   name: 'Deployments',
@@ -142,96 +141,36 @@ export default {
     }
   }, // - data
 
-  /*
-   *  Call our API using Axios, to get the project data.
-   *  See https://nuxtjs.org/guide/async-data#handling-errors
-   */
-  async asyncData ({ app, params, error }) {
-    let currentUser = app.$nuxtLoginservice.user.username
-    let user = params.userName;
-
-    try {
-      const params = {
-        params: { 
-          username: currentUser,
-          user: user,
-        }
-      }
-      // Get the deployments
-      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
-      const deployments = await loadDeployments(config, params)
-
-      // Get all the environments, for the new dialog
-      let url = standardStuff.apiURL('/showEnvironments')
-      let reply = await axios.get(url, params, config)
-      const environments = reply.data.environments
-
-      // Get all the deployables, for the new dialog
-      url = standardStuff.apiURL('/allDeployables')
-      reply = await axios.get(url, params, config)
-      const deployables = reply.data.deployables
-
-      // Get all projectUsers from project_user db
-      let url3 = standardStuff.apiURL('/thisUsersProjects')
-      reply = await axios.get(url3, params, config)
-      const projectUsers = reply.data.projectUsers
-
-      // Get all environmentUsers from environment_user db
-      let url4 = standardStuff.apiURL('/thisUsersEnvironments')
-      reply = await axios.get(url4, params, config)
-      const environmentUsers = reply.data.environmentUsers
-      console.log('environment users: ', environmentUsers)
-
-      // Set the initial healthcheck status for each deployment
-      deployments.forEach(d => {
-        d._healthcheck = {
-          status: 'scanning',
-          text: 'attempting to contact...',
-        }
-        checkHealth(d)
-      })
-
-      return {
-        deployments,
-        environments,
-        deployables,
-        currentUser,
-        user: user,
-        projectUsers, // all records in project_users db with this username
-        environmentUsers, // "" "" "" from environment_users db
-      }
-    } catch (e) {
-      console.log(`Error while fetching deployments: `, e)
-    }
-  },
-
   computed: {
     defaultApplicationName: function () {
       // See if a deployable has been selected.
-      let pos = this.deployableId.indexOf(':')
+      let pos = this.deployableId.indexOf(':');
       if (pos < 0) { return '' } // Nope, none selected
-      const owner = this.deployableId.substring(0, pos)
-      const name = this.deployableId.substring(pos + 1)
+      const owner = this.deployableId.substring(0, pos);
+      const name = this.deployableId.substring(pos + 1);
       console.log(`dep is ${owner}:${name}`);
 
       // See if we have an environment selected.
-      pos = this.environmentId.indexOf(':')
+      pos = this.environmentId.indexOf(':');
       if (pos < 0) { return name } // Just show the deployable name for now.
-      const envOwner = this.environmentId.substring(0, pos)
-      const envName = this.environmentId.substring(pos + 1)
+      const envOwner = this.environmentId.substring(0, pos);
+      const envName = this.environmentId.substring(pos + 1);
       console.log(`env is ${envOwner}:${envName}`);
 
       // Find a non-duplicate deployable name.
-      let newApplicationName = name
+      let newApplicationName = name;
+
       for (let cnt = 1; ; cnt++) {
         if (cnt > 1000) {
-          alert(`We appear to be in an infinite loop!`)
-          return
+          alert(`We appear to be in an infinite loop!`);
+          return;
         }
+
         // create a name
         if (cnt > 1) {
-          newApplicationName = `${name}_${cnt}`
+          newApplicationName = `${name}_${cnt}`;
         }
+
         console.log(`Check ${newApplicationName}`);
 
         // See if it's already used
@@ -240,48 +179,49 @@ export default {
             // console.log(`Name ${newApplicationName} is already used.`);
           } else {
             // console.log(`Name ${newApplicationName} is available.`);
-            return newApplicationName
+            return newApplicationName;
           }
       }
-    },//- defaultApplicationName
+    }, // - defaultApplicationName
 
     nameIsUsed () {
-      let pos = this.deployableId.indexOf(':')
+      let pos = this.deployableId.indexOf(':');
       if (pos < 0) { return false } // Nope, none selected
 
       // See if we have an environment selected.
-      pos = this.environmentId.indexOf(':')
+      pos = this.environmentId.indexOf(':');
       if (pos < 0) { return false } // Just show the deployable name for now.
-      const envOwner = this.environmentId.substring(0, pos)
-      const envName = this.environmentId.substring(pos + 1)
+      const envOwner = this.environmentId.substring(0, pos);
+      const envName = this.environmentId.substring(pos + 1);
       console.log(`env is ${envOwner}:${envName}`);
 
       if (this.applicationName && this.applicationExists(envOwner, envName, this.applicationName)) {
-        return true // need an application name
+        return true; // need an application name
       }
-      return false
-    },
+
+      return false;
+    }, // - nameIsUsed
 
     readyToSave () {
       // See if we have a deployable selected.
-      let pos = this.deployableId.indexOf(':')
+      let pos = this.deployableId.indexOf(':');
       if (pos < 0) { return false }
 
       // See if we have an environment selected.
-      pos = this.environmentId.indexOf(':')
+      pos = this.environmentId.indexOf(':');
       if (pos < 0) { return false }
 
       // See if an application with this environment and name is used.
-      const envOwner = this.environmentId.substring(0, pos)
-      const envName = this.environmentId.substring(pos + 1)
-      if (this.applicationName && this.applicationExists(envOwner, envName, this.applicationName)) {
-        return false // need an application name
-      }
-      return true
-    },//- readyToSave
-  },
+      const envOwner = this.environmentId.substring(0, pos);
+      const envName = this.environmentId.substring(pos + 1);
 
- 
+      if (this.applicationName && this.applicationExists(envOwner, envName, this.applicationName)) {
+        return false; // need an application name
+      }
+
+      return true;
+    }, // - readyToSave
+  },
 
   methods: {
     ...standardStuff.methods,
@@ -301,19 +241,14 @@ export default {
       }
 
       return 0; // user is neither collaborator or owner of environment
-    },
+    }, // - accessEnv
 
     // Check if project is owned
     accessProject (deployable) {
-
       for (let i = 0; i < this.deployables.length; i++) {
         if (this.deployables[i].name ==  deployable && this.deployables[i].owner == this.currentUser) {
           return 1;
         }
-
-        /*if (this.deployables[i].is_global == '1') {
-          return 1;
-        }*/
       }
 
       for (let i = 0; i < this.projectUsers.length; i++) { // check if user is a collaborator
@@ -323,8 +258,7 @@ export default {
       }
 
       return 0; // user is neither collaborator or owner of deployable
-
-    },
+    }, // - accessProject
 
 
     isDeployed (environmentName, deployableName) {
@@ -340,13 +274,11 @@ export default {
       }
 
       return arr; // an array of application names for the selected environment and deployable
-    },
+    }, // - isDeployed
 
     applicationExists (environmentOwner, environmentName, applicationName) {
         for (let i = 0; i < this.deployments.length; i++) {
-          let deployment = this.deployments[i]
-          // console.log(` => `, deployment);
-          // console.log(` - ${deployment.environment_owner}:${deployment.environment}:${deployment.application_name}`);
+          let deployment = this.deployments[i];
           
           if (
             deployment.environment_owner === environmentOwner
@@ -355,50 +287,51 @@ export default {
             &&
             deployment.application_name === applicationName
           ) {
-            return true
+            return true;
           }
+
         } //- for
-        return false
-    },
+
+        return false;
+    }, // - applicationExists
 
     initNewDeploymentDialog () {
-      this.environmentId = ''
-      this.deployableId = ''
-      this.applicationName = ''
-      this.showSaveErrorMsg = false
+      this.environmentId = '';
+      this.deployableId = '';
+      this.applicationName = '';
+      this.showSaveErrorMsg = false;
       this.showDialog = true;
-    },
+    }, // - initNewDeploymentDialog
 
     async createDeployment () {
-      console.log(`createDeployment()`);
-
-      this.showSaveErrorMsg = false
+      this.showSaveErrorMsg = false;
 
       // See if a deployable has been selected.
-      let pos = this.deployableId.indexOf(':')
+      let pos = this.deployableId.indexOf(':');
       if (pos < 0) { return '' } // Nope, none selected
-      const owner = this.deployableId.substring(0, pos)
-      const name = this.deployableId.substring(pos + 1)
+      const owner = this.deployableId.substring(0, pos);
+      const name = this.deployableId.substring(pos + 1);
       console.log(`dep is ${owner}:${name}`);
 
       // See if we have an environment selected.
-      pos = this.environmentId.indexOf(':')
+      pos = this.environmentId.indexOf(':');
       if (pos < 0) { return name } // Just show the deployable name for now.
-      const envOwner = this.environmentId.substring(0, pos)
-      const envName = this.environmentId.substring(pos + 1)
+      const envOwner = this.environmentId.substring(0, pos);
+      const envName = this.environmentId.substring(pos + 1);
       console.log(`env is ${envOwner}:${envName}`);
 
-      let applicationName = this.applicationName
+      let applicationName = this.applicationName;
+
       if (!applicationName) {
-        applicationName = this.defaultApplicationName
+        applicationName = this.defaultApplicationName;
       }
 
-      let notes = this.notes
+      let notes = this.notes;
 
       // Prepare the object
-      
       try {
-        let url = standardStuff.apiURL('/newDeployment')
+        let url = standardStuff.apiURL('/newDeployment');
+
         let record = {
           environment_owner: envOwner,
           environment: envName,
@@ -407,11 +340,9 @@ export default {
           application_name: applicationName,
           notes: notes,
         }
-        console.log(`record is`, record);
-        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-        console.log(`url is ${url}`);
-        let reply = await axios.post(url, record, config)
-        console.log(`reply is `, reply);
+
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt);
+        let reply = await axios.post(url, record, config);
 
         const params = {
           params: { 
@@ -419,10 +350,9 @@ export default {
           }
         }
 
-        let reloadedDeployments = await loadDeployments(config, params)
-        // this.deployables = loadDeployables(jwt)
-        console.log(`reloaded deployments: `, reloadedDeployments);
-        this.deployments = reloadedDeployments
+        let reloadedDeployments = await loadDeployments(config, params);
+        console.log(`Reloaded deployments: `, reloadedDeployments);
+        this.deployments = reloadedDeployments;
 
         // Set the initial healthcheck status for each deployment
         this.deployments.forEach(d => {
@@ -430,68 +360,134 @@ export default {
             status: 'scanning',
             text: 'attempting to contact...',
           }
-          checkHealth(d)
+
+          checkHealth(d);
         })
 
-        this.showSaveErrorMsg = false
-        this.showDialog = false
+        this.showSaveErrorMsg = false;
+        this.showDialog = false;
+        return;
 
-        return
       } catch (e) {
         console.log(`Error:`, e);
-        
-        alert(`Error creating deployable`)
-        this.showSaveErrorMsg = true
+        alert(`Error creating deployable`);
+        this.showSaveErrorMsg = true;
       }
-    },//- createDeployment
+    }, // - createDeployment
 
     healthcheckIcon: function(mode) {
-
       switch (mode) {
         case 'scanning':
-          return 'radar'
+          return 'radar';
         case 'OK':
-          return 'thumb-up-outline'
+          return 'thumb-up-outline';
         case 'error':
-          return 'alert-outline'
+          return 'alert-outline';
         case 'network':
-          return 'cloud-off-outline'
+          return 'cloud-off-outline';
         case 'ENOENT': // healthcare path not found
-          return 'cancel'
+          return 'cancel';
         case 'ENOTFOUND': // url not defined
-          return 'cancel'
+          return 'cancel';
         case 'ECONNABORTED':
-          return 'timer-off-outline'
+          return 'timer-off-outline';
         case 'skip':
         case 'unknown':
         default:
-          return 'minus'
+          return 'minus';
       }
-    }, //- healthcheckIcon
+    }, // - healthcheckIcon
 
     healthcheckColor: function(status) {
       switch (status) {
         case 'scanning':
-          return 'is-info'
+          return 'is-info';
         case 'OK':
-          return 'is-success'
+          return 'is-success';
         case 'error':
-          return 'is-danger'
+          return 'is-danger';
         case 'network':
-          return 'is-danger'
+          return 'is-danger';
         case 'ENOENT':
-          return 'is-black'
+          return 'is-black';
         case 'ENOTFOUND': // url not defined
-          return 'is-black'
+          return 'is-black';
         case 'ECONNABORTED':
-          return 'is-danger'
+          return 'is-danger';
         case 'skip':
         case 'unknown':
         default:
-          return 'is-light'
+          return 'is-light';
       }
-    },//- healthcheckColor
-  }//- methods
+    },// - healthcheckColor
+  }, // - methods
+
+  /*
+   *  Call our API using Axios, to get the project data.
+   *  See https://nuxtjs.org/guide/async-data#handling-errors
+   */
+  async asyncData ({ app, params, error }) {
+    let currentUser = app.$nuxtLoginservice.user.username;
+    let user = params.userName;
+
+    try {
+      const params = {
+        params: { 
+          username: currentUser,
+          user: user,
+        }
+      }
+
+      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt);
+
+      // Get the deployments
+      const deployments = await loadDeployments(config, params);
+
+      // Get all the environments, for the new dialog
+      let url = standardStuff.apiURL('/showEnvironments');
+      let reply = await axios.get(url, params, config);
+      const environments = reply.data.environments;
+
+      // Get all the deployables, for the new dialog
+      url = standardStuff.apiURL('/allDeployables');
+      reply = await axios.get(url, params, config);
+      const deployables = reply.data.deployables;
+
+      // Get all projectUsers from project_user db
+      url = standardStuff.apiURL('/thisUsersProjects');
+      reply = await axios.get(url, params, config);
+      const projectUsers = reply.data.projectUsers;
+
+      // Get all environmentUsers from environment_user db
+      url = standardStuff.apiURL('/thisUsersEnvironments');
+      reply = await axios.get(url, params, config);
+      const environmentUsers = reply.data.environmentUsers;
+      console.log('environment users: ', environmentUsers);
+
+      // Set the initial healthcheck status for each deployment
+      deployments.forEach(d => {
+        d._healthcheck = {
+          status: 'scanning',
+          text: 'attempting to contact...',
+        }
+
+        checkHealth(d);
+      })
+
+      return {
+        deployments,
+        environments,
+        deployables,
+        currentUser,
+        user: user,
+        projectUsers, // all records in project_users db with this username
+        environmentUsers, // "" "" "" from environment_users db
+      }
+
+    } catch (e) {
+      console.log(`Error while fetching deployments: `, e);
+    }
+  }
 }
 
 async function checkHealth(deployment) {
@@ -501,10 +497,11 @@ async function checkHealth(deployment) {
     || !deployment.website_url.startsWith('http')
   ) {
     // development on local server
-    deployment._healthcheck.status = 'skip'
-    deployment._healthcheck.text = 'Not configured'
-    return
+    deployment._healthcheck.status = 'skip';
+    deployment._healthcheck.text = 'Not configured';
+    return;
   }
+
   if (
     deployment.website_url.startsWith('http://localhost')
     || deployment.website_url.startsWith('https://localhost')
@@ -512,9 +509,9 @@ async function checkHealth(deployment) {
     || deployment.website_url.startsWith('https://127.0.0.1')
   ) {
     // development on local server
-    deployment._healthcheck.status = 'skip'
-    deployment._healthcheck.text = 'Runs locally'
-    return
+    deployment._healthcheck.status = 'skip';
+    deployment._healthcheck.text = 'Runs locally';
+    return;
   }
   // if (!deployment.healthcheck) {
   //   // Skip this healthcheck
@@ -529,56 +526,59 @@ async function checkHealth(deployment) {
   //   return
   // }
   
-  
   // Call health check to determine status
   // console.log(`Checking health of `, deployment);
-  const healthcheckUrl = deployment.website_url + deployment.healthcheck
-  let result
-  const USE_PROXY = true
+  const healthcheckUrl = deployment.website_url + deployment.healthcheck;
+  let result;
+  const USE_PROXY = true;
   if (USE_PROXY) {
     try {
-      let url = standardStuff.apiURL('/proxyHealthcheck')
+      let url = standardStuff.apiURL('/proxyHealthcheck');
       // console.log(`checkHealth(${deployment.environment}.${deployment.application_name}): ${url}`);
+
       result = await axios.get(url, {
         params: {
-          url: healthcheckUrl
+          url: healthcheckUrl,
         }
       });
+
       // console.log(`Proxy returned:`, result);
-      deployment._healthcheck.status = result.data.status
+      deployment._healthcheck.status = result.data.status;
       // deployment._healthcheck.text = result.data.text
       switch (deployment._healthcheck.status) {
         // case 'scanning':
         //   break
         case 'OK':
-          deployment._healthcheck.text = result.data.body
-          break
+          deployment._healthcheck.text = result.data.body;
+          break;
         // case 'error':
         //   return 'is-danger'
         // case 'network':
         //   return 'is-danger'
         case 'ENOENT':
-          deployment._healthcheck.text = `ENOENT: healthcheck path was not found on the server (${deployment.healthcheck})`
-          break
+          deployment._healthcheck.text = `ENOENT: healthcheck path was not found on the server (${deployment.healthcheck})`;
+          break;
         case 'ENOTFOUND': // url not defined
-          deployment._healthcheck.text = `ENOTFOUND: incorrect server url? (${deployment.website_url})`
-          break
+          deployment._healthcheck.text = `ENOTFOUND: incorrect server url? (${deployment.website_url})`;
+          break;
         case 'ECONNABORTED':
-          deployment._healthcheck.text = 'ECONNABORTED: timeout?'
-          break
+          deployment._healthcheck.text = 'ECONNABORTED: timeout?';
+          break;
         // case 'skip':
         // case 'unknown':
         default:
-          deployment._healthcheck.text = `status: ${deployment._healthcheck.status}`
-          break
+          deployment._healthcheck.text = `status: ${deployment._healthcheck.status}`;
+          break;
       }
+
     } catch (error) {
       // Unable to ask our server to do the healthcheck for us. I wonder why?
-      deployment._healthcheck.status = 'error'
-      deployment._healthcheck.text = 'Error in juice server.'
+      deployment._healthcheck.status = 'error';
+      deployment._healthcheck.text = 'Error in juice server.';
       console.log(`Healthcheck proxy failed:`, error);
     }
-    return
+
+    return;
   }
 
   /*
@@ -587,22 +587,24 @@ async function checkHealth(deployment) {
    */
   try {
     console.log(`checkHealth(${deployment.environment}.${deployment.application_name}): ${healthcheckUrl}`);
+
     let result = await axios.get(healthcheckUrl, {
       timeout: 4000,
       // crossdomain: true
     });
 
-    let status = result.status
+    let status = result.status;
     console.log(`status is`, status);
     console.log(`data is`, result.data);
     if (status == 200) {
-      deployment._healthcheck.status = 'OK'
-      deployment._healthcheck.text = `status: ${deployment._healthcheck.status}`
-      return
+      deployment._healthcheck.status = 'OK';
+      deployment._healthcheck.text = `status: ${deployment._healthcheck.status}`;
+      return;
+
     } else if (status == 'error') {
-      deployment._healthcheck.status = 'error'
-      deployment._healthcheck.text = `status: ${deployment._healthcheck.status}`
-      return
+      deployment._healthcheck.status = 'error';
+      deployment._healthcheck.text = `status: ${deployment._healthcheck.status}`;
+      return;
     }
 
   } catch (error) {
@@ -610,20 +612,21 @@ async function checkHealth(deployment) {
       // standard axios exception
       if (error.response.status === 404) {
         // ENOENT - the pinged server says the page does not exist
-        deployment._healthcheck.status = 'ENOTFOUND'
-        deployment._healthcheck.text = `ENOENT: healthcheck path was not found on the server (${deployment.healthcheck})`
-        return
+        deployment._healthcheck.status = 'ENOTFOUND';
+        deployment._healthcheck.text = `ENOENT: healthcheck path was not found on the server (${deployment.healthcheck})`;
+        return;
       }
       // } else if (error.message === 'Network Error') {
       //   deployment._healthcheck.status = 'network'
       //   return
     } else if (error.code === 'ECONNABORTED') {
       // See https://medium.com/@masnun/handling-timeout-in-axios-479269d83c68
-      deployment._healthcheck.status = 'ECONNABORTED'
-      deployment._healthcheck.text = 'ECONNABORTED: timeout?'
-      return
+      deployment._healthcheck.status = 'ECONNABORTED';
+      deployment._healthcheck.text = 'ECONNABORTED: timeout?';
+      return;
     }
-    deployment._healthcheck.status = 'timeout'
+
+    deployment._healthcheck.status = 'timeout';
     console.log(`error doing healthcheck:`, error);
     console.log(`error.statusCode`, error.statusCode);
     console.log(`error.errcode`, error.errcode);
@@ -633,21 +636,21 @@ async function checkHealth(deployment) {
     console.log(`json=`, json);
     let errorObject=JSON.parse(JSON.stringify(error));
     console.log(`errorObject=`, errorObject);
-    deployment._healthcheck.status = 'error'
-    deployment._healthcheck.text = `status: ${deployment._healthcheck.status}`
+    deployment._healthcheck.status = 'error';
+    deployment._healthcheck.text = `status: ${deployment._healthcheck.status}`;
   } //- catch
 }
 
 async function loadDeployments (axiosConfig, params) {
   // Returns deployments with environments that are owned by user, 
   // or collaborated on by user
-  console.log('params: ', params)
-  let url = standardStuff.apiURL('/applications')
-  let reply = await axios.get(url, params, axiosConfig)
-  const deployments = reply.data.applications
-  console.log('deployments', deployments)
-  return deployments
-}
+  console.log('params: ', params);
+  let url = standardStuff.apiURL('/applications');
+  let reply = await axios.get(url, params, axiosConfig);
+  const deployments = reply.data.applications;
+  console.log('deployments', deployments);
+  return deployments;
+} // - loadDeployments
 </script>
 
 <style lang="scss">
