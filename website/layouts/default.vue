@@ -14,7 +14,7 @@ div
     div.navbar-end.mobileStyle
       b-navbar-item(href="https://juiceconfig.io", target="_blank") Docs
       div.seperatorStyle.mobile(v-if="loggedIn", separator="true", custom="true") | 
-      b-dropdown(v-if="loggedIn", @click="printOrgs()" position="is-bottom-left", aria-role="menu")
+      b-dropdown(v-if="loggedIn", position="is-bottom-left", aria-role="menu")
         a.navbar-item(slot="trigger", role="button")
           span Menu
             b-tag(v-show="$store.state.myPendingRequests.length > 0", rounded, type="is-danger is-outlined") {{ $store.state.myPendingRequests.length }}
@@ -43,7 +43,6 @@ div
                 option(disabled) Switch account view:
                 option(v-for="user in listOfUserOptions", :value="user") {{ user }}
           ul.menu-list
-            //b-menu-list(label="Menu")
             b-menu-list(label="")
               li(v-for="(item, key) of items", :key="key")
                 nuxt-link(v-if="item.title != 'Users'", :to="`/user/${userDefault}/${item.to.name}`", exact-active-class="activeHighlight")
@@ -106,21 +105,36 @@ export default {
           to: { name: 'users' }
         }
       ],
-      isActive: true,
-      isActiveDrop: true,
-      organisations: [ ],
-      org: '', 
     }
   },
 
   computed: {
-    // List of users orgs and username for switching dashboard view 
+    // Returns true if user is logged in
+    loggedIn: function() {
+      if (this.$loginservice && this.$loginservice.user) {
+        return true;
+      }
+
+      return false;
+    },
+
+    // Returns the username provided by loginservice account or null if not logged in
+    username: function() {
+      return this.loggedIn ? this.$loginservice.user.username : '';
+    },
+
+    // Returns filtered list of users organisations from VueX store
+    listOfOrgs: function() {
+      return this.$store.state.myOrganisations;
+    },
+
+    // Returns filtered list of users orgs and username for switching dashboard view 
     listOfUserOptions: function() {
       let users = [];
 
       users[0] = this.$loginservice.user.username; // personal account
 
-      let i = 1;
+      let i = 1; 
       this.listOfOrgs.forEach(user => {
         users[i] = user.org_username; // org accounts 
         i++;
@@ -129,58 +143,42 @@ export default {
       return users;
     },
 
-    loggedIn: function() {
-      if (this.$loginservice && this.$loginservice.user) {
-        return true
-      }
-      return false
-    },
-
-    username: function() {
-      return this.loggedIn ? this.$loginservice.user.username : ''
-    },
-
-    listOfOrgs: function() {
-      return this.$store.state.myOrganisations
-    },
-
+    // Getter returns the current user, setter updates currentUsername in VueX store
     userDefault: {
-      get: function() {
-        let currentUsername = this.$store.state.currentUsername
+      get: function() { // getter
+        let currentUsername = this.$store.state.currentUsername;
 
         if (this.username == '') { // not logged in
-          return ''
+          return '';
           
         } else { // user is set
-          return currentUsername
+          return currentUsername;
         }
-
       },
 
       set: function(value) { // setter 
         // Update store with new user
         this.$store.dispatch('checkUser', {
           user: value,
-        })
+        });
 
         // Import admins to check the permissions for new state.currentUsername
-        this.$store.dispatch('checkMyAdmins') 
+        this.$store.dispatch('checkMyAdmins');
 
         // Update url 
-        this.$router.push(`/user/${value}/home`)
+        this.$router.push(`/user/${value}/home`);
       },
-    },  
-
+    }, 
   },
 
   mounted() {
-    console.log('Mounted')
+    console.log('Mounted');
     this.$store.dispatch('checkUser', { 
       user: this.userDefault, // empty string when initialising 
-    })
-    this.$store.dispatch('checkMyOrgs')
-    this.$store.dispatch('checkMyRequests')
-    this.$store.dispatch('checkMyAdmins')
+    });
+    this.$store.dispatch('checkMyOrgs');
+    this.$store.dispatch('checkMyRequests');
+    this.$store.dispatch('checkMyAdmins');
   },
 
   methods: {
@@ -191,20 +189,13 @@ export default {
       this.$router.push('/');
     },
 
-    printOrgs: function() {
-      try {
-        this.$store.dispatch('checkMyOrgs')
-      } catch (e) {
-        console.log('Error from Vuex: ', e)
-      }
-    },
-
-    isAdmin: function() { // Permissions for users tab -> for items only accessible to admin/owner
-      let admins = this.$store.state.myAdmins
+    // Returns true if username is an admin or owner of selected organisation
+    isAdmin: function() { 
+      let admins = this.$store.state.myAdmins;
 
       for (let i = 0; i < admins.length; i++) {
         if (admins[i].user_username == this.username) {
-          return true
+          return true;
         } 
       }
 

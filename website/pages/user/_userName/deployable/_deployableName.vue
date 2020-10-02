@@ -563,7 +563,7 @@ div
         div.modal-wrapper
           div.modal-card
             header.modal-card-head
-              p.modal-card-title Remove user    
+              p.modal-card-title Remove user
             section.modal-card-body
               p Are you sure you want to remove <b>{{ users.first_name }} {{ users.last_name }}</b> from <b>{{deployableName}}</b>?
             footer.modal-card-foot 
@@ -603,15 +603,15 @@ div
 </template>
 
 <script>
-import axios from 'axios'
-import standardStuff from '../../../../lib/standard-stuff'
+import axios from 'axios';
+import standardStuff from '../../../../lib/standard-stuff';
 
 export default {
   name: 'Deployable',
 
   components: {
     modal: {
-      template: '#modal-template'
+      template: '#modal-template',
     }
   },
 
@@ -655,7 +655,6 @@ export default {
 
         // Add a new token
         new_token_type: 'registration',
-        new_token_environment_name: '',//ZZZ unused now
         new_token_deployment: null,
 
         // Add a new version
@@ -665,14 +664,7 @@ export default {
         new_version_registration_source: '',
       },
 
-      // Editing deployables existing values
-      product_owner: '',
-      description: '',
-      is_project: '',
-      deployableName: '',
-      deployableOwner: '',
-
-      activeTab: 0,
+      // Imported data / function variables
       deployments: [ ],
       variables: [ ],
       environments: [ ],
@@ -686,16 +678,25 @@ export default {
       deployable: '',
       deployables: [ ],
       project: null, 
-      newUserError: null,
-      editDeployableStatus: null,
       user: '', // user/org name url params
       username: '',
-
       access: null,
-
-      variableError: null,
       output: '',
+      importJSON: '',
+      jsonError: '',
+      importVariables: [ ],
+      selectAllImports: false,
+      
+      // Variables waiting to be saved, with setTimeout delay
+      // variableName => { timer, variable }
+      saveVariableTimers: { },
+
+      // CSS
+      activeTab: 0,
+      newUserError: null,
       errormode: false,
+      variableError: null,
+      editDeployableStatus: null,
 
       // Show environments option in token modal
       showEnvironmentToken: false,
@@ -716,11 +717,6 @@ export default {
       // edit details
       editingDetails: false,
 
-      importJSON: '',
-      jsonError: '',
-      importVariables: [ ],
-      selectAllImports: false,
-
       // Modal data for adding dependency
       newDependencyModal: false,
       removeDependencyModal: false,
@@ -734,12 +730,8 @@ export default {
       variable_type: '',
       variable_mandatory: '',
       removeVariableModal: false,
-
-      // Variables waiting to be saved, with setTimeout delay
-      // variableName => { timer, variable }
-      saveVariableTimers: { },
     }
-  },//- data
+  }, // - data
   
   computed: {
     yesnoFilter: function() {
@@ -748,9 +740,9 @@ export default {
       } else {
         return 'No';
       }
-    },
+    }, // - yesnoFilter
 
-  },
+  }, // - computed
 
   methods: {
     ...standardStuff.methods,
@@ -759,7 +751,8 @@ export default {
     // admin of the organisation (org_user db table), or, 3/4. the project has specified that this user has owner/readwrite 
     // access to this project (project_user db table). Else, it returns false and access to edit buttons, etc, are hidden.
     isEditable: function() {
-      if (this.user == this.username) { // 1. Deployable is from a personal account
+      // 1. Deployable is from a personal account
+      if (this.user == this.username) { 
         return true;
 
       } else { 
@@ -784,28 +777,32 @@ export default {
       }
 
       return false;
-    },
+    }, // - isEditable
 
     // SAVE EDITED DEPLOYABLE DETAILS 
     saveDetails: async function () {
-      let self = this
-      if (self.updateDelay) {
-        clearTimeout(self.updateDelay)
-      }
-      self.updateDelay = setTimeout(async function () {
-        self.updateDelay = null
-        const url = standardStuff.apiURL('/deployable')
-        const config = standardStuff.axiosConfig(self.$loginservice.jwt)
-        console.log(`UPDATING DEPLOYABLE`, self.deployable);
+      let self = this;
 
-        let result = await axios.put(url, self.deployable, config)
+      if (self.updateDelay) {
+        clearTimeout(self.updateDelay);
+      }
+
+      self.updateDelay = setTimeout(async function () {
+        self.updateDelay = null;
+
+        const url = standardStuff.apiURL('/deployable');
+        const config = standardStuff.axiosConfig(self.$loginservice.jwt);
+
+        let result = await axios.put(url, self.deployable, config);
+
       }, 1000)
-    }, // -saveDetails
+    }, // - saveDetails
 
     // EDIT THE DETAILS OF THE SELECTED DEPLOYABLE
     async saveDeployable() {
       try {
-        let url = standardStuff.apiURL('/deployable')
+        let url = standardStuff.apiURL('/deployable');
+
         let record = {
           product_owner: this.form.new_owner,
           type: this.form.new_type,
@@ -813,9 +810,9 @@ export default {
           name: this.deployableName,
           is_global: this.form.is_global,
         }
+
         let config = standardStuff.axiosConfig(this.$loginservice.jwt)
         await axios.post(url, record, config)
-        //console.log('Edited deployable successfully saved: ', this.form.new_is_project)
 
         // Display new deployable details
         this.editDeployableStatus = 'null'
@@ -824,6 +821,7 @@ export default {
         this.deployable.description = this.form.new_description
         this.deployable.is_global = this.form.is_global
         console.log('New deployable details have been updated on the browser.')
+
       } catch (e) {
         console.log(`Error while updating browser: `, e)
       } 
@@ -835,25 +833,25 @@ export default {
       if (this.form.variable_name && this.form.variable_type && this.form.variable_mandatory && this.form.variable_is_external) {
         
         // Check for existing variable names
-        let found = false
+        let found = false;
         this.variables.forEach(variable => {
           if (variable.name === this.form.variable_name) {
-            console.log(`There is already an existing variable with these values!`)
-            found = true
+            console.log(`There is already an existing variable with these values!`);
+            found = true;
           }
         })
 
         // If matching variable is found, send error 
         if (found) {
-          console.log(`There is already a variable with these values... Error message shown!`)
-          this.variableError = `Variable already exists`
-          return 
+          console.log(`There is already a variable with these values... Error message shown!`);
+          this.variableError = `Variable already exists`;
+          return;
         }
-        this.variableError = null
+
+        this.variableError = null;
 
         // If no error, send post request to server
         try {
-          let url = standardStuff.apiURL('/newVariable')
           let record = {
             deployable_owner: this.deployableOwner,
             deployable_name: this.deployableName,
@@ -864,171 +862,160 @@ export default {
             external: this.form.variable_is_external,
             sensitive: this.form.variable_is_sensitive,
           }
-          let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-          await axios.post(url, record, config)
-          this.newVariableModal = false
+
+          let url = standardStuff.apiURL('/newVariable');
+          let config = standardStuff.axiosConfig(this.$loginservice.jwt);
+          await axios.post(url, record, config);
+
+          this.newVariableModal = false;
           console.log(`New variable successfully sent to database`);
+
         } catch (e) {
-          console.log(`Error while adding new variable to the database: `, e)
+          console.log(`Error while adding new variable to the database: `, e);
         }
 
         // Once data sent, reload with the new variable
         try {
           this.reloadVariables(); 
-          console.log(`Variables have been reloaded on the browser.`)
+          console.log(`Variables have been reloaded on the browser.`);
+
         } catch (e) {
-          console.log(`Error while reloading variables on the browser: `, e)
+          console.log(`Error while reloading variables on the browser: `, e);
         }
+
       } else {
-        this.errormode = 'inputError'
+        this.errormode = 'inputError';
       }
     }, // - saveNewVariable
 
     // ADD A NEW USER FOR SELECTED PROJECT TO THE DATABASE - FROM MODAL 
     async saveNewUser() {
-      //Check that form is filled correctly
+      // Check that form is filled correctly
       if (this.form.new_username && this.form.new_user_access) {
-        
         // Check for existing user using selected project:
-        let found = false
+        let found = false;
+
         this.users.forEach(user => {
           if (user.username === this.form.new_username) {
-            console.log(`This user is already able to access this project!`)
-            found = true
+            console.log(`This user is already able to access this project!`);
+            found = true;
           }
-        })
+        });
 
         // If matching user is found, send error 
         if (found) {
-          console.log(`There is already a user with these values... Error message shown!`)
-          this.newUserError = `User already exists`
-          return 
+          console.log(`There is already a user with these values... Error message shown!`);
+          this.newUserError = `User already exists`;
+          return;
         }
-        this.newUserError = null
+
+        this.newUserError = null;
 
         // Retrieve user record from db for new project_user
         let userId = '';
 
-        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt);
 
         try {
-          let url = standardStuff.apiURL('/usernameRecord')
           const params = {
             params: {
               username: this.form.new_username,
             }
-          }
+          };
 
-          let res = await axios.get(url, params, config)
-          userId = res.data.user[0].id
+          let url = standardStuff.apiURL('/usernameRecord');
+          let res = await axios.get(url, params, config);
+          userId = res.data.user[0].id;
 
         } catch (e) {
-          console.log('Error retrieving user record', e)
+          console.log('Error retrieving user record', e);
         }
-
 
         // If no error, send post request to server
         try {
-          let url = standardStuff.apiURL('/newProjectUser')
-
           let record = {
             access: this.form.new_user_access,
             project: this.deployableName,
             username: this.form.new_username,
             id: userId,
-          }
+          };
           
-          await axios.post(url, record, config)
-          console.log(`New project user successfully sent to database`);
+          let url = standardStuff.apiURL('/newProjectUser');
+          await axios.post(url, record, config);
 
-          this.newUserModal = false
+          console.log(`New project user successfully sent to database`);
+          this.newUserModal = false;
 
         } catch (e) {
-          console.log(`Error while sending new project user to the database: `, e)
+          console.log(`Error while sending new project user to the database: `, e);
         }
 
         // Once data sent, reload with the new deployment and reset form values
         try {
-          this.reloadUsers(); 
-          console.log(`Reloading...`)
-
+          this.reloadUsers();
           this.form.new_user_access = '';
           this.form.new_username = '';
 
         } catch (e) {
-          console.log(`Error while reloading users on the browser: `, e)
+          console.log(`Error while reloading users on the browser: `, e);
         }
 
       } else {
-        this.errormode = 'inputError'
+        this.errormode = 'inputError';
       }
     }, // - saveNewUser
 
     // ADD A NEW TOKEN FOR DEPLOYABLE - FROM MODAL 
     async saveNewToken() {
-      console.log(`saveNewToken(): `)
       //Check that form is filled correctly
       if (this.form.new_token_type) {
         // Send post request to server
         try {
-
-          // if (this.showEnvironmentToken === false) {
-          //   this.form.new_token_environment_name = 'NULL';
-          //   this.form.new_token_environment_owner = 'NULL';
-          // } else { // find environment owner based on name
-          //   let i = 0;
-          //   let ownerName = 'NULL';
-          //   this.environments.forEach(environment => { // set environment owner 
-          //       if (environment.name === this.form.new_token_environment_name) {
-          //         ownerName = environment.owner
-          //       }
-          //     }
-          //   );
-
-          //   this.form.new_token_environment_owner = ownerName;
-          // }
-          console.log(`this.form=`, this.form.new_token_deployment);
-
           let record = {
             token_type: this.form.new_token_type,
             deployable_owner: this.deployable.owner,
             deployable_name: this.deployableName,
-          }
+          };
+
           if (this.form.new_token_deployment) {
             record.target_environment_owner = this.form.new_token_deployment.environment_owner
             record.target_environment_name = this.form.new_token_deployment.environment_name
             record.target_application_name = this.form.new_token_deployment.application_name
           }
-          console.log(`record is`, record);
-          let url = standardStuff.apiURL('/token')
-          let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-          await axios.post(url, record, config)
-          this.newTokenModal = false
+
+          let url = standardStuff.apiURL('/token');
+          let config = standardStuff.axiosConfig(this.$loginservice.jwt);
+          await axios.post(url, record, config);
+
+          this.newTokenModal = false;
           console.log(`New token request successfully sent to database`);
+
         } catch (e) {
-          console.log(`Error while sending new token request to the database: `, e)
+          console.log(`Error while sending new token request to the database: `, e);
         }
 
         // Once data sent, reload table with the new token
         try {
           this.reloadTokens(); 
-          console.log(`Reloading...`)
+
         } catch (e) {
-          console.log(`Error while reloading tokens on the browser: `, e)
+          console.log(`Error while reloading tokens on the browser: `, e);
         }
+
       } else {
-        this.errormode = 'inputError'
+        this.errormode = 'inputError';
       }
     }, // - saveNewToken
 
     // ADD A NEW VERSION FOR DEPLOYABLE - FROM MODAL 
     async saveNewVersion() {
-      console.log(`saveNewVersion(): `)
       //Check that form is filled correctly
-      if (this.form.new_version_hash && this.form.new_version_build_no && this.form.new_version_registration_source && this.form.new_version_registered_by) {
+      if (this.form.new_version_hash && this.form.new_version_build_no && 
+      this.form.new_version_registration_source && this.form.new_version_registered_by) {
         // Send post request to server
         try {
-          let url = standardStuff.apiURL('/newVersion')
+          let url = standardStuff.apiURL('/newVersion');
+
           let record = {
             version: this.form.new_version_hash,
             build_no: this.form.new_version_build_no,
@@ -1036,142 +1023,152 @@ export default {
             registered_by: this.form.new_version_registered_by,
             deployable_name: this.deployableName,
             deployable_owner: this.deployable.owner,
-          }
-          let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-          await axios.post(url, record, config)
-          this.modalMode = 'none'
+          };
+
+          let config = standardStuff.axiosConfig(this.$loginservice.jwt);
+          await axios.post(url, record, config);
+
+          this.modalMode = 'none';
           console.log(`New version request successfully sent to server`);
+
         } catch (e) {
-          console.log(`Error while sending new version request to the server: `, e)
+          console.log(`Error while sending new version request to the server: `, e);
         }
 
         // Once data sent, reload table with the new version
         try {
           this.reloadVersions(); 
-          console.log(`Reloading...`)
+
         } catch (e) {
-          console.log(`Error while reloading versions on the browser: `, e)
+          console.log(`Error while reloading versions on the browser: `, e);
         }
+
       } else {
-        this.errormode = 'inputError'
+        this.errormode = 'inputError';
       }
     }, // - saveNewVersion 
     
     // SAVE EDITED USER
     async saveEditedUser() {
       try {
-        let url = standardStuff.apiURL('/editUser')
         let record = {
             id: this.users.user_id,
             access: this.form.edit_useraccess,
             project: this.deployableName,
-        }
-        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-        await axios.post(url, record, config)
-        console.log('Edited user successfully saved: ' + this.deployableName + ' ' + this.users.user_id + ' ' + this.form.edit_useraccess)
+        };
+
+        let url = standardStuff.apiURL('/editUser');
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt);
+        await axios.post(url, record, config);
 
         // Display new users details
         this.showUserEditModal = false;
         this.reloadUsers();
-        console.log('New user details have been updated on the browser.')
+        console.log('New user details have been updated on the browser.');
+
       } catch (e) {
-        console.log(`Error whilst updating browser with edited user:`, e)
+        console.log(`Error whilst updating browser with edited user:`, e);
       } 
     }, // - saveEditedUser
         
     // REMOVE USER
     async removeUser() {
       try {
-        let url = standardStuff.apiURL(`/removeUser/${this.deployableName}/${this.users.username}`)
-        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-        await axios.delete(url, config) 
+        let url = standardStuff.apiURL(`/removeUser/${this.deployableName}/${this.users.username}`);
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt);
+        await axios.delete(url, config);
 
         this.deleteUserModal = false;
         this.reloadUsers();
-        console.log('User has been removed from the project_users db table.')
+        console.log('User has been removed from the project_users db table.');
+
       } catch (e) {
-        console.log(`Error whilst removing user:`, e)
+        console.log(`Error whilst removing user:`, e);
       } 
     }, // - removeUser
 
     // REMOVE DEPENDENCY
     async removeDependencyFunc() {
       try {
-        let url = standardStuff.apiURL(`/removeDependency/${this.deployableOwner}:${this.deployableName}/${this.dependencies.child_name}`)
-        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-        await axios.delete(url, config) 
+        let url = standardStuff.apiURL(`/removeDependency/${this.deployableOwner}:${this.deployableName}/${this.dependencies.child_name}`);
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt);
+        await axios.delete(url, config);
 
         this.removeDependencyModal = false;
         this.reloadDependencies();
-        console.log('Dependency has been removed from the dependency db table.')
+        console.log('Dependency has been removed from the dependency db table.');
+
       } catch (e) {
-        console.log(`Error whilst removing dependency:`, e)
+        console.log(`Error whilst removing dependency:`, e);
       } 
     }, // - removeDependencyFunc
 
     // REMOVE VARIABLE
     async removeVariableFunc() {
       try {
-        let url = standardStuff.apiURL(`/removeVariable/${this.deployableOwner}:${this.deployableName}/${this.variables.name}`)
-        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-        await axios.delete(url, config) 
-        console.log('DeployableOwner: ', this.deployableOwner)
+        let url = standardStuff.apiURL(`/removeVariable/${this.deployableOwner}:${this.deployableName}/${this.variables.name}`);
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt);
+        await axios.delete(url, config);
 
         this.removeVariableModal = false;
         this.reloadVariables();
-        console.log('Variable has been removed from the variables db table.')
+        console.log('Variable has been removed from the variables db table.');
+
       } catch (e) {
-        console.log(`Error whilst removing variable:`, e)
-      } 
+        console.log(`Error whilst removing variable:`, e);
+      }
     }, // - removeVariableFunc
 
     // ADD A NEW DEPENDENCY TO THE DATABASE - FROM MODAL 
     async saveNewDependency() {
       //Check that form is filled correctly
       if (this.form.new_child && this.form.new_prefix && this.form.new_version) {
-        
         // Check for existing dependency using selected child & deployableName:
-        let found = false
+        let found = false;
+
         this.dependencies.forEach(dependency => {
           if (dependency.child === this.form.new_child && dependency.parent === this.deployableName) {
-            console.log(`There is already an existing dependency with these values!`)
-            found = true
+            console.log(`There is already an existing dependency with these values!`);
+            found = true;
           }
-        })
+        });
 
         // Check for existing prefix using selected prefix and deployableName:
-        let foundPref = false
+        let foundPref = false;
+
         this.dependencies.forEach(dependency => {
           if (dependency.prefix === this.form.new_prefix && dependency.parent === this.deployableName) {
-            console.log(`There is already an existing prefix with this value!`)
-            foundPref = true
+            console.log(`There is already an existing prefix with this value!`);
+            foundPref = true;
           }
-        })
+        });
 
         // If matching dependency is found, send error 
         if (found) {
-          console.log(`There is already a dependency with these values... Error message shown!`)
-          this.dependencyError = `Dependency already exists`
-          return 
+          console.log(`There is already a dependency with these values... Error message shown!`);
+          this.dependencyError = `Dependency already exists`;
+          return;
         }
 
         // If matching prefix is found, send error 
         if (foundPref) {
-          console.log(`There is already a prefix with this value... Error message shown!`)
-          this.dependencyError = `Prefix already exists`
-          return 
+          console.log(`There is already a prefix with this value... Error message shown!`);
+          this.dependencyError = `Prefix already exists`;
+          return;
         }
-        this.dependencyError = null
+
+        this.dependencyError = null;
 
         this.deployables.forEach(deployable => {
           if (deployable.name === this.form.new_child) {
             this.form.child_owner = deployable.owner;
           }
-        })
+        });
 
         // If no error, send post request to server
         try {
-          let url = standardStuff.apiURL('/newDependency')
+          let url = standardStuff.apiURL('/newDependency');
+
           let record = {
             child_name: this.form.new_child,
             child_owner: this.form.child_owner,
@@ -1179,31 +1176,32 @@ export default {
             version: this.form.new_version,
             deployable: this.deployableName,
             parent_owner: this.deployable.owner,
-          }
-          let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-          await axios.post(url, record, config)
-          this.newDependencyModal = false
+          };
+
+          let config = standardStuff.axiosConfig(this.$loginservice.jwt);
+          await axios.post(url, record, config);
+          this.newDependencyModal = false;
           console.log(`New dependency successfully sent to database`);
+
         } catch (e) {
-          console.log(`Error while sending new dependency to the database: `, e)
+          console.log(`Error while sending new dependency to the database: `, e);
         }
 
         // Once data sent, reload with the new dependency
         try {
           this.reloadDependencies(); 
-          console.log(`Reloading...`)
         } catch (e) {
-          console.log(`Error while reloading dependencies on the browser: `, e)
+          console.log(`Error while reloading dependencies on the browser: `, e);
         }
+
       } else {
-        this.errormode = 'inputError'
+        this.errormode = 'inputError';
       }
     }, // - saveNewDependency
 
     // SAVE AN EDITED VARIABLE WITH NEW VALUES - IN MODAL
     async saveVariable() {
       try {
-        let url = standardStuff.apiURL('/variable')
         let record = {
           description: this.form.new_variable_description,
           type: this.form.new_variable_type,
@@ -1211,140 +1209,144 @@ export default {
           external: this.form.new_variable_is_external,
           deployable: this.deployableName,
           name: this.variable_name,
-        }
-        let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-        await axios.post(url, record, config)
-        this.showModal = false
-        console.log(`Updated variable successfully sent to database`)
+        };
+
+        let url = standardStuff.apiURL('/variable');
+        let config = standardStuff.axiosConfig(this.$loginservice.jwt);
+        await axios.post(url, record, config);
+
+        this.showModal = false;
+        console.log(`Updated variable successfully sent to database`);
+
       } catch (e) {
-        console.log(`Error while sending edited variable to the database: `, e)
+        console.log(`Error while sending edited variable to the database: `, e);
       }
 
       try {
         this.reloadVariables(); 
-        console.log(`Variables have been reloaded`)
+        console.log(`Variables have been reloaded`);
+
       } catch (e) {
-        console.log(`Error while reloading variables`, e)
+        console.log(`Error while reloading variables`, e);
       }
-    }, // -saveVariable
+    }, // - saveVariable
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW OR EDITED VARIABLES
     async reloadVariables() {
-      const  url = standardStuff.apiURL('/variables')
       const params = {
           params: { 
             deployableOwner: this.deployableOwner,
-            deployableName: this.deployableName
+            deployableName: this.deployableName,
           }
-      }
-      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-      let res = await axios.get(url, params, config)
-      this.variables = res.data.variables
-      console.log(`Variables have been reloaded on the browser.`)
-    },  // -reloadVariables 
+      };
+
+      const  url = standardStuff.apiURL('/variables');
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+      let res = await axios.get(url, params, config);
+      this.variables = res.data.variables;
+
+      console.log(`Variables have been reloaded on the browser.`);    
+    },  // - reloadVariables 
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW PROJECT USER
     async reloadUsers() {
-      const url = standardStuff.apiURL('/project_users')
       const params = {
           params: { 
-            deployableName: this.deployableName
+            deployableName: this.deployableName,
           }
-      }
-      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-      let result = await axios.get(url, params, config)
-      console.log(`API5 returned`, result.data);
-      this.users = result.data.users
-      return {
-        users: this.users
       };
-    },  // -reloadUsers
+
+      const url = standardStuff.apiURL('/project_users');
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+      let result = await axios.get(url, params, config);
+      this.users = result.data.users;
+
+      return {
+        users: this.users,
+      };
+    },  // - reloadUsers
 
     // RELOAD THE DATABASE TABLE AFTER SAVING A NEW TOKEN
     async reloadTokens() {
-      const url = standardStuff.apiURL(`/tokens/${this.deployableOwner}:${this.deployableName}`)
-      console.log(`YYYY AAA RRR PP`, url);
-      // const params = {
-      //     params: { 
-      //       deployableName: this.deployableName
-      //     }
-      // }
-      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-      let result = await axios.get(url, config)
-      // let result = await axios.get(url, params, config)
-      console.log(`API returned`, result.data);
-      this.tokens = result.data.tokens
+      const url = standardStuff.apiURL(`/tokens/${this.deployableOwner}:${this.deployableName}`);
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+      let result = await axios.get(url, config);
+      this.tokens = result.data.tokens;
+
       return {
-        tokens: this.tokens
+        tokens: this.tokens,
       };
-    },  // -reloadTokens
+    }, // - reloadTokens
 
     // RELOAD THE DATABASE TABLE AFTER SAVING A NEW VERSION
     async reloadVersions() {
-      const url = standardStuff.apiURL('/versions')
       const params = {
         params: { 
-          deployableName: this.deployableName
+          deployableName: this.deployableName,
         }
-      }
-      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-      let result = await axios.get(url, params, config)
-      console.log(`API returned`, result.data);
-      this.versions = result.data.versions
-      return {
-        versions: this.versions
       };
-    },  // -reloadVersions 
+
+      const url = standardStuff.apiURL('/versions');
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+      let result = await axios.get(url, params, config);
+      this.versions = result.data.versions;
+
+      return {
+        versions: this.versions,
+      };
+    },  // - reloadVersions 
 
     // RELOAD THE DATABASE TABLE AFTER SAVING NEW DEPENDENCY
     async reloadDependencies() {
-      const url = standardStuff.apiURL('/deployable/${this.deployableOwner}:${this.deployableName}/dependancies')
       const params = {
           params: { 
             deployableName: this.deployableName,
             deployableOwner: this.deployableOwner,
           }
-      }
-      const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-      // let res4 = await axios.get(url, params, config)
-      let res4 = await axios.get(url, params, config)
+      };
+
+      const url = standardStuff.apiURL('/deployable/${this.deployableOwner}:${this.deployableName}/dependancies');
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+      let res = await axios.get(url, params, config);
+      this.dependencies = res.data.dependencies;
+
       console.log(`Dependencies have been reloaded on the browser`);
-      this.dependencies = res4.data.dependencies
+
       return {
-        dependencies: this.dependencies
-      }
-    },  // -reloadDependencies
+        dependencies: this.dependencies,
+      };
+    },  // - reloadDependencies
 
     // EDIT MODE FOR DEPLOYABLES
     setEditMode() { 
-      this.editDeployableStatus = 'edit'
-      this.form.new_owner = this.deployable.product_owner
-      this.form.new_type = this.deployable.type
-      this.form.new_description = this.deployable.description
-      this.form.new_is_project = this.deployable.is_project
-    }, // -setEditMode
+      this.editDeployableStatus = 'edit';
+      this.form.new_owner = this.deployable.product_owner;
+      this.form.new_type = this.deployable.type;
+      this.form.new_description = this.deployable.description;
+      this.form.new_is_project = this.deployable.is_project;
+    }, // - setEditMode
 
     // OPEN MODAL AND CHANGE VALUES FOR EDITING VARIABLE - receives props.row (i.e. variable record)
     editVariable(variables) {  
-      this.showModal = true,
-      this.variable_name = variables.name
-      this.form.new_variable_description = variables.description 
-      this.form.new_variable_type = variables.type 
-      this.form.new_variable_mandatory = variables.mandatory
-      this.form.new_variable_is_external = variables.is_external
-      return false
-    }, // -editVariable
+      this.showModal = true;
+      this.variable_name = variables.name;
+      this.form.new_variable_description = variables.description;
+      this.form.new_variable_type = variables.type;
+      this.form.new_variable_mandatory = variables.mandatory;
+      this.form.new_variable_is_external = variables.is_external;
+      return false;
+    }, // - editVariable
 
     // OPEN MODAL AND CREATE NEW VALUES FOR CREATING NEW VARIABLE 
     newVariable(variable) {
       this.newVariableModal = true;
-      this.variable_name = variable.name,
-      this.variable_description = variable.description,
-      this.variable_type = variable.type,
-      this.variable_mandatory = variable.mandatory,
-      this.variable_is_external = variable.is_external
-      return false
-    }, // -newVariable
+      this.variable_name = variable.name;
+      this.variable_description = variable.description;
+      this.variable_type = variable.type;
+      this.variable_mandatory = variable.mandatory;
+      this.variable_is_external = variable.is_external;
+      return false;
+    }, // - newVariable
 
     // OPEN MODAL AND CHANGE VALUES FOR EDITING USER - receives props.row (i.e. user record)
     editUser(users) {  
@@ -1354,7 +1356,7 @@ export default {
       this.users.user_id = users.user_id;
       this.form.edit_useraccess = users.access;
       return false;
-    }, // -editUser
+    }, // - editUser
 
     deleteUser(user) {
       this.deleteUserModal = true;
@@ -1363,31 +1365,31 @@ export default {
       this.users.username = user.username;
       this.users.user_id = user.user_id;
       return false;
-    }, // -deleteUser
+    }, // - deleteUser
 
     removeDependency(dependency) {
       this.removeDependencyModal = true;
       this.dependencies.child_name = dependency.child_name;
       return false;
-    }, // -removeDependency
+    }, // - removeDependency
 
       removeVariable(variable) {
       this.removeVariableModal = true;
       this.variables.name= variable.name;
       return false;
-    }, // -removeVariable
+    }, // - removeVariable
 
     // OPEN MODAL AND CREATE NEW USER
     newUser() {
       this.newUserModal = true;
-      return false
-    }, // -newUser
+      return false;
+    }, // - newUser
 
     // OPEN MODAL FOR CREATE NEW TOKEN
     newToken() {
       this.newTokenModal = true;
       return false;
-    }, // -newToken 
+    }, // - newToken 
 
     showEnvironmentsToken() {
       if (this.showEnvironmentToken === true) {
@@ -1397,13 +1399,14 @@ export default {
       }
       
       return false;
-    },
+    }, // - showEnvironmentsToken
 
     // OPEN MODAL FOR CREATE NEW VERSION
     newVersion() {
       this.modalMode = 'newVersion';
       this.form.new_version_registered_by = this.currentUser[0].username;
       this.form.new_version_registration_source = 'Juice';
+
       if (this.versions == 0) {
         this.form.new_version_build_no = 1;
       } else {
@@ -1414,19 +1417,19 @@ export default {
       }
       
       return false;
-    }, // -newVersion 
+    }, // - newVersion 
 
     // OPEN MODAL AND CREATE NEW DEPENDENCY 
     newDependency(variable) {
       this.newDependencyModal = true;
-      return false
-    }, // -newVariable
+      return false;
+    }, // - newDependency
 
     showLearnVariablesDialog() {
-      this.importJSON = ''
-      this.importVariables = { }
-      this.modalMode = 'learnVariables'
-    },
+      this.importJSON = '';
+      this.importVariables = { };
+      this.modalMode = 'learnVariables';
+    }, // - showLearnVariablesDialog
 
     // We are importing variable names from example JSON
     // 1. Check the JSON is valid.
@@ -1434,135 +1437,147 @@ export default {
     scanJson() {
       console.log(`scanJson()`);
       console.log(`pre-existing this.importVariables=`, this.importVariables);
-      if (this.importJSON===null || this.importJSON.trim() === '') {
-        this.jsonError = ''
-        return
-      }
-      try {
 
+      if (this.importJSON===null || this.importJSON.trim() === '') {
+        this.jsonError = '';
+        return;
+      }
+
+      try {
         // Add these items to our list. At the same time
         // create a hash so we can lookup variable names.
-        let config = JSON.parse(this.importJSON)
+        let config = JSON.parse(this.importJSON);
         console.log(`config is`, config);
 
-        //
-        let index = { }
+        let index = { };
         for (let path in this.importVariables) {
-          const variable = this.importVariables[path]
-          index[variable.name] = variable
+          const variable = this.importVariables[path];
+          index[variable.name] = variable;
           console.log(`Adding existsing ${variable.name}`);          
         }
+
         console.log(`existing index is`, JSON.stringify(index, '', 2));
 
         // Add any new fields to our index of stuff to update.
         let scan = (prefix, obj) => {
           for (let name in obj) {
-            let value = obj[name]
-            let path = `${prefix}${prefix?'.':''}${name}`
+            let value = obj[name];
+            let path = `${prefix}${prefix?'.':''}${name}`;
 
             if (typeof(value) === 'object') {
-              scan(path, value)
+              scan(path, value);
             } else {
               // if (typeof(index[path]) === 'undefined') {
               // console.log(`add ${path}`);
               if (index[path]) {
                 // console.log(`Already in index`);
               } else {
-                let { is_sensitive, example } = safeExample(path, value)
+                let { is_sensitive, example } = safeExample(path, value);
                 index[path] = {
                   name: path,
                   op: 'add',
                   accept: true,
                   is_sensitive,
                   example,
-                }
+                };
               }
             }
           }
-        }//- scan
-        scan('', config)
+        } // - scan
+
+        scan('', config);
         console.log(`index after scanning:`, index);
         console.log(`index after scanning:`, JSON.stringify(index, '', 2));
 
         // Compare our existing variables against those in the JSON.
         this.variables.forEach(variable => {
-          let def = index[variable.name]
+          let def = index[variable.name];
+
           if (def) {
             // We already know this variable
             // def.op = 'nada'
             if (def.op !== 'delete') {
-              delete index[variable.name]
+              delete index[variable.name];
             }
+
           } else {
             // This variable is not in the JSON. Delete it?
             index[variable.name] = {
               name: variable.name,
               op: 'delete',
               accept: true,
-              example: '' }
+              example: '' 
+            };
           }
         })
 
         // Display them as a sorted list
-        this.importVariables = [ ]
+        this.importVariables = [ ];
+
         for (let name in index) {
-          let value = index[name]
-          this.importVariables.push(value)
+          let value = index[name];
+          this.importVariables.push(value);
         }
+
         this.importVariables.sort((v1, v2) => {
-          if (v1.name < v2.name) return -1
-          if (v1.name > v2.name) return +1
-          return 0
+          if (v1.name < v2.name) return -1;
+          if (v1.name > v2.name) return +1;
+          return 0;
         })
 
-        this.jsonError = ''
+        this.jsonError = '';
+
       } catch (e) {
         console.log(`JSON WAS NOT VALID`, e.message);
-        this.jsonError = e.message
+        this.jsonError = e.message;
       }
-    },//- scanJson
+    }, // - scanJson
 
-    toggleImports () {
-      // console.log(`toggleImports()`);
-
+    toggleImports() {
       // See if they are all selected, or none selected.
-      let allSelected = true
-      let noneSelected = true
+      let allSelected = true;
+      let noneSelected = true;
+
       this.importVariables.forEach(v => {
         if (v.accept) {
-          noneSelected = false
+          noneSelected = false;
         } else {
-          allSelected = false
+          allSelected = false;
         }
-      })
+      });
 
-      let newAccept = this.selectAllImports
+      let newAccept = this.selectAllImports;
+
       if (noneSelected) {
-        newAccept = true
+        newAccept = true;
       } else if (allSelected) {
-        newAccept = false
+        newAccept = false;
       }
 
       this.importVariables.forEach(v => {
-        v.accept = newAccept
-      })
-      this.selectAllImports = newAccept
-    },
+        v.accept = newAccept;
+      });
+
+      this.selectAllImports = newAccept;
+
+    }, // - toggleImports
 
     async updateVariablesFromImport() {
       console.log(`updateVariablesFromImport()`);
       console.log(`pre-existing this.importVariables=`, this.importVariables);
+
       for (let i = 0; i < this.importVariables.length; i++) {
-        let v = this.importVariables[i]
+        let v = this.importVariables[i];
+
         if (!v.accept) {
           continue;
         }
-        if (v.op === 'add') {
-          // console.log(` -> add`, v);
 
+        if (v.op === 'add') {
           // If no error, send post request to server
           try {
-            let url = standardStuff.apiURL('/newVariable')
+            let url = standardStuff.apiURL('/newVariable');
+
             let record = {
               deployable_owner: this.deployableOwner,
               deployable_name: this.deployableName,
@@ -1573,100 +1588,85 @@ export default {
               external: false,//this.form.variable_is_external,
               is_sensitive: v.is_sensitive,
               example: v.example,
-            }
-            // console.log(`save`, record);
-            let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-            await axios.post(url, record, config)
-            // console.log(`New variable successfully sent to database`);
+            };
+
+            let config = standardStuff.axiosConfig(this.$loginservice.jwt);
+            await axios.post(url, record, config);
+
+            console.log(`New variable successfully sent to database`);
+
           } catch (e) {
-            console.log(`Error while adding new variable to the database: `, e)
-          }//-try
+            console.log(`Error while adding new variable to the database: `, e);
+          } 
 
         } else if (v.op === 'delete') {
-          // console.log(` -> delete`, v);
+
           try {
-            let url = standardStuff.apiURL(`/variable/${this.deployableOwner}:${this.deployableName}/${v.name}`)
-            let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-            // console.log(`URL=${url}`);
-            await axios.delete(url, config)
+            let url = standardStuff.apiURL(`/variable/${this.deployableOwner}:${this.deployableName}/${v.name}`);
+            let config = standardStuff.axiosConfig(this.$loginservice.jwt);
+            await axios.delete(url, config);
+
           } catch (e) {
-            console.log(`Error while updating variables: `, e)
-          }//-try
+            console.log(`Error while updating variables: `, e);
+          }
         }
-      }//- for
+      } // - for
 
       // Once data sent, reload with the new variable
       try {
         this.reloadVariables(); 
-        console.log(`Variables have been reloaded on the browser.`)
-        this.modalMode = 'none'
+        console.log(`Variables have been reloaded on the browser.`);
+        this.modalMode = 'none';
+
       } catch (e) {
-        console.log(`Error while reloading variables on the browser: `, e)
+        console.log(`Error while reloading variables on the browser: `, e);
       }
-    },//- updateVariablesFromImport()
+    }, // - updateVariablesFromImport()
 
     updateVariable(variable) {
-      console.log(`Update variable `, variable);
+      let meTimer = this.saveVariableTimers[variable.name];
+      let self = this;
 
+      if (meTimer) {
+        clearTimeout(meTimer.timer);
+      } else {
+        meTimer = { timer: null, variable };
+        this.saveVariableTimers[variable.name] = meTimer;
+      }
 
-      // saveDetails: async function () {
-      let meTimer = this.saveVariableTimers[variable.name]
-      let self = this
-        if (meTimer) {
-            clearTimeout(meTimer.timer)
-        } else {
-          meTimer = { timer: null, variable }
-          this.saveVariableTimers[variable.name] = meTimer
+      meTimer.timer = setTimeout(async function () {
+        self.timer = null; // Clear the cancel handle
+
+        try {
+          let url = standardStuff.apiURL('/variable');
+          variable.deployable_owner = self.deployableOwner;
+          variable.deployable_name = self.deployableName;
+          let config = standardStuff.axiosConfig(self.$loginservice.jwt);
+          let result = await axios.post(url, variable, config);
+
+          console.log(`Updated variable successfully sent to database`, result);
+
+        } catch (e) {
+          console.log(`Error while sending edited variable to the database: `, e);
         }
 
-        meTimer.timer = setTimeout(async function () {
-            // console.log(`Updating...`, self.deployment);
-            self.timer = null // Clear the cancel handle
-            console.log(` DO IT! Update variable`, meTimer);
-          //   const url = standardStuff.apiURL('/variable')
-          //   const config = standardStuff.axiosConfig(self.$loginservice.jwt)
-          //   console.log(`UPDATING VARIABLE`, self.environment);
-          //  let result = await axios.put(url, self.environment, config)
-          //   console.log(`result is `, result);
-            try {
-              let url = standardStuff.apiURL('/variable')
-              // let record = {
-              //   description: this.form.new_variable_description,
-              //   type: this.form.new_variable_type,
-              //   mandatory: this.form.new_variable_mandatory,
-              //   external: this.form.new_variable_is_external,
-              //   deployable: this.deployableName,
-              //   name: this.variable_name,
-              // }
-              variable.deployable_owner = self.deployableOwner
-              variable.deployable_name = self.deployableName
-              let config = standardStuff.axiosConfig(self.$loginservice.jwt)
-              let result = await axios.post(url, variable, config)
-              // this.showModal = false
-              console.log(`Updated variable successfully sent to database`, result)
-            } catch (e) {
-              console.log(`Error while sending edited variable to the database: `, e)
-            }
-
-
-
-        }, 1000)
-    },//- updatevariable
-  },//- methods
+      }, 1000);
+    }, // - updateVariable
+  }, // - methods
 
   /*
    *  Call our API using Axios, to get the project data.
    *  See https://nuxtjs.org/guide/async-data#handling-errors
    */
   async asyncData ({ app, params, error }) {
-    let username = app.$nuxtLoginservice.user.username
-    let {owner:deployableOwner, name:deployableName} = standardStuff.methods.std_fromQualifiedName(params.deployableName, username)
-    console.log(`deployable=> ${deployableOwner}, ${deployableName}`);
+    let username = app.$nuxtLoginservice.user.username;
+    let {owner:deployableOwner, name:deployableName} = standardStuff.methods.std_fromQualifiedName(params.deployableName, username);
     let user = params.userName;
 
     try {
       // Config and params for all calls
-      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+      const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt);
+
       const params = {
           params: { 
             user: user,
@@ -1674,81 +1674,80 @@ export default {
             deployableName: deployableName,
             organisationName: user,
           }
-      }
+      };
 
       // Select the deployable for this page
-      let url = standardStuff.apiURL('/deployable')
-      let res = await axios.get(url, params, config)
+      let url = standardStuff.apiURL('/deployable');
+      let res = await axios.get(url, params, config);
       console.log(`Deployable API returned: `, res.data);
-      const deployable = res.data.record
+      const deployable = res.data.record;
 
       // Select the variables for this deployable
-      url = standardStuff.apiURL('/variables')
-      res = await axios.get(url, params, config)
+      url = standardStuff.apiURL('/variables');
+      res = await axios.get(url, params, config);
       console.log(`Variables API returned: `, res.data);
-      const variables = res.data.variables
-      variables.forEach(v => {v._name = v.name})
+      const variables = res.data.variables;
+      variables.forEach(v => {v._name = v.name});
 
       // Select the deployments for this deployable
-      url = standardStuff.apiURL('/envDeployments')
-      res = await axios.get(url, params, config)
+      url = standardStuff.apiURL('/envDeployments');
+      res = await axios.get(url, params, config);
       console.log(`Deployments API returned`, res.data);
-      const deployments = res.data.deployments
+      const deployments = res.data.deployments;
 
       // Select dependencies for this deployable
-      url = standardStuff.apiURL('/deployable/${deployableOwner}:${deployableName}/dependancies')
-      res = await axios.get(url, params, config)
+      url = standardStuff.apiURL('/deployable/${deployableOwner}:${deployableName}/dependancies');
+      res = await axios.get(url, params, config);
       console.log(`Dependencies API returned: `, res.data);
-      const dependencies = res.data.dependencies
+      const dependencies = res.data.dependencies;
 
       // Select project users for this deployable
-      url = standardStuff.apiURL('/project_users')
-      res = await axios.get(url, params, config)
+      url = standardStuff.apiURL('/project_users');
+      res = await axios.get(url, params, config);
       console.log(`Project_users API returned: `, res.data);
-      const users = res.data.users
+      const users = res.data.users;
 
       // Import environments to use when creating new Deployment
-      url = standardStuff.apiURL('/environments')
-      res = await axios.get(url, config)
+      url = standardStuff.apiURL('/environments');
+      res = await axios.get(url, config);
       console.log(`All environments API returned: `, res.data);
-      const environments = res.data.environments
+      const environments = res.data.environments;
 
       // Import all users for creating new user (on the selected project)
-      url = standardStuff.apiURL('/users')
-      res = await axios.get(url, config)
+      url = standardStuff.apiURL('/users');
+      res = await axios.get(url, config);
       console.log(`All users API returned: `, res.data);
-      const allUsers = res.data.users
+      const allUsers = res.data.users;
 
       // This users accessibility/profile details
-      url = standardStuff.apiURL('/currentUser')
-      res = await axios.get(url, config)
+      url = standardStuff.apiURL('/currentUser');
+      res = await axios.get(url, config);
       console.log(`User access API returned: `, res.data);
-      const currentUser = res.data.user
+      const currentUser = res.data.user;
 
       // Import all versions for this deployable
-      url = standardStuff.apiURL('/versions')
-      res = await axios.get(url, params, config)
+      url = standardStuff.apiURL('/versions');
+      res = await axios.get(url, params, config);
       console.log(`Versions API returned: `, res.data);
-      const versions = res.data.versions
+      const versions = res.data.versions;
 
       // Import all tokens for this deployable
-      url = standardStuff.apiURL(`/tokens/${deployableOwner}:${deployableName}`)
-      res = await axios.get(url, config)
+      url = standardStuff.apiURL(`/tokens/${deployableOwner}:${deployableName}`);
+      res = await axios.get(url, config);
       console.log(`Tokens API returned: `, res.data);
-      const tokens = res.data.tokens 
+      const tokens = res.data.tokens;
 
       // Import all deployables for dependency modal
-      url = standardStuff.apiURL('/deployables')
-      res = await axios.get(url, params, config)
+      url = standardStuff.apiURL('/deployables');
+      res = await axios.get(url, params, config);
       console.log(`All deployables API returned: `, res.data);
-      const deployables = res.data.deployables
+      const deployables = res.data.deployables;
 
       // Import all orgusers (if an org account)
-      url = standardStuff.apiURL('/organisationUsers')
-      res = await axios.get(url, params, config)
-      console.log('All org_users API returned: ', res.data)
-      const orgUsers = res.data.organisationUsers
-
+      url = standardStuff.apiURL('/organisationUsers');
+      res = await axios.get(url, params, config);
+      console.log('All org_users API returned: ', res.data);
+      const orgUsers = res.data.organisationUsers;
 
       return {
         deployableOwner: deployableOwner,
@@ -1767,11 +1766,11 @@ export default {
         orgUsers: orgUsers,
         //versions: versions,
         //tokens: tokens,
-      }
+      };
       
     } catch (e) {
-      console.log(`Could not fetch project:`, e)
-      alert(`Error while fetching project ${deployableName}`)
+      console.log(`Could not fetch project:`, e);
+      alert(`Error while fetching project ${deployableName}`);
     }
   }
 }

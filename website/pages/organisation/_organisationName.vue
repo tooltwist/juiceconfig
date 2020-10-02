@@ -85,7 +85,7 @@
                                     b-button(@click="newUserModal=false", type="is-danger is-outlined", size="is-small") Cancel
 
         // Edit User Modal starts below:
-        div(v-show="showUserEditModal")
+        div(v-show="editUserModal")
             transition(name="modal")
                 div.modal-mask
                     div.modal-wrapper
@@ -105,20 +105,20 @@
                             footer.modal-card-foot 
                                 div.control
                                     b-button(@click.stop="saveEditedUser", type="is-primary is-light", size="is-small")  Save    
-                                    b-button(@click="showUserEditModal=false", type="is-danger is-outlined", size="is-small") Cancel
+                                    b-button(@click="editUserModal=false", type="is-danger is-outlined", size="is-small") Cancel
 
 </template>
 
 <script>
-import axios from 'axios'
-import standardStuff from '../../lib/standard-stuff'
+import axios from 'axios';
+import standardStuff from '../../lib/standard-stuff';
 
 export default {
     name: 'Organisation',
 
     components: {
         modal: {
-            template: '#modal-template'
+            template: '#modal-template',
         }
     },
 
@@ -133,18 +133,22 @@ export default {
                 edit_useraccess: '',
                 user_username: '',
             },
+
             org_users: [ ],
             organisation: [ ],
             users: [ ],
             organisationName: '',
             currentUser: '',
+
+            // CSS
             activeTab: 0,
             newUserModal: false,
-            showUserEditModal: false,
+            editUserModal: false,
         }
     },
 
     computed: {
+        // Returns an array of usernames for current organisation
         usernames: function () {
             let usernames = [];
             let i = 0;
@@ -155,30 +159,31 @@ export default {
             })
 
             return usernames;
-        },
+        }, // - usernames
 
+        // Returns a filtered list for searching usernames array
         filterUsernames: function () {
             return this.usernames.filter((option) => {
-                return option.toString().toLowerCase().indexOf(this.form.new_user.toLowerCase()) >= 0
+                return option.toString().toLowerCase().indexOf(this.form.new_user.toLowerCase()) >= 0;
             })
-        }
-    },
+        }, // - filterUsernames
+    }, // - computed
 
     methods: {
         ...standardStuff.methods,
 
-        // OPEN MODAL AND CHANGE VALUES FOR EDITING USER - receives props.row (i.e. user record)
+        // Opens edit user modal and sets form values for user record
         editUser(user) {  
-            this.showUserEditModal = true;
+            this.editUserModal = true;
             this.form.edit_useraccess = user.role;
             this.form.user_username = user.user_username;
             return false;
-        }, // -editUser
+        }, // - editUser
 
-        // SAVE EDITED USER
+        // Saves edited user record from editUser modal
         async saveEditedUser() {
             try {
-                let url = standardStuff.apiURL('/orgRoleUpdate')
+                let url = standardStuff.apiURL('/orgRoleUpdate');
 
                 let record = {
                     username: this.form.user_username,
@@ -186,46 +191,46 @@ export default {
                     org: this.organisationName,
                 }
 
-                let config = standardStuff.axiosConfig(this.$loginservice.jwt)
-                await axios.post(url, record, config)
+                let config = standardStuff.axiosConfig(this.$loginservice.jwt);
+                await axios.post(url, record, config);
 
                 // Display new users details
-                this.showUserEditModal = false;
+                this.editUserModal = false;
                 this.reloadOrgUsers();
-                console.log('New org_user details have been updated on the browser.')
+                console.log('New org_user details have been updated on the browser.');
                 
             } catch (e) {
-                console.log(`Error whilst updating browser with edited user:`, e)
+                console.log(`Error whilst updating browser with edited user:`, e);
             } 
         }, // - saveEditedUser
 
         // Open modal to add new org member/user:
         newUser() {
             this.newUserModal = true;
-            return false
-        },
+            return false;
+        }, // - newUser
 
-        // Change status of org_user: (disable) temporarily removes access of existing user, (remove) deletes a pending user invitation.
+        // Change status of org_user: (disable) temporarily removes access of existing user, 
+        // (remove) deletes a pending user invitation, (enable) confirms the status of user.
         async changeMembership(member, status) {
+            const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+
             if (status == 'disable') {
-                // update the user_org record where user_username == member, org_username == user SET status == disabled
                 try {
                     let params = {
                         org: this.organisationName,
                         member: member,
                         status: 'disabled',
-                    }
+                    };
 
-                    const url = standardStuff.apiURL('/orgStatusUpdate')
-                    const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-                    await axios.post(url, params, config)
+                    const url = standardStuff.apiURL('/orgStatusUpdate');
+                    await axios.post(url, params, config);
 
                 } catch (e) {
-                    console.log(`Error while updating user on the database: `, e)
+                    console.log(`Error while updating user on the database: `, e);
                 }
 
             } else if (status == 'remove') {
-                // delete the user_org record where user_username == member, org_username == user, status == pending
                 try {
                     const params = {
                         params: {
@@ -233,14 +238,13 @@ export default {
                             member: member,
                             status: 'pending',
                         }
-                    }
+                    };
 
-                    const url = standardStuff.apiURL('/deleteOrgUser')
-                    const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-                    await axios.delete(url, params, config)
+                    const url = standardStuff.apiURL('/deleteOrgUser');
+                    await axios.delete(url, params, config);
 
                 } catch (e) {
-                    console.log(`Error while deleting user record from the database: `, e)
+                    console.log(`Error while deleting user record from the database: `, e);
                 }
 
             } else if (status == 'enable') {
@@ -249,44 +253,42 @@ export default {
                         org: this.organisationName,
                         member: member,
                         status: 'confirmed',
-                    }
+                    };
 
-                    const url = standardStuff.apiURL('/orgStatusUpdate')
-                    const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-                    await axios.post(url, params, config)
+                    const url = standardStuff.apiURL('/orgStatusUpdate');
+                    await axios.post(url, params, config);
 
                 } catch (e) {
-                    console.log(`Error while updating user on the database: `, e)
+                    console.log(`Error while updating user on the database: `, e);
                 }        
             }
 
             try {
                 this.reloadOrgUsers();
             } catch (e) {
-                console.log(`Error whilst reloading users: `, e)
+                console.log(`Error whilst reloading users: `, e);
             }
-        },
+        }, // - changeMembership
 
-        // Reload org_users data after adding new user 
+        // Reload org_users data 
         async reloadOrgUsers() {
             const params = {
                 params: { 
-                    org_username: this.organisationName
+                    org_username: this.organisationName,
                 }
-            }
+            };
 
             const url = standardStuff.apiURL('/orgUsers');
             const config = standardStuff.axiosConfig(this.$loginservice.jwt);
-            let res = await axios.get(url, params, config)
+            let res = await axios.get(url, params, config);
 
-            this.org_users = res.data.org_users
-
-            console.log('org_users = ', this.org_users)
+            this.org_users = res.data.org_users;
+            console.log('Reloaded org_users: ', this.org_users);
             
             return {
                 org_users: this.org_users,
-            }
-        },  // -reloadOrgUsers 
+            };
+        }, // - reloadOrgUsers 
 
         // Add new org_user 
         async saveNewUser () {
@@ -296,17 +298,15 @@ export default {
                     role: this.form.user_role,
                     org_username: this.organisationName,
                     status: 'pending',
-                }
+                };
 
-                let url = standardStuff.apiURL('/newOrgUser')
-                const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-
-                await axios.post(url, record, config)
-
+                let url = standardStuff.apiURL('/newOrgUser');
+                const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+                await axios.post(url, record, config);
                 console.log(`New org_user successfully sent to database`);
 
             } catch (e) {
-                console.log(`Error while sending new org_user record to the database: `, e)
+                console.log(`Error while sending new org_user record to the database: `, e);
             }
 
             try {
@@ -314,41 +314,41 @@ export default {
                 this.newUserModal = false;
 
             } catch (e) {
-                console.log(`Error updating page: `, e)
+                console.log(`Error updating page: `, e);
             }
-        },
-    },
+        }, // - saveNewUser
+    }, // - methods
     
     async asyncData ({ app, params, error }) {
-        let currentUser = app.$nuxtLoginservice.user.username
+        let currentUser = app.$nuxtLoginservice.user.username;
         let organisationName = params.organisationName;
-        console.log('Orgname: ', organisationName)
 
         try {
             const params = {
                 params: {
                     organisationName: organisationName,
                 }
-            }
+            };
+
+            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt);
 
             // Select org record from user db table
-            const url = standardStuff.apiURL('/organisation')
-            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
-            let res = await axios.get(url, params, config)
-            const organisation = res.data.organisation[0]
-            console.log('Org:', organisation)
+            let url = standardStuff.apiURL('/organisation');
+            let res = await axios.get(url, params, config);
+            const organisation = res.data.organisation[0];
+            console.log('Organisation: ', organisation);
 
             // Select all users in org from org_users db table 
-            const url2 = standardStuff.apiURL('/organisationUsers')
-            res = await axios.get(url2, params, config)
-            const org_users = res.data.organisationUsers
-            console.log('org_users:', org_users)
+            url = standardStuff.apiURL('/organisationUsers');
+            res = await axios.get(url, params, config);
+            const org_users = res.data.organisationUsers;
+            console.log('Org_users: ', org_users);
 
             // Import all users
-            let url3 = standardStuff.apiURL('/users');
-            res = await axios.get(url3, config)
-            const users = res.data.users
-            console.log('Users: ', users)
+            url = standardStuff.apiURL('/users');
+            res = await axios.get(url, config);
+            const users = res.data.users;
+            console.log('Users: ', users);
 
             return {
                 organisationName: organisationName,
@@ -356,12 +356,12 @@ export default {
                 org_users: org_users,
                 users: users,
                 currentUser: currentUser,
-            }
+            };
 
         } catch (e) {
-            console.log(`Could not fetch organisation:`, e)
+            console.log(`Could not fetch organisation:`, e);
         }
-    }
+    } // - asyncData
 }
 </script>
 

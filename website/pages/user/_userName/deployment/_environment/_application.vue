@@ -1,11 +1,6 @@
 <template lang="pug">
 section.section
     h1.title.is-paddingless.is-marginless Deployment
-    //- p(class="is-size-5 has-text-weight-semibold is-italic")
-        | Project 
-        span.is-warning {{ applicationName }} 
-        span on environment 
-        span.is-warning {{ environmentName }} 
     br
     table
         tr
@@ -13,7 +8,6 @@ section.section
             td
                 b
                     span(v-html="std_toQualifiedDisplay(environmentOwner, environmentName)")
-
         tr
             td Application:&nbsp;
             td
@@ -25,7 +19,6 @@ section.section
                     span(v-html="std_toQualifiedDisplay(deployment.deployable_owner, deployment.deployable)")
     br
 
-    //- | {{ deployment }}
     b-tabs(v-model="activeTab", :animated="false")
         b-tab-item(label="Deployment details")
             form.formStyle
@@ -36,9 +29,6 @@ section.section
                         .field
                             .control
                                 textarea.textarea(:disabled="!editingDetails", v-model="deployment.notes", placeholder="Add any notes or comments here", @input="saveDetails")
-                                //- input.input(v-if="editingDetails", v-model.trim="deployment.aws_service", placeholder="URL to ECS Service")
-                                //- a.my-not-input-a(v-else-if="validUrl(deployment.aws_service)", :href="deployment.aws_service", target="_blank") &nbsp;{{deployment.aws_service}}
-                                //- p.my-not-input-p(v-else) &nbsp;{{deployment.aws_service}}
                 .field.is-horizontal
                     .field-label.is-normal
                         label.label(style="width:200px;") Service/Website URL: 
@@ -78,7 +68,6 @@ section.section
                     .field-body
                         .field
                             .control
-                                //- input.input(type="text", :class="{ myEditing: !editingDetails } ", v-model="deployment.aws_targetGroup", placeholder="URL to target group")
                                 input.input(v-if="editingDetails", maxlength="256", v-model.trim="deployment.aws_targetgroup", placeholder="URL to ECS Service", @input="saveDetails")
                                 a.my-not-input-a(v-else-if="validUrl(deployment.aws_targetgroup)", :href="deployment.aws_targetgroup", target="_blank") &nbsp;{{trimUrl(deployment.aws_targetgroup)}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.aws_targetgroup}}
@@ -97,7 +86,6 @@ section.section
                     .field-body
                         .field
                             .control
-                                //- input.input(type="text", :class="{ myEditing: !editingDetails } ", v-model="deployment.aws_logfile_url", placeholder="URL to Cloudwatch logs")
                                 input.input(v-if="editingDetails", maxlength="256", v-model.trim="deployment.aws_logfile_url", placeholder="URL to ECS Service", @input="saveDetails")
                                 a.my-not-input-a(v-else-if="validUrl(deployment.aws_logfile_url)", :href="deployment.aws_logfile_url", target="_blank") &nbsp;{{trimUrl(deployment.aws_logfile_url)}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.aws_logfile_url}}
@@ -107,9 +95,7 @@ section.section
                     .field-body
                         .field
                             .control
-                                //- input.input(type="text", :class="{ myEditing: !editingDetails } ", v-model="deployment.aws_secretsmanager_secret", placeholder="Secret name")
                                 input.input(v-if="editingDetails", maxlength="256", v-model.trim="deployment.aws_secretsmanager_secret", placeholder="URL to ECS Service", @input="saveDetails")
-                                //- a.my-not-input-a(v-else-if="validUrl(deployment.aws_secretsmanager_secret)", :href="deployment.aws_secretsmanager_secret", target="_blank") &nbsp;{{deployment.aws_secretsmanager_secret}}
                                 p.my-not-input-p(v-else) &nbsp;{{deployment.aws_secretsmanager_secret}}
 
             .control
@@ -117,12 +103,7 @@ section.section
 
 
         b-tab-item(label="Values")
-
-            //- .field
-                b-checkbox(v-model="isSecureEnvironment")
-                | No secure values. {{isSecureEnvironment}}, {{environment.is_secure_environment}}
             .notification.is-warning
-                //- button.delete
                 | This is a secure environment, so you will not be able to
                 | specify configuration details here.
                 | You will however be able to download templates and scripts to help create configurations.
@@ -184,28 +165,6 @@ section.section
                     button.button.is-light(@click="editingDetails= false") Cancel
                 .control(v-else)
                     button.button.is-success(@click="editingDetails= !editingDetails") Edit
-                
-
-            //- // Submit Modal 
-            //- div(v-show="submitModal")
-            //-     transition(name="modal")
-            //-         div(class="modal-mask")
-            //-             div(class="modal-wrapper")
-            //-                 div(class="modal-container")
-            //-                     div(class="modal-header")
-            //-                         slot(name="header")
-            //-                             div(class="is-size-5 has-text-weight-semibold") Add New Configuration:
-            //-                             i Adding new configuration for {{ applicationName }} on {{ environmentName }}
-            //-                         div(class="modal-body")
-            //-                             slot(name="body")
-            //-                                 article(class="message is-info is-small")
-            //-                                     div(class="message-body") Please check fields for missing or incorrect values before saving.
-            //-                                 div.formStyle(v-for="variables in variableRecursive")
-            //-                                     p {{variables.variableName}}: {{variables.value}}
-            //-                         div(class="buttons is-centered")
-            //-                             b-button(@click.stop="saveNewVariable",  type="is-light", size="is-small")  Save    
-            //-                             b-button(@click="submitModal = false", type="is-danger", size="is-small") Cancel
-
 
         b-tab-item(label="Configuration")
             p How will you provide the configuration to this application?
@@ -251,7 +210,6 @@ section.section
 
 
         b-tab-item(label="Docs")
-            //- p How will you provide the configuration to this application?
             br
             section
                 .block(style="margin-left: 80px;")
@@ -303,9 +261,7 @@ section.section
                     br
                     | &nbsp;&nbsp;&nbsp;&nbsp; -e {{environment.name}} \
                     br
-                    | &nbsp;&nbsp;&nbsp;&nbsp; remote
-
-   
+                    | &nbsp;&nbsp;&nbsp;&nbsp; remote   
 </template>
 
 <script>
@@ -317,7 +273,6 @@ const NUM_END = `)NUZMZ`
 const BOOL_START = `ZBOZOL(`
 const BOOL_END = `)BOZOLZ`
 
-
 export default {
     data () {
         return {
@@ -325,13 +280,11 @@ export default {
             environmentName: '',
             applicationName: '',
             deployment: {},
-            //deployableName: '',//ZZZZ
             variables: [],
             unusedValues: [],
             deployables: [],
             environment: {},
             dependencies: [],
-            // submitModal: false,
             variableRecursive: [],
             user: '',
 
@@ -346,158 +299,154 @@ export default {
     },
 
     computed: {
-
         isSecureEnvironment: function () {
             if (this.environment && this.environment.is_secure_environment) {
-                return true
+                return true;
             }
-            return false
-        },
+            return false;
+        }, // - isSecureEnvironment
 
         configFileContent: function () {
-            let mode = this.noSecureValues ? 'type' : 'value'
-            return this.jsonAsString(mode)
-        },
+            let mode = this.noSecureValues ? 'type' : 'value';
+            return this.jsonAsString(mode);
+        }, // - configFileContent
 
         codeToSetEnvVariable: function( ) {
-            // return 'xyz'
-            let mode = this.noSecureValues ? 'type' : 'value'
-            let json = this.jsonAsString(mode)
-            let script = `export JUICE_CONFIG=env:::$(cat<<ENDDD\n${json}\nENDDD`
-            // console.log(`script=${script}`);
-            return script
-        },//- codeToSetEnvVariable
+            let mode = this.noSecureValues ? 'type' : 'value';
+            let json = this.jsonAsString(mode);
+            let script = `export JUICE_CONFIG=env:::$(cat<<ENDDD\n${json}\nENDDD`;
+            return script;
+        }, // - codeToSetEnvVariable
 
         codeForSecretsManager: function( ) {
-            let mode = this.noSecureValues ? 'type' : 'value'
-            let json = this.jsonAsString('envvar')
+            let mode = this.noSecureValues ? 'type' : 'value';
+            let json = this.jsonAsString('envvar');
 
-            let vars = ''
+            let vars = '';
             this.variableRecursive.forEach((v, i) => {
-                let value = v.value
-                let type = v.type
-                vars += `\n# ${v.variableName}${v.description ? ('  -  '+v.description) : ''}\n`
+                let value = v.value;
+                let type = v.type;
+                vars += `\n# ${v.variableName}${v.description ? ('  -  '+v.description) : ''}\n`;
+
                 if (v.example) {
-                    vars += `#   [e.g. ${v.example}]\n`
+                    vars += `#   [e.g. ${v.example}]\n`;
                 }
-                let envvar = this.environmentVariableName(v.variableName)
+
+                let envvar = this.environmentVariableName(v.variableName);
                 switch (type) {
                     case 'number':
-                        vars += `${envvar}=${this.noSecureValues ? 'NUMBER' : value}\n`
-                        break
+                        vars += `${envvar}=${this.noSecureValues ? 'NUMBER' : value}\n`;
+                        break;
                     case 'boolean':
-                        vars += `${envvar}=${this.noSecureValues ? 'BOOLEAN' : value}\n`
-                        break
+                        vars += `${envvar}=${this.noSecureValues ? 'BOOLEAN' : value}\n`;
+                        break;
                     case 'text':
                     case 'string':
                     default:
-                        vars += `${envvar}=${this.noSecureValues ? 'STRING' : `"${value}"`}\n`
-                        break
+                        vars += `${envvar}=${this.noSecureValues ? 'STRING' : `"${value}"`}\n`;
+                        break;
                 }
             })
 
-            let script = ''
-            script += '#/bin/bash\n'
-            script += '#\n'
-            script += '#	Save secret to AWS Secrets Manager\n'
-            script += '#	https://docs.aws.amazon.com/cli/latest/reference/secretsmanager/put-secret-value.html\n'
-            script += '#\n'
-            script += 'AWS_PROFILE=default\n'
-            script += `REGION=${this.environment.aws_region}\n`
-            script += `SECRET_NAME=${this.deployment.aws_secretsmanager_secret}\n`
-            script += '\n'
-            script += vars
-            script += '\n'
-            script += '#\n'
-            script += '# DO NOT CHANGE BELOW HERE\n'
-            script += '#\n'
+            let script = '';
+            script += '#/bin/bash\n';
+            script += '#\n';
+            script += '#	Save secret to AWS Secrets Manager\n';
+            script += '#	https://docs.aws.amazon.com/cli/latest/reference/secretsmanager/put-secret-value.html\n';
+            script += '#\n';
+            script += 'AWS_PROFILE=default\n';
+            script += `REGION=${this.environment.aws_region}\n`;
+            script += `SECRET_NAME=${this.deployment.aws_secretsmanager_secret}\n`;
+            script += '\n';
+            script += vars;
+            script += '\n';
+            script += '#\n';
+            script += '# DO NOT CHANGE BELOW HERE\n';
+            script += '#\n';
             // script += 'SecretString="{\"db.host\":\"${DB_HOST}\",\"db.port\":\"${DB_PORT}\",\"db.database\":\"${DB_NAME}\",\"db.user\":\"${DB_USERNAME}\",\"db.password\":null}"\n'
-            script += `SecretString=$(cat<<ENDDD\n${json}\nENDDD\n`
+            script += `SecretString=$(cat<<ENDDD\n${json}\nENDDD\n`;
             // script += '#echo Secret is ${SecretString}\n'
-            script += 'export AWS_PROFILE=${AWS_PROFILE}\\\n'
-            script += 'aws secretsmanager put-secret-value \\\n'
-            script += '    --region ${REGION}\\\n'
-            script += '    --secret-id ${SECRET_NAME}\\\n'
-            script += '    --secret-string ${SecretString}\n'
+            script += 'export AWS_PROFILE=${AWS_PROFILE}\\\n';
+            script += 'aws secretsmanager put-secret-value \\\n';
+            script += '    --region ${REGION}\\\n';
+            script += '    --secret-id ${SECRET_NAME}\\\n';
+            script += '    --secret-string ${SecretString}\n';
 
-            // console.log(`script=${script}`);
-            return script
-        },//- codeForSecretsManager
+            return script;
+        }, // - codeForSecretsManager
 
         markupDocumentationTable () {
-            let str = ''
+            let str = '';
             str += `&nbsp;\n`
-            str += `### Configuration variables for \`${this.applicationName}\`\n`
-            str += `_Generated by [Juice](http://juiceconfig.io) ${new Date()}_  \n`
-            str += `&nbsp;\n`
-            str += `| Name | Type | Example | Description |\n`
-            str += `| ---- | ---- | ------- | ----------- |\n`
+            str += `### Configuration variables for \`${this.applicationName}\`\n`;
+            str += `_Generated by [Juice](http://juiceconfig.io) ${new Date()}_  \n`;
+            str += `&nbsp;\n`;
+            str += `| Name | Type | Example | Description |\n`;
+            str += `| ---- | ---- | ------- | ----------- |\n`;
+
             this.variableRecursive.forEach((v, i) => {
-                let value = v.value
-                let type = v.type
-                str += `| ${v.variableName} | ${v.type} | ${v.example} | ${v.description} |\n`
+                let value = v.value;
+                let type = v.type;
+                str += `| ${v.variableName} | ${v.type} | ${v.example} | ${v.description} |\n`;
             })
-            return str
-        },//- markupDocumentationTable
+
+            return str;
+        }, // - markupDocumentationTable
 
         markupDocumentationList () {
-            let str = ''
-            str += `&nbsp;\n`
-            str += `### Configuration variables for \`${this.applicationName}\`\n`
-            str += `_Generated by [Juice](http://juiceconfig.io) ${new Date()}_  \n`
-            str += `&nbsp;\n`
+            let str = '';
+            str += `&nbsp;\n`;
+            str += `### Configuration variables for \`${this.applicationName}\`\n`;
+            str += `_Generated by [Juice](http://juiceconfig.io) ${new Date()}_  \n`;
+            str += `&nbsp;\n`;
 
             this.variableRecursive.forEach((v, i) => {
-                let value = v.value
-                let type = v.type
-                str += '- - -\n'
-                str += `#### \`${v.variableName}\`\n`
-                str += `| Description: | ${v.description ? ('**'+this.wikiText(v.description)+'**') : ''} |\n`
-                str += `| ----: | :----- |\n`
-                str += `| Type: | ${v.type} |\n`
-                str += `| Mandatory: | ${v.mandatory ? 'yes' : 'no' } |\n`
+                let value = v.value;
+                let type = v.type;
+                str += '- - -\n';
+                str += `#### \`${v.variableName}\`\n`;
+                str += `| Description: | ${v.description ? ('**'+this.wikiText(v.description)+'**') : ''} |\n`;
+                str += `| ----: | :----- |\n`;
+                str += `| Type: | ${v.type} |\n`;
+                str += `| Mandatory: | ${v.mandatory ? 'yes' : 'no' } |\n`;
+
                 if (v.example) {
-                    str += `| Example: | \`${this.wikiText(v.example)}\`  |\n`
+                    str += `| Example: | \`${this.wikiText(v.example)}\`  |\n`;
                 }
             })
-            return str
-        },//- markupDocumentationList
+
+            return str;
+        }, // - markupDocumentationList
     },
 
     methods: {
         ...standardStuff.methods,
 
-        // validUrl: function (url) {
-        //     return url && (url.startsWith('http://') || url.startsWith('https://'))
-        // },
-
-        // Submitting the configuration values to a modal for confirmation (for now)
-        // submitConfig() {
-        //     this.submitModal = true
-        //     console.log(this.variableRecursive)
-        // },
-
         jsonAsString(mode/*value|type|envvar*/) {
-            let sep = '    '
-            let obj = { }
-            let self = this
+            let sep = '    ';
+            let obj = { };
+            let self = this;
+
             this.variableRecursive.forEach((v, i) => {
-                self.setValue(obj, mode, '', v.variableName, v.type, v.value)
+                self.setValue(obj, mode, '', v.variableName, v.type, v.value);
             })
-            let json2 = JSON.stringify(obj, '', 2)
+
+            let json2 = JSON.stringify(obj, '', 2);
+
             if (mode === 'value' || mode === 'envvar') {
-                json2 = json2.split(`"${NUM_START}`).join('')
-                json2 = json2.split(`${NUM_END}"`).join('')
-                json2 = json2.split(`"${BOOL_START}`).join('')
-                json2 = json2.split(`${BOOL_END}"`).join('')
+                json2 = json2.split(`"${NUM_START}`).join('');
+                json2 = json2.split(`${NUM_END}"`).join('');
+                json2 = json2.split(`"${BOOL_START}`).join('');
+                json2 = json2.split(`${BOOL_END}"`).join('');
+
             } else if (mode === 'type') {
-                json2 = json2.replace(/"STRING"/g, 'STRING')
-                json2 = json2.replace(/"NUMBER"/g, 'NUMBER')
-                json2 = json2.replace(/"BOOLEAN"/g, 'BOOLEAN')
+                json2 = json2.replace(/"STRING"/g, 'STRING');
+                json2 = json2.replace(/"NUMBER"/g, 'NUMBER');
+                json2 = json2.replace(/"BOOLEAN"/g, 'BOOLEAN');
             }
-            // console.log(`json2(${mode})=`, json2);
-            return json2
-        },
+
+            return json2;
+        }, // - jsonAsString
 
         setValue: function(obj, mode, sofar, name, type, value) {
             // console.log(`setValue(obj, mode:${mode}, sofar:${sofar}, name:${name}, type:${type}, value:${value})`);
@@ -508,197 +457,187 @@ export default {
             // if (name === 'isAwesome') { type = 'boolean'; value = false }
 
             // If name is x.y.z, let's find the first bit (x)
-            let errmsg = ''
-            let pos = name.indexOf('.')
+            let errmsg = '';
+            let pos = name.indexOf('.');
+
             if (pos >= 0) {
-                let prefix = name.substring(0, pos)
-                let suffix = name.substring(pos + 1)
+                let prefix = name.substring(0, pos);
+                let suffix = name.substring(pos + 1);
                 // console.log(` - prefix=${prefix}`);
                 // console.log(` - suffix=${suffix}`);
-                sofar = `${sofar}${prefix}.`
+                sofar = `${sofar}${prefix}.`;
+
                 switch (typeof(obj[prefix])) {
                     case 'undefined':
                         // New object
-                        obj[prefix] = { }
-                        return this.setValue(obj[prefix], mode, sofar, suffix, type, value)
+                        obj[prefix] = { };
+                        return this.setValue(obj[prefix], mode, sofar, suffix, type, value);
                         break;
                     case 'object':
                         // Existing object
-                        return this.setValue(obj[prefix], mode, sofar, suffix, type, value)
+                        return this.setValue(obj[prefix], mode, sofar, suffix, type, value);
                         break;
                     default:
                         // Not an object, can't set 'y.z'
-                        return `Conflict setting ${sofar}.\n`
+                        return `Conflict setting ${sofar}.\n`;
                 }
+
             } else {
                 // New value
                 // console.log(`- set it ${name}, mode=${mode}`);
 
                 // let path = sofar ? `${sofar}.${name}` : name
-                let path = `${sofar}${name}`
+                let path = `${sofar}${name}`;
                 // console.log(`Zpath=${path}`);
                 
                 switch (mode) {
                     case 'value':
-                        obj[name] = value
-                        break
+                        obj[name] = value;
+                        break;
 
                     case 'envvar':
                         // obj[name] = `YARPX\${${this.environmentVariableName(name)}}`
                         if (type==='string' || type==='text') {
-                            obj[name] = `\${${this.environmentVariableName(path)}}`
+                            obj[name] = `\${${this.environmentVariableName(path)}}`;
                         } else if (type==='number') {
-                            obj[name] = `${NUM_START}\${${this.environmentVariableName(path)}}${NUM_END}`
+                            obj[name] = `${NUM_START}\${${this.environmentVariableName(path)}}${NUM_END}`;
                         } else if (type==='boolean') {
-                            obj[name] = `\${${this.environmentVariableName(path)}}`
+                            obj[name] = `\${${this.environmentVariableName(path)}}`;
                         } else {
                             console.log(`Unknown type for ${sofar}.${name} (${type})`);
-                            return `Unknown type for ${sofar}.${name} (${type})\n`
+                            return `Unknown type for ${sofar}.${name} (${type})\n`;
                         }
-                        break
+                        break;
 
                     case 'type':
                         if (type==='string' || type==='text') {
-                            obj[name] = `STRING`
+                            obj[name] = `STRING`;
                         } else if (type==='number') {
-                            obj[name] = `NUMBER`
+                            obj[name] = `NUMBER`;
                         } else if (type==='boolean') {
-                            obj[name] = `BOOLEAN`
+                            obj[name] = `BOOLEAN`;
                         } else {
                             console.log(`Unknown type for ${sofar}.${name} (${type})`);
-                            return `Unknown type for ${sofar}.${name} (${type})\n`
+                            return `Unknown type for ${sofar}.${name} (${type})\n`;
                         }
-                        // console.log(`  - obj=`, obj);
-                        
-                        break
+                        break;
                 }
-// clog
             }
-        },//- setValue
+        }, // - setValue
 
         environmentVariableName: function(name) {
-            let mode = this.noSecureValues ? 'type' : 'value'
+            let mode = this.noSecureValues ? 'type' : 'value';
+
             // camelCase => snake_case
             let n2 = name.replace(/[\w]([A-Z])/g, function(m) {
                 return m[0] + "_" + m[1];
-            })
+            });
+
             n2 = n2.toUpperCase();
-            n2 = n2.replace(/\./g, '_')
-            n2 = n2.replace(/UR_L/g, 'URL')
-            return n2
-        },//- environmentVariableName
+            n2 = n2.replace(/\./g, '_');
+            n2 = n2.replace(/UR_L/g, 'URL');
+
+            return n2;
+        }, // - environmentVariableName
 
         downloadConfigFile: function () {
-            const filename = `${this.environmentName}-${this.applicationName}.config`
-            let content = this.configFileContent
+            const filename = `${this.environmentName}-${this.applicationName}.config`;
+            let content = this.configFileContent;
             var myblob = new Blob([content], {
                 type: 'text/json'
             });
-            const url = window.URL.createObjectURL(myblob)
-            const link = document.createElement('a')
-            link.href = url
-            link.setAttribute('download', filename) //or any other extension
-            document.body.appendChild(link)
-            link.click()
-        },
+            const url = window.URL.createObjectURL(myblob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', filename); //or any other extension
+            document.body.appendChild(link);
+            link.click();
+        }, // - downloadConfigFile
 
         downloadSetEnvironment: function () {
-            const filename = `environment-${this.environmentName}-${this.applicationName}.sh`
-            let content = this.codeToSetEnvVariable
+            const filename = `environment-${this.environmentName}-${this.applicationName}.sh`;
+            let content = this.codeToSetEnvVariable;
             var myblob = new Blob([content], {
-                type: 'text/plain'
+                type: 'text/plain',
             });
-            const url = window.URL.createObjectURL(myblob)
-            const link = document.createElement('a')
-            link.href = url
-            link.setAttribute('download', filename) //or any other extension
-            document.body.appendChild(link)
-            link.click()
-        },
+            const url = window.URL.createObjectURL(myblob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', filename); //or any other extension
+            document.body.appendChild(link);
+            link.click();
+        }, // - downloadSetEnvironment
 
         downloadSetSecret: function () {
-            const filename = `set-secret-${this.environmentName}-${this.applicationName}.sh`
-            let content = this.codeForSecretsManager
+            const filename = `set-secret-${this.environmentName}-${this.applicationName}.sh`;
+            let content = this.codeForSecretsManager;
             var myblob = new Blob([content], {
-                type: 'text/plain'
+                type: 'text/plain',
             });
-            const url = window.URL.createObjectURL(myblob)
-            const link = document.createElement('a')
-            link.href = url
-            link.setAttribute('download', filename) //or any other extension
-            document.body.appendChild(link)
-            link.click()
-        },
+            const url = window.URL.createObjectURL(myblob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', filename); //or any other extension
+            document.body.appendChild(link);
+            link.click();
+        }, // - downloadSetSecret
 
         downloadMarkupDocumentationTable: function () {
-            const filename = `config-documentation-${this.environmentName}-${this.applicationName}-table.md`
-            let content = this.markupDocumentationTable
+            const filename = `config-documentation-${this.environmentName}-${this.applicationName}-table.md`;
+            let content = this.markupDocumentationTable;
             var myblob = new Blob([content], {
-                type: 'text/plain'
+                type: 'text/plain',
             });
-            const url = window.URL.createObjectURL(myblob)
-            const link = document.createElement('a')
-            link.href = url
-            link.setAttribute('download', filename) //or any other extension
-            document.body.appendChild(link)
-            link.click()
-        },//- downloadMarkupDocumentationTable
+            const url = window.URL.createObjectURL(myblob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', filename); //or any other extension
+            document.body.appendChild(link);
+            link.click();
+        },// - downloadMarkupDocumentationTable
 
         downloadMarkupDocumentationList: function () {
-            const filename = `config-documentation-${this.environmentName}-${this.applicationName}-list.md`
-            let content = this.markupDocumentationList
+            const filename = `config-documentation-${this.environmentName}-${this.applicationName}-list.md`;
+            let content = this.markupDocumentationList;
             var myblob = new Blob([content], {
-                type: 'text/plain'
+                type: 'text/plain',
             });
-            const url = window.URL.createObjectURL(myblob)
-            const link = document.createElement('a')
-            link.href = url
-            link.setAttribute('download', filename) //or any other extension
-            document.body.appendChild(link)
-            link.click()
-        },//- downloadMarkupDocumentationList
-
-        // updateDeployment: async function () {
-        //     console.log(`updateDeployment() `, this.deployment);
-
-        //     const url = standardStuff.apiURL('/deployment')
-        //     const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-        //     let result = await axios.put(url, this.deployment, config)
-        //     // console.log(`API4 returned`, res4.data)
-        //     // const dependencies = res4.data.dependencies
-        //     console.log(`result is `, result);
-        // },
+            const url = window.URL.createObjectURL(myblob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', filename); //or any other extension
+            document.body.appendChild(link);
+            link.click();
+        },// - downloadMarkupDocumentationList
 
         saveDetails: async function () {
-            let self = this
+            let self = this;
+
             if (self.updateDelay) {
-                clearTimeout(self.updateDelay)
+                clearTimeout(self.updateDelay);
             }
+
             self.updateDelay = setTimeout(async function () {
-                // console.log(`Updating...`, self.deployment);
-                self.updateDelay = null
-                const url = standardStuff.apiURL('/deployment')
-                const config = standardStuff.axiosConfig(self.$loginservice.jwt)
-                let result = await axios.put(url, self.deployment, config)
-                // console.log(`result is `, result);
+                self.updateDelay = null;
+                const url = standardStuff.apiURL('/deployment');
+                const config = standardStuff.axiosConfig(self.$loginservice.jwt);
+                let result = await axios.put(url, self.deployment, config);
             }, 1000)
-        },
+        }, // - saveDetails
 
         deleteUnusedValue: async function (variableName) {
             console.log(`deleteUnusedValue(${variableName})`);
 
             for (let i = 0; i < this.unusedValues.length; i++) {
-                let uv = this.unusedValues[i]
+                let uv = this.unusedValues[i];
+
                 if (uv.variableName === variableName) {
-                    // this.unusedValues.splice(i, 1)
                     console.log(`Found in position ${i}`);
-                    uv.deleted = true
-                    
-                    return
+                    uv.deleted = true;
+                    return;
                 }
             }
-
-        },
+        }, // - deleteUnusedValue
 
         saveVariableValues: async function () {
             console.log(`saveNewVariable()`, this.variableRecursive);
@@ -710,169 +649,146 @@ export default {
                 variableValues: {
                     // We'll put the values here
                 }
-            }
+            };
+
             // Add the known variables
-            const DEBUG = true
+            const DEBUG = true;
+
             this.variableRecursive.forEach(v => {
                 if (!DEBUG || v.value) {
-                    request.variableValues[v.variableName] = v.value
+                    request.variableValues[v.variableName] = v.value;
                 }
             })
+
             this.unusedValues.forEach(uv => {
                 if (!uv.deleted && uv.value) {
-                    request.variableValues[uv.variableName] = uv.value
+                    request.variableValues[uv.variableName] = uv.value;
                 }
             })
 
-            const url = standardStuff.apiURL('/variableValues')
-            const config = standardStuff.axiosConfig(this.$loginservice.jwt)
-            let response = await axios.post(url, request, config)
-            this.editingDetails = false
-        },
+            const url = standardStuff.apiURL('/variableValues');
+            const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+            let response = await axios.post(url, request, config);
+            this.editingDetails = false;
+        }, // - saveVariableValues
 
         trimUrl: function (url) {
-            const maxlen = 70
+            const maxlen = 70;
+
             if (url.length > maxlen) {
                 // return `${url.substring(0, maxlen)} ...`
-                return `...${url.substring(url.length - maxlen)}`
+                return `...${url.substring(url.length - maxlen)}`;
             }
-            return url
-        },
+
+            return url;
+        }, // - trimUrl
 
         // Escape characters for Wiki markdown
         wikiText: function (text) {
-            if (!text) return ''
-            let result = ''
+            if (!text) return '';
+            let result = '';
+
             while (text.length > 0) {
-                let c = text.charAt(0)
-                text = text.substring(1)
+                let c = text.charAt(0);
+                text = text.substring(1);
+
                 if (c === '\n') {
-                    result += '<br/>'
+                    result += '<br/>';
                 } else if (c==='|' || c==='*' || c==='_') {
-                    result += '\\|'
+                    result += '\\|';
                 } else {
-                    result += c
+                    result += c;
                 }
             }
-            return result
-        }
+
+            return result;
+        } // - wikiText
 
     },//- methods
 
     async asyncData ({ app, params, error }) {
-        let username = app.$nuxtLoginservice.user.username
-        let {owner:environmentOwner, name:environmentName} = standardStuff.methods.std_fromQualifiedName(params.environment, username)
-        let applicationName = params.application
+        let username = app.$nuxtLoginservice.user.username;
+        let {owner:environmentOwner, name:environmentName} = standardStuff.methods.std_fromQualifiedName(params.environment, username);
+        let applicationName = params.application;
         let user = params.userName;
         console.log(`deployment=> ${environmentOwner}, ${environmentName}, ${applicationName}`);
     
         try {
             // Params and config for all API calls
-            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt)
+            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt);
+
             let params = { 
                 params: {
                     environmentOwner,
                     environmentName,
                     applicationName,
-                    // deployableOwner: '',
-                    // deployableName: deployableName
                 }
             }
 
             // Select this deployment for this page
-            let url = standardStuff.apiURL('/deployments')
-            let res = await axios.get(url, params, config)
+            let url = standardStuff.apiURL('/deployments');
+            let res = await axios.get(url, params, config);
             console.log(`Deployment API returned: `, res.data.deployments);
             if (res.data.deployments.length > 1) {
-                return error({status: 500, message: 'Returned too many deployments'})
+                return error({status: 500, message: 'Returned too many deployments'});
             }
-            const deployment = res.data.deployments[0]
+            const deployment = res.data.deployments[0];
 
             // Select the environment for this page
-            url = standardStuff.apiURL('/environmentIndex')
-            res = await axios.get(url, params, config)
+            url = standardStuff.apiURL('/environmentIndex');
+            res = await axios.get(url, params, config);
             console.log(`Environment API returned: `, res.data);
             if (res.data.record.length > 1) {
-                return error({status: 500, message: 'Returned too many environments'})
+                return error({status: 500, message: 'Returned too many environments'});
             }
-            const environment = res.data.record            
+            const environment = res.data.record;
 
             // Import deployables to be shown in dropdown
-            url = standardStuff.apiURL('/deployables')
-            res = await axios.get(url, config)
+            url = standardStuff.apiURL('/deployables');
+            res = await axios.get(url, config);
             console.log(`Deployables API returned: `, res.data);
-            const deployables = res.data.deployables
-
-            // Find our specific deployable
-            // let deployableOwner = null
-            // let deployableName = null
-            // for (let i = 0; i < deployables.length; )
-
-            // // Select the variables for this deployable
-            // const url3 = `${protocol}://${host}:${port}/variables`
-            // let res3 = await axios.get(url3, { 
-            //     params: {
-            //         deployableName: deployableName
-            //     }
-            // })
-            // // console.log(`API3 returned`, res3.data);
-            // const variables = res3.data.variables
-
-            // // Import dependencies with 'deployableName' as parent
-            // const url4 = `${protocol}://${host}:${port}/dependencies1`
-            // let res4 = await axios.get(url4, {
-            //     params: {
-            //         owner: deployment.deployable_owner,
-            //         name: deployment.deployable
-            //     }
-            // })
-            // console.log(`API4 dependencies`, res4.data)
-            // const dependencies = res4.data.dependencies
-
-            // // Select all variables for dependencies
-            // const url5 = '${protocol}://${host}:${port}/variablesAll'
-            // let res5 = await axios.get(url5)
-            
-            // const variablesDepend = res5.data.variables
+            const deployables = res.data.deployables;
 
             // Variables for dependencies and deployable (recursive array data)
-            url = standardStuff.apiURL(`/deployable/${deployment.deployable_owner}:${deployment.deployable}/variablesConfig`)
-            res = await axios.get(url, config)
-            console.log(`VariablesConfig API returned: `, res.data)
-            const variableRecursive = res.data
+            url = standardStuff.apiURL(`/deployable/${deployment.deployable_owner}:${deployment.deployable}/variablesConfig`);
+            res = await axios.get(url, config);
+            console.log(`VariablesConfig API returned: `, res.data);
+            const variableRecursive = res.data;
 
             // Select variable values for this deployment
-            url = standardStuff.apiURL(`/deployment/${environmentOwner}:${environmentName}/${applicationName}/variableValues`)
-            res = await axios.get(url, config)
-            console.log(`variableValues API returned: `, res.data)
-            const variableValues = res.data.variableValues
+            url = standardStuff.apiURL(`/deployment/${environmentOwner}:${environmentName}/${applicationName}/variableValues`);
+            res = await axios.get(url, config);
+            console.log(`variableValues API returned: `, res.data);
+            const variableValues = res.data.variableValues;
 
             // If we have any values defined that are not used, we might want
             // to keep them - perhaps they'll be added back to the deployable.
-            let unusedValues = [ ]
+            let unusedValues = [ ];
 
             // Patch the variable values in to the variable list
             // This is inefficient, but the list isn't too long...
             variableValues.forEach((vv) => {
-                let used = false
+                let used = false;
+
                 for (let i = 0; i < variableRecursive.length; i++) {
-                    let v = variableRecursive[i]
+                    let v = variableRecursive[i];
+
                     if (v.variableName === vv.variable_name) {
-                        v.value = vv.value
-                        used = true
-                        break                    
+                        v.value = vv.value;
+                        used = true;
+                        break;
                     }
-                }//- for
+                } //- for
 
                 // If this value is not used by any defined variable, let's put it in the "unused values" list.
                 if (!used) {
                     unusedValues.push({
                         variableName: vv.variable_name,
                         value: vv.value,
-                        deleted: false
+                        deleted: false,
                     })
                 }
-            })//- variableValues.forEach
+            }) // - variableValues.forEach
 
             console.log(`unusedValues=`, unusedValues);
 
@@ -881,17 +797,15 @@ export default {
                 environmentName,
                 applicationName,
                 deployment: deployment,
-                // deployableName: deployableName,
                 environment: environment,
                 deployables: deployables,
-                // variables: variables,
-                // dependencies: dependencies,
                 variableRecursive: variableRecursive,
                 user: user,
                 unusedValues,
             }
+
         } catch (e) {
-            console.log(`Could not fetch data:`, e)
+            console.log(`Could not fetch data:`, e);
         }
     },
 }
