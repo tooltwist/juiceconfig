@@ -91,6 +91,7 @@ export default {
     },
 
     computed: {
+        // Creates a list of just usernames from the user object
         usernames: function () {
             let usernames = [];
             let i = 0;
@@ -103,6 +104,7 @@ export default {
             return usernames;
         }, // - usernames
 
+        // Searches through usernames by filtering with input
         filterUsernames: function () {
             return this.usernames.filter((option) => {
                 return option.toString().toLowerCase().indexOf(this.form.username.toLowerCase()) >= 0;
@@ -268,20 +270,19 @@ export default {
                 }
             }
 
+            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt);
+
             // Import all users to check username and to add users to org
             let url = standardStuff.apiURL('/users');
-            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt);
-            console.log(`Calling ${url}`);
             let res = await axios.get(url, config);
             const users = res.data.users;
             console.log('Users: ', users);
 
             // Import all org_users for newly created org 
             url = standardStuff.apiURL('/orgUsers');
-            console.log(`Calling ${url}`);
             res = await axios.get(url, params, config);
             const org_users = res.data.org_users;
-            console.log('org_users: ', org_users); 
+            console.log('Org_users: ', org_users); 
 
             return {
                 org_users: org_users,

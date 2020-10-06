@@ -84,6 +84,7 @@ export default {
   methods: {
     ...standardStuff.methods,
 
+    // Display group colour formatting in table
     groupColour: function(group_name) {
       let colour = 'none';
 

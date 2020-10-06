@@ -117,6 +117,7 @@ export default {
   },
   
   computed: {
+    // Returns a list of usernames for all users
     usernames: function () {
       let usernames = [];
       let i = 0;
@@ -129,12 +130,14 @@ export default {
       return usernames;
     }, // - usernames
 
+    // Filters users based on input: searching
     filterUsernames: function () {
       return this.usernames.filter((option) => {
         return option.toString().toLowerCase().indexOf(this.form.new_user.toLowerCase()) >= 0;
       })
     }, // - filterUsernames
 
+    // Filters list of users: Active, pending, disabled
     filterUsers: function () {
       let sort = this.sortBy;
       let newUsers = [];
@@ -221,7 +224,7 @@ export default {
       }
     }, // - changeMembership
 
-    // ADD A NEW USER TO THE DATABASE - FROM MODAL 
+    // Add a new user to database
     async saveNewUser() {
       //Check that form is filled correctly
       if (this.form.new_user && this.form.user_role) {
@@ -258,17 +261,16 @@ export default {
       }
     }, // - saveNewUser
 
-    // RELOAD THE DATABASE TABLE AFTER SAVING NEW USER
+    // Reload users after saving new user
     async reloadUsers() {
-      const url = standardStuff.apiURL('/organisationUsers');
-      const config = standardStuff.axiosConfig(this.$loginservice.jwt);
-
       const params = {
         params: {
           organisationName: this.user,
         }
       }
 
+      const url = standardStuff.apiURL('/organisationUsers');
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt);
       let res = await axios.get(url, params, config);
       this.users = res.data.organisationUsers;
       console.log(`Users have been reloaded on the browser.`);
@@ -276,7 +278,7 @@ export default {
       return {
         users: this.users,
       };
-    },  // - reloadUsers 
+    }, // - reloadUsers 
   }, // - data
 
   /*
@@ -299,12 +301,13 @@ export default {
       let url = standardStuff.apiURL('/organisationUsers');
       let res = await axios.get(url, params, config);
       const users = res.data.organisationUsers;
-      console.log("Users API calls result: ", users);
+      console.log('Users: ', users);
 
       // Import all users
       url = standardStuff.apiURL('/users');
       res = await axios.get(url, config);
       const allUsers = res.data.users;
+      console.log('allUsers: ', allUsers)
 
       return {
         allUsers: allUsers,

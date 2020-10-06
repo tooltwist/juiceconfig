@@ -10,7 +10,6 @@ section.section
         article.message.is-success
             div.message-header
                 p Success!
-                //button(class="delete", aria-label="delete")
             div.message-body
                 | New environment has been successfully saved. Would you like to return to the 
                 a(:href="`/user/${user}/environments`") environments page
@@ -135,8 +134,8 @@ export default {
 
             newGroup: '',
             saveMode: false,
-            environments: '',
-            groups: '',
+            environments: [ ],
+            groups: [ ],
             user: '',
         }
     },
@@ -178,6 +177,7 @@ export default {
             return false;
         }, // - groupExists
 
+        // Checks if all form requirements are met before saving
         readyToSave () {
             if (!this.form.new_environment) {
                 return false; // Need a name
@@ -196,14 +196,12 @@ export default {
     },
 
     methods: {
+        // Switch between newGroup = true / false
         addNewGroup() { 
-            if (this.newGroup) {
-                this.newGroup = false;
-            } else {
-                this.newGroup = true;
-            }
+            this.newGroup = (this.newGroup) ? false : true;
         }, // - addNewGroup
 
+        // Add a new environment
         async newEnvironment(e) {
             // Check that form is correctly filled out
             if (!this.readyToSave) {
@@ -266,8 +264,6 @@ export default {
 
                 const config = standardStuff.axiosConfig(this.$loginservice.jwt);
                 await axios.post(url, record, config);
-                // Prevent input error from showing
-                // this.mode = false;
                 console.log('New environment successfully sent to the database.');
 
             } catch (e) {

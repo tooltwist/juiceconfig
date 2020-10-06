@@ -442,27 +442,31 @@ export default {
 
       // Get the deployments
       const deployments = await loadDeployments(config, params);
+      console.log('deployments: ', deployments);
 
       // Get all the environments, for the new dialog
       let url = standardStuff.apiURL('/showEnvironments');
       let reply = await axios.get(url, params, config);
       const environments = reply.data.environments;
+      console.log('environments: ', environments);
 
       // Get all the deployables, for the new dialog
       url = standardStuff.apiURL('/allDeployables');
       reply = await axios.get(url, params, config);
       const deployables = reply.data.deployables;
+      console.log('deployables: ', deployables);
 
       // Get all projectUsers from project_user db
       url = standardStuff.apiURL('/thisUsersProjects');
       reply = await axios.get(url, params, config);
       const projectUsers = reply.data.projectUsers;
+      console.log('projectUsers: ', projectUsers);
 
       // Get all environmentUsers from environment_user db
       url = standardStuff.apiURL('/thisUsersEnvironments');
       reply = await axios.get(url, params, config);
       const environmentUsers = reply.data.environmentUsers;
-      console.log('environment users: ', environmentUsers);
+      console.log('environmentUsers: ', environmentUsers);
 
       // Set the initial healthcheck status for each deployment
       deployments.forEach(d => {
@@ -490,6 +494,7 @@ export default {
   }
 }
 
+// Returns the health check status for each deployment where url is provided
 async function checkHealth(deployment) {
   // Check we have a valid website URL, that is not localhost
   if (
@@ -641,14 +646,14 @@ async function checkHealth(deployment) {
   } //- catch
 }
 
+// Returns deployments with environments that are owned by user, 
+// or collaborated on by user
 async function loadDeployments (axiosConfig, params) {
-  // Returns deployments with environments that are owned by user, 
-  // or collaborated on by user
-  console.log('params: ', params);
   let url = standardStuff.apiURL('/applications');
   let reply = await axios.get(url, params, axiosConfig);
   const deployments = reply.data.applications;
-  console.log('deployments', deployments);
+  console.log('Deployments: ', deployments);
+
   return deployments;
 } // - loadDeployments
 </script>

@@ -73,10 +73,8 @@ export default {
             },
 
             global: false,
-            ownerName: '',
             savedMode: false,
             deployables: [ ],
-            deployableError: null,
             user: '',
         }
     },
@@ -100,6 +98,7 @@ export default {
             return false;
         }, // - deployableExists
 
+        // Check that all form requirements are met before saving
         readyToSave () {
             if (!this.form.new_deployable) {
                 return false; // Need a name
@@ -114,6 +113,7 @@ export default {
     },
 
     methods: {
+        // Switch between global/non global deployable format
         globalDeployable () {
             if (this.form.is_global != 1) {
                 this.form.is_global = 1;
@@ -124,6 +124,7 @@ export default {
             }
         }, // - globalDeployable
 
+        // Add a new deployable
         async newDeployable(e) {
             // Check that form is correctly filled out
             if (!this.readyToSave) {
@@ -173,7 +174,6 @@ export default {
             
             return {
                 deployables: deployables,
-                ownerName: me,
                 user: user,
                 form: {
                     new_owner: user
@@ -182,7 +182,7 @@ export default {
 
          } catch (e) {
             console.log(`Error while fetching deployables: `, e);
-            // error({ statusCode: 400, message: 'Error while fetching deployables' })
+
             return {
                 initialisationError: true,
             };

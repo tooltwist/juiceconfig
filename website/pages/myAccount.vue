@@ -10,7 +10,7 @@
                                 label Username:
                             td(style="justify:left;") {{userName}}
                         tr  
-                            td(style="justify:right;") 
+                            td(style="justify:right;")
                                 label Full name: 
                             td(style="justify:left;") {{user.first_name}} {{user.last_name}} (ID: {{user.id}})
                         tr  
@@ -100,11 +100,7 @@ export default {
 
     computed: {
         loggedIn: function() {
-            if (this.$loginservice && this.$loginservice.user) {
-                return true;
-            }
-
-            return false;
+            return (this.$loginservice && this.$loginservice.user) ?  true : false;
         }, // - loggedIn
         
         fullname: function() {
@@ -115,15 +111,10 @@ export default {
     methods: {
         ...standardStuff.methods,
 
+        // Response to organisation invitations: confirmed or declined
         async invResponse (org, response) {
             try {
-                if (response == 'accept') {
-                    this.status = 'confirmed';
-                } else {
-                    this.status = 'declined';
-                }
-
-                console.log('Username: ', this.userName);
+                this.status = (response == 'accept') ? 'confirmed' : 'declined';
 
                 let record = {
                     user_username: this.userName,
@@ -150,9 +141,10 @@ export default {
                 }
             }
 
+            const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+
             // Update org_users
             let url = standardStuff.apiURL('/organisations');
-            const config = standardStuff.axiosConfig(this.$loginservice.jwt);
             let result = await axios.get(url, params, config);
             this.organisations = result.data.organisations;
 
@@ -165,9 +157,9 @@ export default {
                 organisations: this.organisations,
                 requests: this.requests,
             };
-        },  // - reloadOrgUsers
+        }, // - reloadOrgUsers
 
-        // OPEN MODAL AND CHANGE VALUES FOR MY ACCOUNT
+        // Open editAccountModal
         editMyAccount () {  
             this.editAccountModal = true;
             this.form.new_first_name = this.user.first_name;
@@ -176,11 +168,9 @@ export default {
             return false;
         }, // - editMyAccount
 
-        // SAVE EDITED USER
+        // Save edited account details
         async saveEditedAccount() {
             try {
-                let url = standardStuff.apiURL('/editAccount');
-
                 let record = {
                     id: this.user.id,
                     first_name: this.form.new_first_name,
@@ -189,6 +179,7 @@ export default {
                     userName: this.userName
                 };
                 
+                let url = standardStuff.apiURL('/editAccount');
                 let config = standardStuff.axiosConfig(this.$loginservice.jwt);
                 await axios.post(url, record, config);
 
@@ -202,16 +193,15 @@ export default {
             } 
         }, // - saveEditedAccount
 
-        // RELOAD THE DATABASE TABLE AFTER SAVING NEW ACCOUNT DETAILS
+        // Reload account details after saving edited details
         async reloadAccount() {
-            const url = standardStuff.apiURL('/myaccount');
-
             const params = {
                 params: { 
                     userName: this.user.username
                 }
             }
 
+            const url = standardStuff.apiURL('/myaccount');
             const config = standardStuff.axiosConfig(this.$loginservice.jwt);
             let result = await axios.get(url, params, config);
             this.user = result.data.record;
@@ -219,7 +209,7 @@ export default {
             return {
                 user: this.user,
             };
-        },  // -reloadAccount
+        }, // -reloadAccount
     }, // - methods
  
     async asyncData ({ app, params, error }) {
@@ -233,21 +223,21 @@ export default {
                 }
             };
 
+            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt);
+
             // Select the deployable for this page
             let url = standardStuff.apiURL('/myaccount');
-            const config = standardStuff.axiosConfig(app.$nuxtLoginservice.jwt);
             let res = await axios.get(url, params, config);
-            console.log(`User: `, res.data);
             const user = res.data.record;
+            console.log(`User: `, user);
 
             // Import organisations 
             url = standardStuff.apiURL('/organisations');
             res = await axios.get(url, params, config);
-            console.log(`API4 returned`, res.data);
             const organisations = res.data.organisations;
             console.log('Organisations: ', organisations);
 
-            // import pending invitation requests from org_user db table
+            // Import pending invitation requests from org_user db table
             url = standardStuff.apiURL('/orgRequests');
             res = await axios.get(url, params, config);
             const requests = res.data.requests;
@@ -265,9 +255,8 @@ export default {
         }
     }
 }
-
-
 </script>
+
 <style scoped>
 .modal-mask {
   position: fixed;
