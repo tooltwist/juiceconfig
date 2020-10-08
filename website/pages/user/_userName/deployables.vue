@@ -49,6 +49,7 @@ export default {
   }, // - data
 
   computed: {
+    // Returns a filtered list of deployables depending on the value of 'sortBy'
     listOfDeployables: function () {      
       let sortedDeployables = [ ];
       let j = 0;
@@ -126,7 +127,7 @@ export default {
       let url = standardStuff.apiURL('/deployables');
       let res = await axios.get(url, params, config);
       const projects = res.data.deployables;
-      console.log(`Deployables: `, projects);
+      console.log(`projects: `, projects);
 
       // Retrieve all records with current userid from project_user db table
       url = standardStuff.apiURL('/projectAccess');

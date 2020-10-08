@@ -20,7 +20,7 @@ div
               .field-body
                   .field
                       .control
-                          select.select(v-model="environment.type", :disabled="!editingDetails")
+                          select.select(v-model="environment.type", :disabled="!editingDetails", @input="saveDetails")
                             option(value="aws") Amazon Web Services (AWS)
                             option(value="local") Local development machine
                             option(value="other") Other
@@ -221,20 +221,18 @@ div
               | {{ props.row.first_name }}
             b-table-column(field="last_name", label="Last Name")
               | {{ props.row.last_name }}
-            div(v-if="access === 'admin'")
-              b-table-column(field="user_id", label="User ID")
-                | {{ props.row.user_id }}
-            b-table-column(field="access", label="Access")  
+            b-table-column(v-if="isEditable", field="user_id", label="User ID")
+              | {{ props.row.user_id }}
+            b-table-column(v-if="isEditable", field="access", label="Access")  
               div(v-if="props.row.access === 'owner'") Admin
               div(v-else-if="props.row.access === 'read'") Read
               div(v-else-if="props.row.access === 'write'") Write
               div(v-else) {{ props.row.access }}
-            b-table-column(field="", label="")
-              div(v-if="isEditable")
-                a(href="", @click.prevent="editUser(props.row)")
-                  b-icon(icon="circle-edit-outline")
-                a(href="",  @click.prevent="deleteUser(props.row)")
-                  b-icon(icon="delete")
+            b-table-column(v-if="isEditable", field="", label="")
+              a(href="", @click.prevent="editUser(props.row)")
+                b-icon(icon="circle-edit-outline")
+              a(href="",  @click.prevent="deleteUser(props.row)")
+                b-icon(icon="delete")
 
   // New User Modal starts below:
   div(v-show="newUserModal")
@@ -327,10 +325,6 @@ export default {
   data () {
     return {
       form: {
-        // Edit Environment
-        edit_envdescription: '',
-        edit_envnotes: '',
-
         // Edit existing user
         edit_useraccess: '',
 
@@ -339,34 +333,35 @@ export default {
         new_user_access: '',
       },
 
-      editingDetails: false,
+      // Identification
+      user: '',
+      username: '',
+      currentUser: [],
 
+      // Users
       users: [],
       allUsers: [],
-      currentUser: [],
-      groups: [],
       orgUsers: [],
-      username: '',
 
-      user: '',
-      noData: false,
+      // Environments
       environmentOwner: '',
       environmentName: '',
       environment: null,
+      groups: [],
+
+      // Deployments
       deployments: [],
-      activeTab: 0,
 
-      newUserError: null, 
-      access: null,
-
-      // User Modals
+      // Editing modes
       newUserModal: false,
       deleteUserModal: false,
-
-      // Edit User Modal
       showUserEditModal: false,
+      editingDetails: false,
 
+      // Formatting
+      newUserError: null,
       errormode: false,
+      activeTab: 0,
     }
   }, // - data
 
@@ -404,76 +399,7 @@ export default {
       return false;
     }, // - isEditable
 
-    // SAVED EDITED ENVIRONMENT TO THE DATABASE - FROM MODAL
-    async saveEditedEnv() {
-      try {
-        let url = standardStuff.apiURL('/editedEnv');
-
-        let record = {
-          description: this.form.edit_envdescription,
-          notes: this.form.edit_envnotes,
-          name: this.environmentName,
-        }
-
-        let config = standardStuff.axiosConfig(this.$loginservice.jwt);
-        await axios.post(url, record, config);
-        this.editEnvInfo = null;
-        console.log(`Updated environment successfully sent to database`);
-
-      } catch (e) {
-        console.log(`Error while sending edited environment to the database: `, e);
-      }
-
-      try {
-        this.reloadEnvironment(); 
-        console.log(`Environment has been reloaded`);
-
-      } catch (e) {
-        console.log(`Error while reloading environment: `, e);
-      }
-    }, // - saveEditedEnv
-
-    // RELOAD THE DATABASE TABLE AFTER SAVING EDITED ENVIRONMENT
-    async reloadEnvironment() {
-      const url = standardStuff.apiURL('/environment');
-
-      const params = { 
-        params: {
-          environmentName: this.environmentName,
-        }
-      }
-
-      const config = standardStuff.axiosConfig(this.$loginservice.jwt);
-      let res = await axios.get(url, params, config);
-      this.environment = res.data.record;
-      console.log(`Environment has been reloaded on the browser.`);
-
-      return {
-        environment: this.environment,
-      };
-    },  // - reloadEnvironment 
-
-    // RELOAD THE DATABASE TABLE AFTER SAVING NEW DEPLOYMENT
-    async reloadDeployments() {
-      const url = standardStuff.apiURL('/deployments');
-
-      const params = { 
-        params: {
-          environmentName: this.environmentName
-        }
-      }
-
-      const config = standardStuff.axiosConfig(this.$loginservice.jwt);
-      let res = await axios.get(url, params, config);
-      console.log(`Deployments have been reloaded on the browser`);
-      this.deployments = res.data.deployments;
-
-      return {
-        deployments: this.deployments
-      };
-    },  // - reloadDeployments
-
-    // ADD A NEW USER FOR SELECTED ENVIRONMENT TO THE DATABASE - FROM MODAL 
+    // Add a new user 
     async saveNewUser() {
       // Check that form is filled correctly
       if (this.form.new_environmentuser && this.form.new_user_access) {
@@ -551,6 +477,7 @@ export default {
       }
     }, // - saveNewUser
 
+    // Save an edited user
     async saveEditedUser() {
       try {
         let url = standardStuff.apiURL('/editEnvUser');
@@ -574,7 +501,7 @@ export default {
       } 
     }, // - saveEditedUser
 
-    // REMOVE USER
+    // Remove a user from environment_users db table
     async removeUser() {
       try {
         let url = standardStuff.apiURL(`/removeEnvUser/${this.environmentName}/${this.users.username}`);
@@ -591,6 +518,7 @@ export default {
       } 
     }, // - removeUser
 
+    // Reload users on the browser
     async reloadUsers() {
       const url = standardStuff.apiURL('/environments_users');
 
@@ -601,30 +529,21 @@ export default {
       }
       const config = standardStuff.axiosConfig(this.$loginservice.jwt);
       let res = await axios.get(url, params, config);
-      console.log(`Environments have been reloaded on the browser:`, res.data);
       this.users = res.data.users;
+      console.log(`Users have been reloaded on the browser:`, this.users);
 
       return {
         users: this.users,
       };
     },  // - reloadUsers
 
-    // OPEN EDIT ENV MODAL:
-    setEditMode() {
-      this.editEnvInfo = 'edit';
-      this.form.edit_envdescription = this.environment.description;
-      this.form.edit_envnotes = this.environment.notes;
-      return false;
-    }, // - setEditMode
-
-    // OPEN MODAL AND CREATE NEW USER:
+    // Opens newUserModal
     newUser() {
       this.newUserModal = true;
-
       return false;
     }, // - newUser
 
-    // OPEN MODAL AND CHANGE VALUES FOR EDITING USER - receives props.row (i.e. user record)
+    // Opens and populates showUserEditModal
     editUser(users) {  
       this.showUserEditModal = true;
       this.users.first_name = users.first_name;
@@ -635,6 +554,7 @@ export default {
       return false;
     }, // - editUser
 
+    // Opens and populates deleteUserModal
     deleteUser(user) {
       this.deleteUserModal = true;
       this.users.first_name = user.first_name;
@@ -645,6 +565,7 @@ export default {
       return false;
     }, // - deleteUser
 
+    // Save edited environment form
     saveDetails: async function () {
       let self = this;
 
@@ -656,7 +577,6 @@ export default {
         self.updateDelay = null;
         const url = standardStuff.apiURL('/environment');
         const config = standardStuff.axiosConfig(self.$loginservice.jwt);
-        console.log(`UPDATING ENVIRONMENT`, self.environment);
         let result = await axios.put(url, self.environment, config);
       }, 1000)
     }, // - saveDetails
@@ -667,7 +587,6 @@ export default {
    *  See https://nuxtjs.org/guide/async-data#handling-errors
    */
   async asyncData ({ app, params, error }) {
-    // let environmentName = params.environmentName
     let username = app.$nuxtLoginservice.user.username;
     let user = params.userName;
     let {owner:environmentOwner, name:environmentName} = standardStuff.methods.std_fromQualifiedName(params.environmentName, username);
@@ -687,50 +606,50 @@ export default {
       // Select the environment for this page
       let url = standardStuff.apiURL('/environment');
       let res = await axios.get(url, params, config);
-      console.log(`Environment API returned: `, res.data);
       const environment = res.data.record;
+      console.log(`environment: `, environment);
 
       // Select the deployments for this environment
       url = standardStuff.apiURL('/deployments');
       res = await axios.get(url, params, config);
-      console.log(`Deployments API returned: `, res.data);
       const deployments = res.data.deployments;
+      console.log(`deployments: `, deployments);
 
       // Select the users for the environment (from environment_users db table)
       url = standardStuff.apiURL('/environments_users');
       res = await axios.get(url, params, config);
-      console.log(`Users API returned: `, res.data);
       const users = res.data.users;
+      console.log(`users: `, users);
 
       // Import deployables to be used in deployments form
       url = standardStuff.apiURL('/deployables');
       res = await axios.get(url, config);
-      console.log(`All deployables API returned: `, res.data);
       const deployables = res.data.deployables;
+      console.log(`deployables: `, deployables);
 
       // Import all users for creating new user (on the selected project)
       url = standardStuff.apiURL('/users');
       res = await axios.get(url, config);
-      console.log(`All users API returned: `, res.data);
       const allUsers = res.data.users;
+      console.log(`allUsers: `, allUsers);
 
       // This users accessibility/profile details
       url = standardStuff.apiURL('/currentUser');
       res = await axios.get(url, config);
-      console.log(`This user access API returned: `, res.data);
       const currentUser = res.data.user;
+      console.log(`currentUser: `, currentUser);
 
       // Import all groups to be used when editing environment
       url = standardStuff.apiURL('/groups');
       res = await axios.get(url, config);
-      console.log(`All groups API returned: `, res.data);
       const groups = res.data.groups;
+      console.log(`groups: `, groups);
 
       // Import all orgusers (if an org account)
       url = standardStuff.apiURL('/organisationUsers');
       res = await axios.get(url, params, config);
-      console.log('All org_users API returned: ', res.data);
       const orgUsers = res.data.organisationUsers;
+      console.log('orgUsers: ', orgUsers);
     
       return {
         environmentOwner: environmentOwner,

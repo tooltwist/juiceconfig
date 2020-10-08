@@ -122,10 +122,6 @@ export default {
 
       // Modal to add new deployment
       showDialog: false,
-      environment: '',
-      environmentOwner: '',
-      deployable: '',
-      deployableOwner: '',
       applicationName: '',
       notes: '',
       projectUsers: '',
@@ -142,22 +138,23 @@ export default {
   }, // - data
 
   computed: {
+    // Creates a default application name for new deployment form
     defaultApplicationName: function () {
-      // See if a deployable has been selected.
+      // See if a deployable has been selected
       let pos = this.deployableId.indexOf(':');
       if (pos < 0) { return '' } // Nope, none selected
       const owner = this.deployableId.substring(0, pos);
       const name = this.deployableId.substring(pos + 1);
       console.log(`dep is ${owner}:${name}`);
 
-      // See if we have an environment selected.
+      // See if we have an environment selected
       pos = this.environmentId.indexOf(':');
       if (pos < 0) { return name } // Just show the deployable name for now.
       const envOwner = this.environmentId.substring(0, pos);
       const envName = this.environmentId.substring(pos + 1);
       console.log(`env is ${envOwner}:${envName}`);
 
-      // Find a non-duplicate deployable name.
+      // Find a non-duplicate deployable name
       let newApplicationName = name;
 
       for (let cnt = 1; ; cnt++) {
@@ -166,7 +163,7 @@ export default {
           return;
         }
 
-        // create a name
+        // Create a name
         if (cnt > 1) {
           newApplicationName = `${name}_${cnt}`;
         }
@@ -184,6 +181,7 @@ export default {
       }
     }, // - defaultApplicationName
 
+    // Checks if name already exists
     nameIsUsed () {
       let pos = this.deployableId.indexOf(':');
       if (pos < 0) { return false } // Nope, none selected
@@ -202,6 +200,7 @@ export default {
       return false;
     }, // - nameIsUsed
 
+    // Checks that form is completed correctly
     readyToSave () {
       // See if we have a deployable selected.
       let pos = this.deployableId.indexOf(':');
@@ -260,7 +259,7 @@ export default {
       return 0; // user is neither collaborator or owner of deployable
     }, // - accessProject
 
-
+    // A list of applications for an environment/deployable for use in healthcheck grid 
     isDeployed (environmentName, deployableName) {
       let arr = [];
 
@@ -273,9 +272,10 @@ export default {
         } 
       }
 
-      return arr; // an array of application names for the selected environment and deployable
+      return arr; // array of application names
     }, // - isDeployed
 
+    // Checks for an existing record for new deployment/application form
     applicationExists (environmentOwner, environmentName, applicationName) {
         for (let i = 0; i < this.deployments.length; i++) {
           let deployment = this.deployments[i];
@@ -295,6 +295,7 @@ export default {
         return false;
     }, // - applicationExists
 
+    // Opens new deployment modal
     initNewDeploymentDialog () {
       this.environmentId = '';
       this.deployableId = '';
@@ -303,6 +304,7 @@ export default {
       this.showDialog = true;
     }, // - initNewDeploymentDialog
 
+    // Creates a new record for deployment/application from form
     async createDeployment () {
       this.showSaveErrorMsg = false;
 
@@ -375,6 +377,7 @@ export default {
       }
     }, // - createDeployment
 
+    // Returns the relevant icon for healthcheck status of application
     healthcheckIcon: function(mode) {
       switch (mode) {
         case 'scanning':
@@ -385,7 +388,7 @@ export default {
           return 'alert-outline';
         case 'network':
           return 'cloud-off-outline';
-        case 'ENOENT': // healthcare path not found
+        case 'ENOENT': // healthcheck path not found
           return 'cancel';
         case 'ENOTFOUND': // url not defined
           return 'cancel';
@@ -398,6 +401,7 @@ export default {
       }
     }, // - healthcheckIcon
 
+    // Returns the relevant colour for healthcheck status of application
     healthcheckColor: function(status) {
       switch (status) {
         case 'scanning':
@@ -483,7 +487,7 @@ export default {
         environments,
         deployables,
         currentUser,
-        user: user,
+        user,
         projectUsers, // all records in project_users db with this username
         environmentUsers, // "" "" "" from environment_users db
       }
@@ -547,7 +551,6 @@ async function checkHealth(deployment) {
         }
       });
 
-      // console.log(`Proxy returned:`, result);
       deployment._healthcheck.status = result.data.status;
       // deployment._healthcheck.text = result.data.text
       switch (deployment._healthcheck.status) {

@@ -103,7 +103,7 @@ section.section
 
 
         b-tab-item(label="Values")
-            .notification.is-warning
+            div.notification.is-warning(v-if="isSecureEnvironment")
                 | This is a secure environment, so you will not be able to
                 | specify configuration details here.
                 | You will however be able to download templates and scripts to help create configurations.
@@ -119,14 +119,6 @@ section.section
                 br
                 br
             div(v-if="variableRecursive.length > 0")
-                div.buttons(style="float:right;")
-                    .control(v-if="editingDetails", )
-                        button.button.is-success(@click="saveVariableValues") Save Changes
-                        | &nbsp;&nbsp;
-                        button.button.is-light(@click="editingDetails= false") Cancel
-                    .control(v-else)
-                        button.button.is-success(@click="editingDetails= !editingDetails") Edit
-                br
                 table.my-values-table
                     tr.is-size-7(v-for="(variable, index) in variableRecursive")
                         td.my-values-td-label
@@ -158,8 +150,8 @@ section.section
                                 p.my-not-input-p &nbsp;{{val.value}}
             br
 
-            div.buttons(style="float:right;")
-                .control(v-if="editingDetails", )
+            div.buttons(v-if="variableRecursive.length != 0", style="float:right;")
+                .control(v-if="editingDetails")
                     button.button.is-success(@click="saveVariableValues") Save Changes
                     | &nbsp;&nbsp;
                     button.button.is-light(@click="editingDetails= false") Cancel
@@ -299,11 +291,9 @@ export default {
     },
 
     computed: {
+        // Returns true if the environment is secure
         isSecureEnvironment: function () {
-            if (this.environment && this.environment.is_secure_environment) {
-                return true;
-            }
-            return false;
+            return (this.environment && this.environment.is_secure_environment) ? true : false;
         }, // - isSecureEnvironment
 
         configFileContent: function () {
@@ -594,7 +584,7 @@ export default {
             link.setAttribute('download', filename); //or any other extension
             document.body.appendChild(link);
             link.click();
-        },// - downloadMarkupDocumentationTable
+        }, // - downloadMarkupDocumentationTable
 
         downloadMarkupDocumentationList: function () {
             const filename = `config-documentation-${this.environmentName}-${this.applicationName}-list.md`;
@@ -608,8 +598,9 @@ export default {
             link.setAttribute('download', filename); //or any other extension
             document.body.appendChild(link);
             link.click();
-        },// - downloadMarkupDocumentationList
+        }, // - downloadMarkupDocumentationList
 
+        // Save edited values for deployment
         saveDetails: async function () {
             let self = this;
 
@@ -639,6 +630,7 @@ export default {
             }
         }, // - deleteUnusedValue
 
+        // Save variables values for new deployment
         saveVariableValues: async function () {
             console.log(`saveNewVariable()`, this.variableRecursive);
 
@@ -728,38 +720,38 @@ export default {
             // Select this deployment for this page
             let url = standardStuff.apiURL('/deployments');
             let res = await axios.get(url, params, config);
-            console.log(`Deployment API returned: `, res.data.deployments);
             if (res.data.deployments.length > 1) {
                 return error({status: 500, message: 'Returned too many deployments'});
             }
             const deployment = res.data.deployments[0];
+            console.log(`deployment: `, deployment);
 
             // Select the environment for this page
             url = standardStuff.apiURL('/environmentIndex');
             res = await axios.get(url, params, config);
-            console.log(`Environment API returned: `, res.data);
             if (res.data.record.length > 1) {
                 return error({status: 500, message: 'Returned too many environments'});
             }
             const environment = res.data.record;
+            console.log(`environment: `, environment);
 
             // Import deployables to be shown in dropdown
             url = standardStuff.apiURL('/deployables');
             res = await axios.get(url, config);
-            console.log(`Deployables API returned: `, res.data);
             const deployables = res.data.deployables;
+            console.log(`deployables: `, deployables);
 
             // Variables for dependencies and deployable (recursive array data)
             url = standardStuff.apiURL(`/deployable/${deployment.deployable_owner}:${deployment.deployable}/variablesConfig`);
             res = await axios.get(url, config);
-            console.log(`VariablesConfig API returned: `, res.data);
             const variableRecursive = res.data;
+            console.log(`variableRecursive: `, res.data);
 
             // Select variable values for this deployment
             url = standardStuff.apiURL(`/deployment/${environmentOwner}:${environmentName}/${applicationName}/variableValues`);
             res = await axios.get(url, config);
-            console.log(`variableValues API returned: `, res.data);
             const variableValues = res.data.variableValues;
+            console.log(`variableValues: `, variableValues);
 
             // If we have any values defined that are not used, we might want
             // to keep them - perhaps they'll be added back to the deployable.
@@ -790,7 +782,7 @@ export default {
                 }
             }) // - variableValues.forEach
 
-            console.log(`unusedValues=`, unusedValues);
+            console.log(`unusedValues: `, unusedValues);
 
             return {
                 environmentOwner,

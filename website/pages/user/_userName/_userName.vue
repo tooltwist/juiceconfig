@@ -113,6 +113,7 @@ export default {
     },
 
     computed: {
+        // Return projects that this user has access to
         filteredProjects() {
             let projects = [];
 
@@ -127,6 +128,7 @@ export default {
             return projects;
         }, // - filteredProjects
 
+        // Return environments that this user has access to
         filteredEnvironments() {
             let environments = [];
 
@@ -145,6 +147,7 @@ export default {
     methods: {
         ...standardStuff.methods,
 
+        // Save updated deployable details
         saveDetails: async function () {
             let self = this;
 
@@ -169,16 +172,15 @@ export default {
             }, 1000)
         }, // - saveDetails
 
-        // RELOAD THE DATABASE TABLE 
+        // Reload users data
         async reloadUsers() {
-            const url = standardStuff.apiURL('/userName');
-
             const params = {
                 params: { 
                     userID: this.userID
                 }
             }
 
+            const url = standardStuff.apiURL('/userName');
             const config = standardStuff.axiosConfig(this.$loginservice.jwt);
             let res = await axios.get(url, params, config);
             console.log(`reloadUsers returned: `, res.data);
@@ -187,7 +189,7 @@ export default {
             return {
                 user: this.user,
             };
-        },  // - reloadUsers
+        }, // - reloadUsers
     },
 
     async asyncData ({ app, params, error }) {
@@ -210,44 +212,45 @@ export default {
             let url = standardStuff.apiURL('/userName');
             let res = await axios.get(url, params, config);
             const user = res.data.record;
-            console.log(`User   :`, user);
+            console.log(`user: `, user);
 
             // Select user details from org_user db table
             url = standardStuff.apiURL('/singleOrgUser');
             res = await axios.get(url, params, config);
             const orguser = res.data.record;
-            console.log(`OrgUser   :`, orguser);
+            console.log(`orgUser: `, orguser);
 
             // Import all project_users with username to cross-reference with org deployables
             url = standardStuff.apiURL('/projectAccess');
             res = await axios.get(url, params, config);
             const projectUsers = res.data.records;
-            console.log('projectUsers = ', projectUsers);
+            console.log('projectUsers: ', projectUsers);
 
             // Import all project_users with username to cross-reference with org deployables
             url = standardStuff.apiURL('/thisUsersEnvironments');
             res = await axios.get(url, params, config);
             const environmentUsers = res.data.environmentUsers;
-            console.log('environmentUsers = ', environmentUsers);
+            console.log('environmentUsers: ', environmentUsers);
 
-            // Import all org deployables
-            params = { // change params for future calls
+            // Changed params for future calls 
+            params = { 
                 params: {
                     username: org,
                     user: org,
                 }
             }
 
+            // Import all org deployables
             url = standardStuff.apiURL('/allDeployables');
             res = await axios.get(url, params, config);
             const projects = res.data.deployables;
-            console.log('projects = ', projects);
+            console.log('projects: ', projects);
 
             // Import all org environments
             url = standardStuff.apiURL('/showEnvironments');
             res = await axios.get(url, params, config);
             const environments = res.data.environments;
-            console.log('environments = ', environments);
+            console.log('environments: ', environments);
 
             return {
                 environmentUsers: environmentUsers,
