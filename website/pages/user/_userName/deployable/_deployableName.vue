@@ -142,6 +142,8 @@ div
                 span(v-html="std_toQualifiedDisplay(props.row.environmentOwner, props.row.environment)")
             b-table-column(field="notes", label="Notes")
               | {{ props.row.notes }}
+            b-table-column(field="", label="")
+              b-button.button.is-small.is-primary.is-outlined(tag="nuxt-link", :to="`/user/${user}/deployment/${props.row.environment_owner}:${props.row.environment}/${props.row.application_name}`") Configure
         div(v-if="this.deployments.length === 0")
           article.message.is-success.is-small
             div.message-body There are no deployments for this deployable yet. Would you like to add a new deployment?
@@ -205,7 +207,7 @@ div
               a(href="",  @click.prevent="deleteUser(props.row)")
                 b-icon(icon="delete")
 
-      b-tab-item(label="Versions")     
+      b-tab-item(v-if="!NOT_YET", label="Versions")     
         b-button.is-success(@click.prevent="newVersion()", style="float:right;") Create new version
         br
         br
@@ -222,7 +224,7 @@ div
               b-table-column(field="registered_by", label="Registered By")
                 | {{ props.row.registered_by}}
 
-      b-tab-item(label="Tokens")       
+      b-tab-item(v-if="!NOT_YET", label="Tokens")       
         b-button.is-success(@click.prevent="newToken()", style="float:right;") Generate a random token
         br
         br
@@ -242,7 +244,7 @@ div
               | {{ props.row.environment_owner }}
 
   // New Token Modal starts below:
-  div(v-show="newTokenModal")
+  div(v-if="!NOT_YET", v-show="newTokenModal")
     transition(name="modal")
       div.modal-mask
         div.modal-wrapper
@@ -283,7 +285,7 @@ div
 
 
   // New Version Modal starts below:
-  div(v-show="modalMode==='newVersion'")
+  div(v-if="!NOT_YET", v-show="modalMode==='newVersion'")
     transition(name="modal")
       div.modal-mask
         div.modal-wrapper
@@ -663,6 +665,8 @@ export default {
         new_version_build_no: '',
         new_version_registration_source: '',
       },
+
+      NOT_YET: true, // These features will be implemented later
 
       // Imported data / function variables
       deployments: [ ],

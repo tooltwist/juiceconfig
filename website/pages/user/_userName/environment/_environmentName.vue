@@ -169,6 +169,8 @@ div
                   span(v-html="std_toQualifiedDisplay(props.row.deployable_owner,props.row.deployable,true)")
               b-table-column(field="notes", label="Notes")
                 | {{ props.row.notes }}
+              b-table-column(field="", label="")
+                b-button.button.is-small.is-primary.is-outlined(tag="nuxt-link", :to="`/user/${user}/deployment/${props.row.environment_owner}:${props.row.environment}/${props.row.application_name}`") Configure
       
       b-tab-item(label="Commands", v-if="environment.type==='aws'")
         .notification
