@@ -48,31 +48,12 @@ div
             .field-body
               .field
                 .control
-                  p(v-if="groups.length == 0") None
-                  div(v-else)
+                  div(v-if="groups.length == 0", style="display: inline-block;")
+                    p None  
+                  div(v-else, style="display: inline-block;")
                     select.select(v-show="!newGroup", v-model="environment.group_name", :disabled="!editingDetails", @input="saveDetails")
                       option(v-for="group in groups", :value="group.group_name") {{group.group_name}}
-                      
-                  div(v-show="editingDetails")
-                    input(type="checkbox", @click="addNewGroup()") 
-                    span.is-small  Create new group
-
-                  form(v-if="newGroup", style="border-spacing: 15px;")
-                    p Group name: 
-                        input.input(name="new_group", v-model="form.new_group", maxlength="16", placeholder="Group Name")
-                        p.help.is-danger(v-if="groupExists") This group name already exists.
-                    p Description:
-                        input.input(name="new_group_description", v-model="form.group_description", maxlength="16", placeholder="Description")
-                    p Tag colour:
-                        .control 
-                            .select
-                                select(v-model="form.group_colour")
-                                    option(value="red") Red
-                                    option(value="blue") Blue
-                                    option(value="green") Green
-                                    option(value="orange") Orange
-                                    option(value="yellow") Yellow
-                    button.button.is-small(@click="addGroup()") Add group
+                  button.button.is-small(v-if="editingDetails", @click.prevent="addGroupModal", style="margin: 2px 5px;") Add group
           .field.is-horizontal
               .field-label.is-normal
                   label.label(style="width:200px;") Description: 
@@ -332,6 +313,37 @@ div
               div.control
                 b-button(@click.stop="removeUser", type="is-danger is-outlined", size="is-small") Remove    
                 b-button(@click="deleteUserModal=false", type="is-gray is-outlined", size="is-small") Cancel
+
+  // Modal for new environment group
+  div(v-show="showNewGroupModal")
+    transition(name="modal")
+      div.modal-mask
+        div.modal-wrapper
+          div.modal-card
+            header.modal-card-head
+              p.modal-card-title Create new group for {{environmentName}} 
+            section.modal-card-body
+              div.modal-body
+                slot(name="body")
+                  form
+                    p Group name: 
+                      input.input(name="new_group", v-model="form.new_group", maxlength="16", placeholder="Group Name")
+                      //p.help.is-danger(v-if="groupExists") This group name already exists.
+                    p Description:
+                      input.input(name="new_group_description", v-model="form.group_description", maxlength="16", placeholder="Description")
+                    p Tag colour:
+                      .control 
+                        .select
+                          select(v-model="form.group_colour")
+                            option(value="red") Red
+                            option(value="blue") Blue
+                            option(value="green") Green
+                            option(value="orange") Orange
+                            option(value="yellow") Yellow
+            footer.modal-card-foot 
+              div.control
+                b-button(@click.stop="addGroup()", type="is-primary is-light", size="is-small")  Save    
+                b-button(@click="showNewGroupModal=false", type="is-danger is-outlined", size="is-small") Cancel
 </template>
 
 <script>
@@ -390,6 +402,7 @@ export default {
       deleteUserModal: false,
       showUserEditModal: false,
       editingDetails: false,
+      showNewGroupModal: false,
 
       // Formatting
       newUserError: null,
@@ -402,9 +415,9 @@ export default {
     ...standardStuff.methods,
 
     // Switch between newGroup = true / false
-    addNewGroup() { 
-      this.newGroup = (this.newGroup) ? false : true;
-    }, // - addNewGroup
+    //addNewGroup() { 
+      //this.newGroup = (this.newGroup) ? false : true;
+    //}, // - addNewGroup
 
     // This method returns true if the user is 1. the owner of the private account (user==username), 2. the owner or
     // admin of the organisation (org_user db table), or, 3/4. the environment has specified that this user has owner/readwrite 
@@ -455,13 +468,31 @@ export default {
         await axios.post(url, record, config);
         console.log('New group sent to the database.');
 
-        // set this.form.group_name as new group name
-        this.form.group_name = this.form.new_group;
+        this.reloadGroups();
 
       } catch (e) {
         console.log(`Error while sending new group to the database: `, e);
       }
     },
+
+    // Reload users on the browser
+    async reloadGroups() {
+      const url = standardStuff.apiURL('/groups');
+
+      const params = {
+        params: { 
+          user: this.user
+        }
+      }
+      const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+      let res = await axios.get(url, params, config);
+      this.groups = res.data.groups;
+      console.log(`Groups have been reloaded on the browser:`, this.groups);
+
+      return {
+        groups: this.groups,
+      };
+    }, // - reloadGroups
 
     // Add a new user 
     async saveNewUser() {
@@ -599,7 +630,7 @@ export default {
       return {
         users: this.users,
       };
-    },  // - reloadUsers
+    }, // - reloadUsers
 
     // Opens newUserModal
     newUser() {
@@ -614,9 +645,14 @@ export default {
       this.users.last_name = users.last_name;
       this.users.user_id = users.user_id;
       this.form.edit_useraccess = users.access;
-
       return false;
     }, // - editUser
+
+    // Opens new group modal
+    addGroupModal() {
+      this.showNewGroupModal = true;
+      return false;
+    }, // - addGroupModal
 
     // Opens and populates deleteUserModal
     deleteUser(user) {
@@ -625,14 +661,12 @@ export default {
       this.users.last_name = user.last_name;
       this.users.username = user.username;
       this.users.user_id = user.user_id;
-
       return false;
     }, // - deleteUser
 
     // Save edited environment form
     saveDetails: async function () {
       let self = this;
-
       if (self.updateDelay) {
         clearTimeout(self.updateDelay);
       }
@@ -664,6 +698,7 @@ export default {
           environmentName: environmentName,
           environmentOwner: environmentOwner,
           organisationName: user,
+          user: user,
         }
       }
 
@@ -705,7 +740,7 @@ export default {
 
       // Import all groups to be used when editing environment
       url = standardStuff.apiURL('/groups');
-      res = await axios.get(url, config);
+      res = await axios.get(url, params, config);
       const groups = res.data.groups;
       console.log(`groups: `, groups);
 
