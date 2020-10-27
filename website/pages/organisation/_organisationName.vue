@@ -12,7 +12,7 @@
                         td(style="justify:right;") 
                             label Email:
                         td(style="justify:left;") {{organisation.email}}
-                    tr  
+                    tr
                         td(style="justify:right;")
                             label Admin:
                         td(style="justify:left;") 
@@ -134,10 +134,13 @@ export default {
                 user_username: '',
             },
 
+            // Server imports
             org_users: [ ],
             organisation: [ ],
             users: [ ],
             organisationName: '',
+
+            // User details
             currentUser: '',
 
             // CSS

@@ -48,8 +48,31 @@ div
             .field-body
               .field
                 .control
-                  select.select(v-model="environment.group_name", :disabled="!editingDetails", @input="saveDetails")
-                    option(v-for="group in groups", :value="group.group_name") {{group.group_name}}
+                  p(v-if="groups.length == 0") None
+                  div(v-else)
+                    select.select(v-show="!newGroup", v-model="environment.group_name", :disabled="!editingDetails", @input="saveDetails")
+                      option(v-for="group in groups", :value="group.group_name") {{group.group_name}}
+                      
+                  div(v-show="editingDetails")
+                    input(type="checkbox", @click="addNewGroup()") 
+                    span.is-small  Create new group
+
+                  form(v-if="newGroup", style="border-spacing: 15px;")
+                    p Group name: 
+                        input.input(name="new_group", v-model="form.new_group", maxlength="16", placeholder="Group Name")
+                        p.help.is-danger(v-if="groupExists") This group name already exists.
+                    p Description:
+                        input.input(name="new_group_description", v-model="form.group_description", maxlength="16", placeholder="Description")
+                    p Tag colour:
+                        .control 
+                            .select
+                                select(v-model="form.group_colour")
+                                    option(value="red") Red
+                                    option(value="blue") Blue
+                                    option(value="green") Green
+                                    option(value="orange") Orange
+                                    option(value="yellow") Yellow
+                    button.button.is-small(@click="addGroup()") Add group
           .field.is-horizontal
               .field-label.is-normal
                   label.label(style="width:200px;") Description: 
@@ -333,6 +356,11 @@ export default {
         // Add new user
         new_environmentuser: '',
         new_user_access: '',
+
+        // Creating a new group
+        new_group: '',
+        group_colour: '',
+        group_description: '',
       },
 
       // Identification
@@ -350,6 +378,9 @@ export default {
       environmentName: '',
       environment: null,
       groups: [],
+
+      // Create new group
+      newGroup: false,
 
       // Deployments
       deployments: [],
@@ -369,6 +400,11 @@ export default {
 
   methods: {
     ...standardStuff.methods,
+
+    // Switch between newGroup = true / false
+    addNewGroup() { 
+      this.newGroup = (this.newGroup) ? false : true;
+    }, // - addNewGroup
 
     // This method returns true if the user is 1. the owner of the private account (user==username), 2. the owner or
     // admin of the organisation (org_user db table), or, 3/4. the environment has specified that this user has owner/readwrite 
@@ -400,6 +436,32 @@ export default {
 
       return false;
     }, // - isEditable
+
+    async addGroup() {
+      try {
+        e.preventDefault();
+
+        // send record for new group
+        const url = standardStuff.apiURL('/newGroup');
+
+        const record = { 
+          group_name: this.form.new_group,
+          description: this.form.group_description,
+          colour: this.form.group_colour,
+          group_owner: this.user,
+        };
+
+        const config = standardStuff.axiosConfig(this.$loginservice.jwt);
+        await axios.post(url, record, config);
+        console.log('New group sent to the database.');
+
+        // set this.form.group_name as new group name
+        this.form.group_name = this.form.new_group;
+
+      } catch (e) {
+        console.log(`Error while sending new group to the database: `, e);
+      }
+    },
 
     // Add a new user 
     async saveNewUser() {
