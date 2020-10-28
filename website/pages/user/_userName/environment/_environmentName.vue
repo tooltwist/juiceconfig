@@ -414,11 +414,6 @@ export default {
   methods: {
     ...standardStuff.methods,
 
-    // Switch between newGroup = true / false
-    //addNewGroup() { 
-      //this.newGroup = (this.newGroup) ? false : true;
-    //}, // - addNewGroup
-
     // This method returns true if the user is 1. the owner of the private account (user==username), 2. the owner or
     // admin of the organisation (org_user db table), or, 3/4. the environment has specified that this user has owner/readwrite 
     // access to this environment (environment_user db table). Else, it returns false and access to edit buttons, etc, are hidden.
@@ -452,7 +447,7 @@ export default {
 
     async addGroup() {
       try {
-        // send record for new group
+        // Send record for new group
         const url = standardStuff.apiURL('/newGroup');
         const record = { 
           group_name: this.form.new_group,
@@ -464,8 +459,12 @@ export default {
         await axios.post(url, record, config);
         console.log('New group sent to the database.');
 
+        // Reset page formatting
         this.reloadGroups();
         this.showNewGroupModal = false;
+        this.form.new_group = '';
+        this.form.group_description = '';
+        this.form.group_colour = '';
       } catch (e) {
         console.log(`Error while sending new group to the database: `, e);
       }
