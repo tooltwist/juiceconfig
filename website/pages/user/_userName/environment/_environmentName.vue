@@ -53,7 +53,7 @@ div
                   div(v-else, style="display: inline-block;")
                     select.select(v-show="!newGroup", v-model="environment.group_name", :disabled="!editingDetails", @input="saveDetails")
                       option(v-for="group in groups", :value="group.group_name") {{group.group_name}}
-                  button.button.is-small(v-if="editingDetails", @click.prevent="addGroupModal", style="margin: 2px 5px;") Add group
+                  button.button.is-small.is-light(v-if="editingDetails", @click.prevent="addGroupModal", style="margin: 2px 5px;") Add group
           .field.is-horizontal
               .field-label.is-normal
                   label.label(style="width:200px;") Description: 
@@ -452,24 +452,20 @@ export default {
 
     async addGroup() {
       try {
-        e.preventDefault();
-
         // send record for new group
         const url = standardStuff.apiURL('/newGroup');
-
         const record = { 
           group_name: this.form.new_group,
           description: this.form.group_description,
           colour: this.form.group_colour,
           group_owner: this.user,
         };
-
         const config = standardStuff.axiosConfig(this.$loginservice.jwt);
         await axios.post(url, record, config);
         console.log('New group sent to the database.');
 
         this.reloadGroups();
-
+        this.showNewGroupModal = false;
       } catch (e) {
         console.log(`Error while sending new group to the database: `, e);
       }
@@ -478,7 +474,6 @@ export default {
     // Reload users on the browser
     async reloadGroups() {
       const url = standardStuff.apiURL('/groups');
-
       const params = {
         params: { 
           user: this.user
