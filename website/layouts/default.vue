@@ -111,11 +111,7 @@ export default {
   computed: {
     // Returns true if user is logged in
     loggedIn: function() {
-      if (this.$loginservice && this.$loginservice.user) {
-        return true;
-      }
-
-      return false;
+      return (this.$loginservice && this.$loginservice.user) ? true : false;
     },
 
     // Returns the username provided by loginservice account or null if not logged in
@@ -147,13 +143,7 @@ export default {
     userDefault: {
       get: function() { // getter
         let currentUsername = this.$store.state.currentUsername;
-
-        if (this.username == '') { // not logged in
-          return '';
-          
-        } else { // user is set
-          return currentUsername;
-        }
+        return (this.username == '') ? '' : currentUsername;
       },
 
       set: function(value) { // setter 
@@ -198,7 +188,7 @@ export default {
           return true;
         } 
       }
-
+      
       return false;
     },
   },  
