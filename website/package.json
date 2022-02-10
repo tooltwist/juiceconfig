@@ -16,7 +16,7 @@
   "dependencies": {
     "@nuxtjs/axios": "^5.3.6",
     "@tooltwist/vue-loginservice": "^4.0.17",
-    "node-sass": "^4.13.1",
+    "node-sass": "^7.0.0",
     "nuxt": "^2.0.0",
     "nuxt-buefy": "^0.3.2",
     "pug": "^3.0.1",
