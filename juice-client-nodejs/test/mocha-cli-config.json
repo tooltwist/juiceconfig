@@ -1,0 +1,34 @@
+{
+  "db": {
+    // Database details
+    "database": "juice",
+    "port": /* A comment here */ 56911
+  },
+  "tests": {
+    "boolean": {
+      "true1": "true",
+      "true2": "t",
+      "true3": "yes",
+      "true4": "y",
+      "true5": "TRUE",
+      "true6": "T",
+      "true7": "YES",
+      "true8": "Y",
+      "true9": true,
+      "true10": 1,
+      "false1": "false",
+      "false2": "f",
+      "false3": "no",
+      "false4": "n",
+      "false5": "FALSE",
+      "false6": "F",
+      "false7": "NO",
+      "false8": "N",
+      "false9": false,
+      "false10": 0,
+      "dud1": 123,
+      "dud2": "unknown",
+      "dud3": { "x": "Y" }
+    }
+  }
+}

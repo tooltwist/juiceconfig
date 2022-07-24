@@ -34,13 +34,34 @@ describe('Test client', function() {
       assert.equal(value, true)
       assert.equal(typeof(value), 'boolean')
     });
-    it(`boolean value: true`, async function() {
+    it(`boolean value: "TRUE"`, async function() {
       const value = await juice.boolean('tests.boolean.true5', juice.MANDATORY)
+      // console.log(`-> ${typeof(value)}, ${value}  `);
+      assert.equal(value, true)
+      assert.equal(typeof(value), 'boolean')
+    });
+    it(`boolean value: "T"`, async function() {
+      const value = await juice.boolean('tests.boolean.true6', juice.MANDATORY)
+      assert.equal(value, true)
+      assert.equal(typeof(value), 'boolean')
+    });
+    it(`boolean value: "YES"`, async function() {
+      const value = await juice.boolean('tests.boolean.true7', juice.MANDATORY)
+      assert.equal(value, true)
+      assert.equal(typeof(value), 'boolean')
+    });
+    it(`boolean value: "Y"`, async function() {
+      const value = await juice.boolean('tests.boolean.true8', juice.MANDATORY)
+      assert.equal(value, true)
+      assert.equal(typeof(value), 'boolean')
+    });
+    it(`boolean value: true`, async function() {
+      const value = await juice.boolean('tests.boolean.true9', juice.MANDATORY)
       assert.equal(value, true)
       assert.equal(typeof(value), 'boolean')
     });
     it(`boolean value: 1`, async function() {
-      const value = await juice.boolean('tests.boolean.true6', juice.MANDATORY)
+      const value = await juice.boolean('tests.boolean.true10', juice.MANDATORY)
       assert.equal(value, true)
       assert.equal(typeof(value), 'boolean')
     });
@@ -94,7 +115,7 @@ describe('Test client', function() {
       assert.equal(value, false)
       assert.equal(typeof(value), 'boolean')
     });
-    it(`boolean value: 1`, async function() {
+    it(`boolean value: 0`, async function() {
       const value = await juice.boolean('tests.boolean.false10', juice.MANDATORY)
       assert.equal(value, false)
       assert.equal(typeof(value), 'boolean')

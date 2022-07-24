@@ -1,6 +1,7 @@
 
 const fs = require('fs');
 const AWS = require('aws-sdk')
+const commentJSON = require('comment-json');
 
 
 exports.flattenConfig = flattenConfig
@@ -30,8 +31,8 @@ async function getConfigFromConfigFile(path) {
   }
 
   try {
-    let rawdata = fs.readFileSync(path);
-    let config = JSON.parse(rawdata);
+    let rawdata = fs.readFileSync(path).toString();
+    let config = commentJSON.parse(rawdata);
     // console.log(config);
     configuration = config
   } catch (e) {
@@ -50,7 +51,7 @@ function getConfigFromEnvironmentVariable(variableName) {
   }
 
   try {
-    let config = JSON.parse(value)
+    let config = commentJSON.parse(value)
     // console.log(`parsed config is `, config);
     configuration = config
   } catch (e) {
@@ -113,14 +114,14 @@ function getConfigFromSecretsManager(region, secretName) {
       if ('SecretString' in data) {
           secret = data.SecretString;
       } else {
-          let buff = new Buffer(data.SecretBinary, 'base64');
+          let buff = Buffer.from(data.SecretBinary, 'base64');
           let decodedBinarySecret = buff.toString('ascii');
           // console.log(`decodedBinarySecret=`, decodedBinarySecret);
           secret = decodedBinarySecret
       }
       // console.log(`Found secret ${secret}`);
       try {
-        let config = JSON.parse(secret)
+        let config = commentJSON.parse(secret)
         // console.log(`parsed secret is `, config);
         configuration = config
       } catch (e) {

@@ -1,13 +1,14 @@
 #d!b/in/sh
 
-echo export JUICE_CONFIG=file:::/opt/Development/Projects/juice/juiceconfig-config/local-server/volumes/juice-client/mocha-test-data.json
-     export JUICE_CONFIG=file:::/opt/Development/Projects/juice/juiceconfig-config/local-server/volumes/juice-client/mocha-test-data.json
-
+     export JUICE_CONFIG=file:::`pwd`/mocha-cli-config.json
+echo export JUICE_CONFIG=${JUICE_CONFIG}
 #
 #	If files are specified, run just those tests
 #
 if [ "$#" != 0 ] ; then
-	mocha $*
+	echo mocha $*
+	     mocha $*
 else
-	mocha mocha-cli-tests
+	echo mocha mocha-cli-tests
+	     mocha mocha-cli-tests
 fi

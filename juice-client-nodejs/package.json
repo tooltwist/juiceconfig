@@ -5,7 +5,7 @@
   "main": "lib/juice-client.js",
   "scripts": {
     "patch-release": "npm version patch && npm publish --access=public && git push --follow-tags",
-    "test-cli": "cd test; mocha mocha-cli-tests"
+    "test-cli": "cd test; ./test-locally-using-mocha.sh"
   },
   "repository": {
     "type": "git",
@@ -25,6 +25,7 @@
   "dependencies": {
     "aws-sdk": "^2.620.0",
     "axios": "^0.24.0",
+    "comment-json": "^4.2.2",
     "istextorbinary": "^3.3.0"
   },
   "devDependencies": {
@@ -32,7 +33,5 @@
     "should": "^7.0.1",
     "supertest": "^6.1.6"
   },
-  "zbin": {
-    "juice-cli": "lib/cli.js"
-  }
+  "bin": "bin/juice-cli.js"
 }
