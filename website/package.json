@@ -14,8 +14,8 @@
     "cypress:open": "cypress open"
   },
   "dependencies": {
-    "@nuxtjs/axios": "^5.3.6",
-    "@tooltwist/vue-loginservice": "^4.0.17",
+    "@nuxtjs/axios": "^5.13.6",
+    "@tooltwist/vue-loginservice": "^5.1.8",
     "node-sass": "^7.0.0",
     "nuxt": "^2.15.8",
     "nuxt-buefy": "^0.3.2",
